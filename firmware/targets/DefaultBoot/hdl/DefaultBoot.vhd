@@ -8,7 +8,7 @@
 -- the terms contained in the LICENSE.txt file.
 ------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
--- MultiRena.vhd
+-- DefaultBoot.vhd
 -------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -27,7 +27,7 @@ use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
 
-entity MultiRena is
+entity DefaultBoot is
    generic (
       BUILD_INFO_G    : BuildInfoType);
    port (
@@ -65,9 +65,9 @@ entity MultiRena is
       -- Control outputs
       txData      : out   slv(6  downto 1)
    );
-end MultiRena;
+end DefaultBoot;
 
-architecture STRUCTURE of MultiRena is
+architecture STRUCTURE of DefaultBoot is
 
    constant TPD_C : time := 1 ns;
 
