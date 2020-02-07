@@ -7,6 +7,7 @@ loadRuckusTcl $::env(PROJ_DIR)/../../submodules/rce-gen3-fw-lib/RceG3
 loadRuckusTcl $::env(PROJ_DIR)/../../submodules/rce-gen3-fw-lib/RceEthernet
 loadRuckusTcl $::env(PROJ_DIR)/../../submodules/rce-gen3-fw-lib/PpiCommon
 loadRuckusTcl $::env(PROJ_DIR)/../../submodules/rce-gen3-fw-lib/PpiPgp
+loadRuckusTcl $::env(PROJ_DIR)/../../common
 
 # Load local Source Code and constraints
 loadSource -dir       "$::DIR_PATH/hdl/"

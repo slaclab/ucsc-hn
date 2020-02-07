@@ -26,6 +26,9 @@ library surf;
 use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
+use surf.EthMacPkg.all;
+
+library ucsc_hn;
 
 entity MultiRena is
    generic (
@@ -67,6 +70,26 @@ architecture STRUCTURE of MultiRena is
 
    constant TPD_C : time := 1 ns;
 
+   -- AXI-Lite
+   constant AXIL_XBAR_MASTERS_C : integer := 3;
+   constant MAC_AXIL_INDEX_C    : integer := 0;
+   constant UDP_AXIL_INDEX_C    : integer := 1;
+   constant RSSI_AXIL_INDEX_C   : integer := 2;
+
+   constant AXIL_XBAR_CFG_C : AxiLiteCrossbarMasterConfigArray(AXIL_XBAR_MASTERS_C-1 downto 0) := (
+      MAC_AXIL_INDEX_C  => (
+         baseAddr       => X"B0000000",
+         addrBits       => 16,
+         connectivity   => X"FFFF"),
+      UDP_AXIL_INDEX_C  => (
+         baseAddr       => X"B0010000",
+         addrBits       => 16,
+         connectivity   => X"FFFF"),
+      RSSI_AXIL_INDEX_C => (
+         baseAddr       => X"B0020000",
+         addrBits       => 10,
+         connectivity   => X"FFFF"));
+
    signal stableClk : sl;
    signal stableRst : sl;
    signal clk312    : sl;
@@ -97,6 +120,22 @@ architecture STRUCTURE of MultiRena is
    signal coreAxilWriteMaster : AxiLiteWriteMasterType;
    signal coreAxilWriteSlave  : AxiLiteWriteSlaveType;
 
+   -- Core Axi Bus, 0xB0000000 - 0xBFFFFFFF  (axilClk domain)
+   signal coreAxilReadMasters  : AxiLiteReadMasterArray(AXIL_XBAR_MASTERS_C-1 downto 0);
+   signal coreAxilReadSlaves   : AxiLiteReadSlaveArray(AXIL_XBAR_MASTERS_C-1 downto 0);
+   signal coreAxilWriteMasters : AxiLiteWriteMasterArray(AXIL_XBAR_MASTERS_C-1 downto 0);
+   signal coreAxilWriteSlaves  : AxiLiteWriteSlaveArray(AXIL_XBAR_MASTERS_C-1 downto 0);
+
+   signal udpAxilReadMaster  : AxiLiteReadMasterType;
+   signal udpAxilReadSlave   : AxiLiteReadSlaveType;
+   signal udpAxilWriteMaster : AxiLiteWriteMasterType;
+   signal udpAxilWriteSlave  : AxiLiteWriteSlaveType;
+
+   signal udpObServerMaster : AxiStreamMasterType;
+   signal udpObServerSlave  : AxiStreamSlaveType;
+   signal udpIbServerMaster : AxiStreamMasterType;
+   signal udpIbServerSlave  : AxiStreamSlaveType;
+
    -- DMA Interfaces (dmaClk domain)
    signal dmaClk      : slv(3 downto 0);
    signal dmaClkRst   : slv(3 downto 0);
@@ -113,6 +152,13 @@ architecture STRUCTURE of MultiRena is
    signal userEthUdpIbSlave    : AxiStreamSlaveType;
    signal userEthUdpObMaster   : AxiStreamMasterType;
    signal userEthUdpObSlave    : AxiStreamSlaveType;
+   signal localIp              : slv(31 downto 0);
+   signal localMac             : slv(47 downto 0);
+
+   signal rssiObMaster    : AxiStreamMasterType;
+   signal rssiObSlave     : AxiStreamSlaveType;
+   signal rssiIbMaster    : AxiStreamMasterType;
+   signal rssiIbSlave     : AxiStreamSlaveType;
 
    -- ZYNQ GEM Interface
    signal armEthTx   : ArmEthTxArray(1 downto 0);
@@ -123,6 +169,12 @@ architecture STRUCTURE of MultiRena is
    signal iethRxN : slv(3 downto 0);
    signal iethTxP : slv(3 downto 0);
    signal iethTxN : slv(3 downto 0);
+
+   signal clockIn     : sl;
+   signal clockOut    : sl;
+   signal syncIn      : sl;
+   signal syncOut     : sl;
+   signal rxData      : slv(30 downto 1);
 
 begin
 
@@ -194,6 +246,28 @@ begin
          armEthMode          => armEthMode);
 
    ----------------------------------------------------------------------------      
+   --                         Core AXI Crossbar                              --
+   ----------------------------------------------------------------------------      
+   U_AxiLiteCrossbar_1 : entity surf.AxiLiteCrossbar
+      generic map (
+         TPD_G              => TPD_C,
+         NUM_SLAVE_SLOTS_G  => 1,
+         NUM_MASTER_SLOTS_G => AXIL_XBAR_MASTERS_C,
+         MASTERS_CONFIG_G   => AXIL_XBAR_CFG_C,
+         DEBUG_G            => false)
+      port map (
+         axiClk              => axilClk,
+         axiClkRst           => axilRst,
+         sAxiWriteMasters(0) => coreAxilWriteMaster,
+         sAxiWriteSlaves(0)  => coreAxilWriteSlave,
+         sAxiReadMasters(0)  => coreAxilReadMaster,
+         sAxiReadSlaves(0)   => coreAxilReadSlave,
+         mAxiWriteMasters    => coreAxilWriteMasters,
+         mAxiWriteSlaves     => coreAxilWriteSlavEs,
+         mAxiReadMasters     => coreAxilReadMasters,
+         mAxiReadSlaves      => coreAxilReadSlaves);
+
+   ----------------------------------------------------------------------------      
    --                         ETH GT Mapping                                 --
    ----------------------------------------------------------------------------      
    -- This VHDL wrapper is determined by the ZYNQ family type
@@ -232,19 +306,15 @@ begin
          dmaClk               => dmaClk(3),
          dmaRst               => dmaClkRst(3),
          dmaState             => dmaState(3),
-         --dmaIbMaster          => dmaIbMaster(3),
-         --dmaIbSlave           => dmaIbSlave(3),
-         --dmaObMaster          => dmaObMaster(3),
-         --dmaObSlave           => dmaObSlave(3),
-         dmaIbMaster          => open,
-         dmaIbSlave           => AXI_STREAM_SLAVE_FORCE_C,
-         dmaObMaster          => AXI_STREAM_MASTER_INIT_C,
-         dmaObSlave           => open,
+         dmaIbMaster          => dmaIbMaster(3),
+         dmaIbSlave           => dmaIbSlave(3),
+         dmaObMaster          => dmaObMaster(3),
+         dmaObSlave           => dmaObSlave(3),
          -- User ETH interface
          userEthClk           => userEthClk,
          userEthRst           => userEthClkRst,
-         userEthIpAddr        => open,
-         userEthMacAddr       => open,
+         userEthIpAddr        => localIp,
+         userEthMacAddr       => localMac,
          userEthUdpIbMaster   => userEthUdpIbMaster,
          userEthUdpIbSlave    => userEthUdpIbSlave,
          userEthUdpObMaster   => userEthUdpObMaster,
@@ -260,10 +330,10 @@ begin
          -- AXI-Lite Buses
          axilClk              => axilClk,
          axilRst              => axilRst,
-         axilWriteMaster      => coreAxilWriteMaster,
-         axilWriteSlave       => coreAxilWriteSlave,
-         axilReadMaster       => coreAxilReadMaster,
-         axilReadSlave        => coreAxilReadSlave,
+         axilWriteMaster      => coreAxilWriteMasters(MAC_AXIL_INDEX_C),
+         axilWriteSlave       => coreAxilWriteSlaves(MAC_AXIL_INDEX_C),
+         axilReadMaster       => coreAxilReadMasters(MAC_AXIL_INDEX_C),
+         axilReadSlave        => coreAxilReadSlaves(MAC_AXIL_INDEX_C),
          -- Ref Clock
          ethRefClk            => '0',
          -- Ethernet Lines
@@ -280,23 +350,172 @@ begin
    ethTxP     <= iethTxP(0);
    ethTxN     <= iethTxN(0);
 
-   --extAxilReadMaster   : AxiLiteReadMasterType;
-   extAxilReadSlave    <= AXI_LITE_READ_SLAVE_INIT_C;
-   --extAxilWriteMaster  : AxiLiteWriteMasterType;
-   extAxilWriteSlave   <= AXI_LITE_WRITE_SLAVE_INIT_C;
+   -------------------------------------------------------------------------------------------------
+   -- UDP Engine
+   -------------------------------------------------------------------------------------------------
+   U_AxiLiteAsync : entity surf.AxiLiteAsync
+      generic map (
+         TPD_G => TPD_C)
+      port map (
+         sAxiClk         => axilClk,
+         sAxiClkRst      => axilRst,
+         sAxiReadMaster  => coreAxilReadMasters(UDP_AXIL_INDEX_C),
+         sAxiReadSlave   => coreAxilReadSlaves(UDP_AXIL_INDEX_C),
+         sAxiWriteMaster => coreAxilWriteMasters(UDP_AXIL_INDEX_C),
+         sAxiWriteSlave  => coreAxilWriteSlaves(UDP_AXIL_INDEX_C),
+         mAxiClk         => userEthClk,
+         mAxiClkRst      => userEthClkRst,
+         mAxiReadMaster  => udpAxilReadMaster,
+         mAxiReadSlave   => udpAxilReadSlave,
+         mAxiWriteMaster => udpAxilWriteMaster,
+         mAxiWriteSlave  => udpAxilWriteSlave);
 
+   U_UdpEngineWrapper : entity surf.UdpEngineWrapper
+      generic map (
+         TPD_G          => TPD_C,
+         SERVER_EN_G    => true,
+         SERVER_SIZE_G  => 1,
+         SERVER_PORTS_G => (0=>8192),
+         CLIENT_EN_G    => false,
+         DHCP_G         => false,
+         CLK_FREQ_G     => 125.0e6)
+      port map (
+         localMac           => localMac,
+         localIp            => localIp,
+         obMacMaster        => userEthUdpObMaster,
+         obMacSlave         => userEthUdpObSlave,
+         ibMacMaster        => userEthUdpIbMaster,
+         ibMacSlave         => userEthUdpIbSlave,
+         obServerMasters(0) => udpObServerMaster,
+         obServerSlaves(0)  => udpObServerSlave,
+         ibServerMasters(0) => udpIbServerMaster,
+         ibServerSlaves(0)  => udpIbServerSlave,
+         axilWriteMaster    => udpAxilWriteMaster,
+         axilWriteSlave     => udpAxilWriteSlave,
+         axilReadMaster     => udpAxilReadMaster,
+         axilReadSlave      => udpAxilReadSlave,
+         clk                => userEthClk,
+         rst                => userEthClkRst);
+
+   -------------------------------------------------------------------------------------------------
+   -- RSSI Engines
+   -------------------------------------------------------------------------------------------------
+   U_RssiCoreWrapper : entity surf.RssiCoreWrapper
+      generic map (
+         TPD_G                => TPD_C,
+         CLK_FREQUENCY_G      => 125.0e6,
+         WINDOW_ADDR_SIZE_G   => 4,
+         SEGMENT_ADDR_SIZE_G  => 7,
+         BYPASS_CHUNKER_G     => false,
+         PIPE_STAGES_G        => 1,
+         APP_STREAMS_G        => 1,
+--       APP_STREAM_ROUTES_G  => APP_STREAM_ROUTES_G,
+         TIMEOUT_UNIT_G       => 1.0e-3,
+         SERVER_G             => true,
+         RETRANSMIT_ENABLE_G  => true,
+         MAX_NUM_OUTS_SEG_G   => 16,
+         INIT_SEQ_N_G         => 16#80#,
+         APP_ILEAVE_EN_G      => true,
+         BYP_TX_BUFFER_G      => false,
+         BYP_RX_BUFFER_G      => false,
+         ILEAVE_ON_NOTVALID_G => true,
+         APP_AXIS_CONFIG_G    => (0 => RCEG3_AXIS_DMA_CONFIG_C),
+         TSP_AXIS_CONFIG_G    => EMAC_AXIS_CONFIG_C,
+         MAX_SEG_SIZE_G       => 1024)
+      port map (
+         clk_i                => userEthClk,
+         rst_i                => userEthClkRst,
+         sAppAxisMasters_i(0) => rssiIbMaster,
+         sAppAxisSlaves_o(0)  => rssiIbSlave,
+         mAppAxisMasters_o(0) => rssiObMaster,
+         mAppAxisSlaves_i(0)  => rssiObSlave,
+         sTspAxisMaster_i     => udpObServerMaster,
+         sTspAxisSlave_o      => udpObServerSlave,
+         mTspAxisMaster_o     => udpIbServerMaster,
+         mTspAxisSlave_i      => udpIbServerSlave,
+         openRq_i             => '1',
+         axiClk_i             => axilClk,
+         axiRst_i             => axilRst,
+         axilReadMaster       => coreAxilReadMasters(RSSI_AXIL_INDEX_C),
+         axilReadSlave        => coreAxilReadSlaves(RSSI_AXIL_INDEX_C),
+         axilWriteMaster      => coreAxilWriteMasters(RSSI_AXIL_INDEX_C),
+         axilWriteSlave       => coreAxilWriteSlaves(RSSI_AXIL_INDEX_C),
+         statusReg_o          => open);
+
+   ----------------------------------------------------
+   -- Fan In Board Core
+   ----------------------------------------------------
+   U_FanInBoard: entity ucsc_hn.FanInBoard
+      generic map ( TPD_G  => TPD_C) port map (
+         axilClk              => axilClk,
+         axilRst              => axilRst,
+         axilReadMaster       => extAxilReadMaster,
+         axilReadSlave        => extAxilReadSlave,
+         axilWriteMaster      => extAxilWriteMaster,
+         axilWriteSlave       => extAxilWriteSlave,
+         dataClk              => userEthClk,
+         dataClkRst           => userEthClkRst,
+         dataObMaster         => rssiObMaster,
+         dataObSlave          => rssiObSlave,
+         dataIbMaster         => rssiIbMaster,
+         dataIbSlave          => rssiIbSlave,
+         clockIn              => clockIn,
+         clockOut             => clockOut,
+         syncIn               => syncIn,
+         syncOut              => syncOut,
+         rxData               => rxData,
+         txData               => txData
+      );
+
+   ----------------------------------------------------
+   -- IO Buffers
+   ----------------------------------------------------
+   U_ClockInBuf : IBUFDS
+      port map(
+         I      => clockInP,
+         IB     => clockInN,
+         O      => clockIn
+      );
+
+   U_ClockOutBuf : OBUFDS
+      port map(
+         O      => clockOutP,
+         OB     => clockOutN,
+         I      => clockOut
+      );
+
+   U_SyncInBuf : IBUFDS
+      port map(
+         I      => syncInP,
+         IB     => syncInN,
+         O      => syncIn
+      );
+
+   U_SyncOutBuf : OBUFDS
+      port map(
+         O      => syncOutP,
+         OB     => syncOutN,
+         I      => syncOut
+      );
+
+   U_RxDataGen : for i in 1 to 30 generate
+
+      U_RxDataBuf : IBUFDS
+         port map(
+            I      => rxDataP(i),
+            IB     => rxDataN(i),
+            O      => rxData(i)
+         );
+   end generate;
+
+   -- DMA Interfaces are not used
    dmaClk(2 downto 0) <= (others=>axiDmaClk);
    dmaClkRst(2 downto 0) <= (others=>axiDmaRst);
 
    --dmaObMaster(2 downto 0)
-   dmaObSlave(3 downto 0)   <= dmaIbSlave(3 downto 0);
-   dmaIbMaster(3 downto 0)  <= dmaObMaster(3 downto 0);
+   dmaObSlave(2 downto 0)   <= dmaIbSlave(2 downto 0);
+   dmaIbMaster(2 downto 0)  <= dmaObMaster(2 downto 0);
    --dmaIbSlave(2 downto 0)
-
-   userEthUdpIbMaster   <= AXI_STREAM_MASTER_INIT_C;
-   --userEthUdpIbSlave    : out AxiStreamSlaveType;
-   --userEthUdpObMaster   : out AxiStreamMasterType;
-   userEthUdpObSlave    <= AXI_STREAM_SLAVE_FORCE_C;
 
 end architecture STRUCTURE;
 
