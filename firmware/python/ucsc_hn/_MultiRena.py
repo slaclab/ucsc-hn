@@ -14,6 +14,6 @@ class MultiRena(pr.Device):
         self.add(RceG3.RceVersion())
         self.add(RceG3.RceEthernet())
         self.add(surf.ethernet.udp.UdpEngineServer(offset = 0xB0010000))
-        self.add(surf.protocols.rssi.RssiCore(offset=0xB0002000))
+        self.add(surf.protocols.rssi.RssiCore(offset=0xB0020000))
         self.add(surf.protocols.ssi.SsiPrbsTx(offset=0xA0000000))
 

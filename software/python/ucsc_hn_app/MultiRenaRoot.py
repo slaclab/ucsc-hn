@@ -1,5 +1,7 @@
 import pyrogue
 import pyrogue.protocols
+import pyrogue.utilities
+import pyrogue.utilities.prbs
 import rogue
 import surf.protocols.pgp as pgp
 import surf.protocols.batcher
@@ -17,8 +19,10 @@ class MultiRenaRoot(pyrogue.Root):
         self.add(ucsc_hn.MultiRena(memBase=self._remMem))
 
         self._remRssi = pyrogue.protocols.UdpRssiPack(port=8192,host=host,packVer=2)
+        self.add(self._remRssi)
 
         self._prbsRx = pyrogue.utilities.prbs.PrbsRx(width=32)
+        self.add(self._prbsRx)
 
         self._remRssi.application(0) >> self._prbsRx
 
