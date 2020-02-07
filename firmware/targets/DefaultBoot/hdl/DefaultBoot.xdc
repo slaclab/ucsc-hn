@@ -12,8 +12,6 @@ set_property PACKAGE_PIN AA16 [get_ports i2cScl]
 set_property PACKAGE_PIN AA17 [get_ports i2cSda]
 
 # Ethernet signals
-set_property PACKAGE_PIN U5   [get_ports ethRefClkP]
-set_property PACKAGE_PIN V5   [get_ports ethRefClkN]
 set_property PACKAGE_PIN AA7  [get_ports ethRxP]
 set_property PACKAGE_PIN AB7  [get_ports ethRxM]
 set_property PACKAGE_PIN AA3  [get_ports ethTxP]
@@ -120,16 +118,16 @@ set_property IOSTANDARD LVCMOS25 [get_ports i2cSda]
 # Timing Constraints
 ####################
 
-create_clock -name ethRefClkP -period 6.400 [get_ports {ethRefClkP}]
+create_clock -name fclk0 -period 10.0 [get_pins {U_RceG3Top/GEN_SYNTH.U_RceG3Cpu/U_PS7/inst/PS7_i/FCLKCLK[0]}]
 
-create_generated_clock -name clk200 [get_pins -hier -filter {name =~ */U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]
-create_generated_clock -name clk312 [get_pins -hier -filter {name =~ */U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}]
-create_generated_clock -name clk156 [get_pins -hier -filter {name =~ */U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
-create_generated_clock -name clk125 [get_pins -hier -filter {name =~ */U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT3}]
-create_generated_clock -name clk62  [get_pins -hier -filter {name =~ */U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT4}]
+create_generated_clock -name clk200 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT0}]
+create_generated_clock -name clk312 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT1}]
+create_generated_clock -name clk156 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT2}]
+create_generated_clock -name clk125 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT3}]
+create_generated_clock -name clk62  [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT4}]
 
-create_generated_clock -name dnaClk  [get_pins -hier -filter {name =~ */U_RceG3Top/GEN_SYNTH.U_RceG3AxiCntl/U_DeviceDna/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}] 
-create_generated_clock -name dnaClkL [get_pins -hier -filter {name =~ */U_RceG3Top/GEN_SYNTH.U_RceG3AxiCntl/U_DeviceDna/GEN_7SERIES.DeviceDna7Series_Inst/DNA_CLK_INV_BUFR/O}] 
+create_generated_clock -name dnaClk  [get_pins {U_RceG3Top/GEN_SYNTH.U_RceG3AxiCntl/U_DeviceDna/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}] 
+create_generated_clock -name dnaClkL [get_pins {U_RceG3Top/GEN_SYNTH.U_RceG3AxiCntl/U_DeviceDna/GEN_7SERIES.DeviceDna7Series_Inst/DNA_CLK_INV_BUFR/O}] 
 set_clock_groups -asynchronous -group [get_clocks {dnaClk}] -group [get_clocks {dnaClkL}] -group [get_clocks {clk125}] 
 
 # Treat all clocks asynchronous to each-other except for clk62/clk125 (required by GEM/1000BASE-KX)    

@@ -36,10 +36,6 @@ entity DefaultBoot is
       i2cSda      : inout sl;
       i2cScl      : inout sl;
 
-      -- Ethernet reference clock
-      ethRefClkP  : in    sl;
-      ethRefClkN  : in    sl;
-
       -- Ethernet
       ethRxP      : in    sl;
       ethRxN      : in    sl;
@@ -110,23 +106,10 @@ architecture STRUCTURE of DefaultBoot is
    signal dmaIbMaster : AxiStreamMasterArray(3 downto 0);
    signal dmaIbSlave  : AxiStreamSlaveArray(3 downto 0);
 
-   -- User Ethernet
-   signal userEthClk           : sl;
-   signal userEthClkRst        : sl;
-   signal userEthUdpIbMaster   : AxiStreamMasterType;
-   signal userEthUdpIbSlave    : AxiStreamSlaveType;
-   signal userEthUdpObMaster   : AxiStreamMasterType;
-   signal userEthUdpObSlave    : AxiStreamSlaveType;
-
    -- ZYNQ GEM Interface
    signal armEthTx   : ArmEthTxArray(1 downto 0);
    signal armEthRx   : ArmEthRxArray(1 downto 0);
    signal armEthMode : slv(31 downto 0);
-
-   signal iethRxP : slv(3 downto 0);
-   signal iethRxN : slv(3 downto 0);
-   signal iethTxP : slv(3 downto 0);
-   signal iethTxN : slv(3 downto 0);
 
 begin
 
@@ -148,8 +131,8 @@ begin
          i2cSda              => i2cSda,
          i2cScl              => i2cScl,
          -- Reference Clock
-         ethRefClkP          => ethRefClkP,
-         ethRefClkN          => ethRefClkN,
+         ethRefClkP          => '0',
+         ethRefClkN          => '1',
          ethRefClk           => open,
          stableClk           => stableClk,
          stableRst           => stableRst,
@@ -197,104 +180,45 @@ begin
          armEthRx            => armEthRx,
          armEthMode          => armEthMode);
 
-   ----------------------------------------------------------------------------      
-   --                         ETH GT Mapping                                 --
-   ----------------------------------------------------------------------------      
-   -- This VHDL wrapper is determined by the ZYNQ family type
-   -- Zynq-7000:        rce-gen3-fw-lib/RceG3/hdl/zynq/RceEthGtMapping.vhd
-   -- Zynq Ultrascale+: rce-gen3-fw-lib/RceG3/hdl/zynquplus/RceEthGtMapping.vhd
-   ----------------------------------------------------------------------------      
-   U_RceEthernet : entity rce_gen3_fw_lib.RceEthernet
-      generic map (
-         -- Generic Configurations
-         TPD_G              => TPD_C,
-         RCE_DMA_MODE_G     => RCE_DMA_AXISV2_C,
-         ETH_TYPE_G         => "1000BASE-KX",
-         MEMORY_TYPE_G      => "block",
-         EN_JUMBO_G         => false,
-         -- User ETH Configurations
-         UDP_SERVER_EN_G    => true,
-         UDP_SERVER_SIZE_G  => 1,
-         UDP_SERVER_PORTS_G => (0=>8192),
-         BYP_EN_G           => false,
-         VLAN_EN_G          => false)
-      port map (
-         -- Clocks and resets
-         clk312               => clk312,
-         rst312               => rst312,
-         clk200               => clk200,
-         rst200               => rst200,
-         clk156               => clk156,
-         rst156               => rst156,
-         clk125               => clk125,
-         rst125               => rst125,
-         clk62                => clk62,
-         rst62                => rst62,
-         stableClk            => stableClk,
-         stableRst            => stableRst,
-         -- PPI Interface
-         dmaClk               => dmaClk(3),
-         dmaRst               => dmaClkRst(3),
-         dmaState             => dmaState(3),
-         dmaIbMaster          => dmaIbMaster(3),
-         dmaIbSlave           => dmaIbSlave(3),
-         dmaObMaster          => dmaObMaster(3),
-         dmaObSlave           => dmaObSlave(3),
-         -- User ETH interface
-         userEthClk           => userEthClk,
-         userEthRst           => userEthClkRst,
-         userEthIpAddr        => open,
-         userEthMacAddr       => open,
-         userEthUdpIbMaster   => userEthUdpIbMaster,
-         userEthUdpIbSlave    => userEthUdpIbSlave,
-         userEthUdpObMaster   => userEthUdpObMaster,
-         userEthUdpObSlave    => userEthUdpObSlave,
-         userEthBypIbMaster   => AXI_STREAM_MASTER_INIT_C,
-         userEthBypIbSlave    => open,
-         userEthBypObMaster   => open,
-         userEthBypObSlave    => AXI_STREAM_SLAVE_FORCE_C,
-         userEthVlanIbMasters => (others=>AXI_STREAM_MASTER_INIT_C),
-         userEthVlanIbSlaves  => open,
-         userEthVlanObMasters => open,
-         userEthVlanObSlaves  => (others=>AXI_STREAM_SLAVE_FORCE_C),
-         -- AXI-Lite Buses
-         axilClk              => axilClk,
-         axilRst              => axilRst,
-         axilWriteMaster      => coreAxilWriteMaster,
-         axilWriteSlave       => coreAxilWriteSlave,
-         axilReadMaster       => coreAxilReadMaster,
-         axilReadSlave        => coreAxilReadSlave,
-         -- Ref Clock
-         ethRefClk            => '0',
-         -- Ethernet Lines
-         ethRxP               => iethRxP,
-         ethRxN               => iethRxN,
-         ethTxP               => iethTxP,
-         ethTxN               => iethTxN);
 
-   -- Show connections
-   iethRxP(0) <= ethRxP;
-   iethRxN(0) <= ethRxN;
-   ethTxP     <= iethTxP(0);
-   ethTxN     <= iethTxN(0);
+   -- GEM Boot
+   U_RceEthGem : entity rce_gen3_fw_lib.RceEthGem
+      generic map (
+         TPD_G => TPD_C)
+      port map (
+         sysClk125 => clk125,
+         sysRst125 => rst125,
+         sysClk62  => clk62,
+         sysRst62  => rst62,
+         locked    => locked,
+         stableClk => stableClk,
+         stableRst => stableRst,
+         -- ARM Interface
+         armEthTx  => armEthTx(0),
+         armEthRx  => armEthRx(0),
+         -- Ethernet Lines
+         gtRxP     => ethRxP,
+         gtRxN     => ethRxN,
+         gtTxP     => ethTxP,
+         gtTxN     => ethTxN);
+
+   armEthMode <= x"00000001";
+
+   --coreAxilReadMaster   : AxiLiteReadMasterType;
+   coreAxilReadSlave    <= AXI_LITE_READ_SLAVE_INIT_C;
+   --coreAxilWriteMaster  : AxiLiteWriteMasterType;
+   coreAxilWriteSlave   <= AXI_LITE_WRITE_SLAVE_INIT_C;
 
    --extAxilReadMaster   : AxiLiteReadMasterType;
    extAxilReadSlave    <= AXI_LITE_READ_SLAVE_INIT_C;
    --extAxilWriteMaster  : AxiLiteWriteMasterType;
    extAxilWriteSlave   <= AXI_LITE_WRITE_SLAVE_INIT_C;
 
-   dmaClk(2 downto 0) <= (others=>axiDmaClk);
-   dmaClkRst(2 downto 0) <= (others=>axiDmaRst);
+   dmaClk <= (others=>axiDmaClk);
+   dmaClkRst <= (others=>axiDmaRst);
 
-   --dmaObMaster(2 downto 0)
-   dmaObSlave(2 downto 0)   <= (others=>AXI_STREAM_SLAVE_FORCE_C);
-   dmaIbMaster(2 downto 0)  <= (others=>AXI_STREAM_MASTER_INIT_C);
-   --dmaIbSlave(2 downto 0)
-
-   userEthUdpIbMaster   <= AXI_STREAM_MASTER_INIT_C;
-   --userEthUdpIbSlave    : out AxiStreamSlaveType;
-   --userEthUdpObMaster   : out AxiStreamMasterType;
-   userEthUdpObSlave    <= AXI_STREAM_SLAVE_FORCE_C;
+   dmaObSlave  <= dmaIbSlave;
+   dmaIbMaster <= dmaObMaster;
 
 end architecture STRUCTURE;
 

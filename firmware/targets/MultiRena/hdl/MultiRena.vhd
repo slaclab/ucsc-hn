@@ -36,10 +36,6 @@ entity MultiRena is
       i2cSda      : inout sl;
       i2cScl      : inout sl;
 
-      -- Ethernet reference clock
-      ethRefClkP  : in    sl;
-      ethRefClkN  : in    sl;
-
       -- Ethernet
       ethRxP      : in    sl;
       ethRxN      : in    sl;
@@ -148,8 +144,8 @@ begin
          i2cSda              => i2cSda,
          i2cScl              => i2cScl,
          -- Reference Clock
-         ethRefClkP          => ethRefClkP,
-         ethRefClkN          => ethRefClkN,
+         ethRefClkP          => '1',
+         ethRefClkN          => '0',
          ethRefClk           => open,
          stableClk           => stableClk,
          stableRst           => stableRst,
@@ -208,7 +204,7 @@ begin
       generic map (
          -- Generic Configurations
          TPD_G              => TPD_C,
-         RCE_DMA_MODE_G     => RCE_DMA_AXISV2_C,
+         RCE_DMA_MODE_G     => RCE_DMA_AXIS_C,
          ETH_TYPE_G         => "1000BASE-KX",
          MEMORY_TYPE_G      => "block",
          EN_JUMBO_G         => false,
@@ -236,10 +232,14 @@ begin
          dmaClk               => dmaClk(3),
          dmaRst               => dmaClkRst(3),
          dmaState             => dmaState(3),
-         dmaIbMaster          => dmaIbMaster(3),
-         dmaIbSlave           => dmaIbSlave(3),
-         dmaObMaster          => dmaObMaster(3),
-         dmaObSlave           => dmaObSlave(3),
+         --dmaIbMaster          => dmaIbMaster(3),
+         --dmaIbSlave           => dmaIbSlave(3),
+         --dmaObMaster          => dmaObMaster(3),
+         --dmaObSlave           => dmaObSlave(3),
+         dmaIbMaster          => open,
+         dmaIbSlave           => AXI_STREAM_SLAVE_FORCE_C,
+         dmaObMaster          => AXI_STREAM_MASTER_INIT_C,
+         dmaObSlave           => open,
          -- User ETH interface
          userEthClk           => userEthClk,
          userEthRst           => userEthClkRst,
@@ -272,6 +272,8 @@ begin
          ethTxP               => iethTxP,
          ethTxN               => iethTxN);
 
+   armEthMode <= x"00000002";
+
    -- Show connections
    iethRxP(0) <= ethRxP;
    iethRxN(0) <= ethRxN;
@@ -287,8 +289,8 @@ begin
    dmaClkRst(2 downto 0) <= (others=>axiDmaRst);
 
    --dmaObMaster(2 downto 0)
-   dmaObSlave(2 downto 0)   <= (others=>AXI_STREAM_SLAVE_FORCE_C);
-   dmaIbMaster(2 downto 0)  <= (others=>AXI_STREAM_MASTER_INIT_C);
+   dmaObSlave(3 downto 0)   <= dmaIbSlave(3 downto 0);
+   dmaIbMaster(3 downto 0)  <= dmaObMaster(3 downto 0);
    --dmaIbSlave(2 downto 0)
 
    userEthUdpIbMaster   <= AXI_STREAM_MASTER_INIT_C;
