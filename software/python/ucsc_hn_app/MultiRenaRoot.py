@@ -18,12 +18,11 @@ class MultiRenaRoot(pyrogue.Root):
 
         self.add(ucsc_hn.MultiRena(memBase=self._remMem))
 
-        if True:
-            self._remRssi = pyrogue.protocols.UdpRssiPack(port=8192,host=host,packVer=2)
-            self.add(self._remRssi)
+        self._remRssi = pyrogue.protocols.UdpRssiPack(port=8192,host=host,packVer=2)
+        self.add(self._remRssi)
 
-            self._prbsRx = pyrogue.utilities.prbs.PrbsRx(width=32)
-            self.add(self._prbsRx)
+        self._prbsRx = pyrogue.utilities.prbs.PrbsRx(width=32)
+        self.add(self._prbsRx)
 
-            self._remRssi.application(0) >> self._prbsRx
+        self._remRssi.application(0) >> self._prbsRx
 
