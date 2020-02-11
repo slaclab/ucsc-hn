@@ -1,2 +1,3 @@
 
-from ._MultiRena import *
+from ._FanInBoard import *
+from ._MultiRenaRoot import *

@@ -7,7 +7,7 @@ import surf.protocols.rssi
 import surf.ethernet.udp
 import RceG3
 
-class MultiRena(pr.Device):
+class FanInBoard(pr.Device):
     def __init__ (self, **kwargs):
         super().__init__(description="MutiRena Registers.", **kwargs)
 
