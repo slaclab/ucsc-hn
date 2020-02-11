@@ -5,14 +5,13 @@ import pyrogue
 pyrogue.addLibraryPath('../../firmware/submodules/rce-gen3-fw-lib/python')
 pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 pyrogue.addLibraryPath('../../firmware/python')
-pyrogue.addLibraryPath('../python')
 
 import pyrogue.pydm
 import pyrogue.gui
 import rogue
 import logging
 
-from ucsc_hn_app.MultiRenaRoot import MultiRenaRoot
+from ucsc_hn import MultiRenaRoot
 
 #rogue.Logging.setFilter('pyrogue.memory.block.InterCardRoot.PcieControl[0].Fpga.PrbsTx',rogue.Logging.Debug)
 #rogue.Logging.setFilter('pyrogue.memory.block',rogue.Logging.Debug)
