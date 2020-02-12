@@ -66,9 +66,9 @@ jobs:
         - cd $DOWNLOAD_DIR
         - wget -O file.zip $DOWNLOAD_URL
         - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-             7za x file.zip
+             7za x file.zip;
           else
-             unzip file.zip
+             unzip file.zip;
           fi
 
       script:
