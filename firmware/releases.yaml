@@ -1,0 +1,35 @@
+
+GitBase: ..
+
+TopRoguePackage: ucsc_hn
+
+RoguePackages:
+   - python
+
+RogueScripts:
+   - ../software/scripts/renaGui
+
+CondaDependencies:
+   - surf
+   - rce_gen3_fw_lib
+
+RogueConfig:
+
+Targets:
+   MultiRena:
+      ImageDir: targets/MultiRena/images
+      Extensions:
+      - bit
+   DefaultBoot:
+      ImageDir: targets/DefaultBoot/images
+      Extensions:
+      - bit
+
+Releases:
+   MultiRena:
+      Targets:
+      - MultiRena
+      - DefaultBoot
+      Types:
+      - Rogue
+
