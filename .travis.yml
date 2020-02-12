@@ -16,6 +16,7 @@ env:
     - GH_REPO_URL: github.com/slaclab/ucsc-hn
     - PACKAGE_DIR: $HOME/packages
     - MINICONDA_DIR: $PACKAGE_DIR/miniconda
+    - DOWNLOAD_DIR: ${HOME}/download
     - DOWNLOAD_URL: ${GH_REPO_URL}/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
 
 # Install dependencies
@@ -34,7 +35,6 @@ jobs:
     - &deploy-conda-stage       # Conda for linux
       stage: deploy_tag
       name: "Deploy Conda"
-      env: DOWNLOAD_DIR=${HOME}/linux_download
       before_install:
         # Prepare folders
         - mkdir -p $MINICONDA_DIR
@@ -45,6 +45,7 @@ jobs:
             sudo mv MacOSX-SDKs/MacOSX10.9.sdk /opt/;
             export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk;
             export CONDA_BUILD=1;
+            brew install p7zip
           fi
 
       install:
@@ -64,7 +65,10 @@ jobs:
         # Download and unzip tag zipfile
         - cd $DOWNLOAD_DIR
         - wget -O file.zip $DOWNLOAD_URL
-        - unzip file.zip
+        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+             7za x file.zip
+          else
+             unzip file.zip
 
       script:
         # Build conda package
@@ -76,6 +80,5 @@ jobs:
 
     - <<: *deploy-conda-stage   # Conda for MacOS
       os: osx
-      env: DOWNLOAD_DIR=${HOME}/macos_download
       language: ruby  # osx does not support language=python
 
