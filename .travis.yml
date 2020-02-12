@@ -16,7 +16,6 @@ env:
     - PACKAGE_DIR: $HOME/packages
     - MINICONDA_DIR: $PACKAGE_DIR/miniconda
     - DOWNLOAD_URL: https://github.com/slaclab/cryo-det/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
-    - secure: "l+cE3Ijlx/bJRTD/k72AfdWnVaxeBbO7HnuH/rMbMUP6NS02+/TIre9n9UqgfGJ2iSCXIU02+aOcGjCsbQd2y/r3ckHI3QQBDnb3bNmdNnhUVGkTcpycqs4SKvPe/AgijlwKBYeGoQwuntLj70AEQUbyjgj2rJ1FTkGTLrKZRgcfOPxs/Fdllc0OCwsX54kkk2LH54GYhWbCRSgPZmdTRCWXqswDPSTLxSOm5kgFtGwJGIXZhViF9JmRMpJwwBi+I7NC8gxEyg00IFZO2jwAV5U44nyKtl9kHNTdceBTDZn/b3pfpRRoe7YVgml48sf2a3fk4GUSTV9Xy7XVpu+1tzfvprCwZKfXIV0dFRKwpwa8yoj04MdKyYBaWUDxIarqRp5IKfuoZYIDiifHSoiq6YgPx/zzld8wUM2QPu41SFHfBMjpb9vyozViUk7jmVpEKkXRlMWdVSGb4MUv3BW49y/ITamCOPm1FgHxLmr24zYjneMSPoIj4wWD0OqcbtK7xQrVL11NBvjuKs4AJvIgU3rErLptKZWKRyk9+5ejzYoB8merahKmc++4nfONJuw9BlMKrA5dFz+Zfx4PUwlZifSCu8Fyb0IZJ4wOCRxnjcVZR3+IIqDfTVwwzSfaAQjjHcD5nX4m4UCk7nlh02sdMn90rojIaezmxZvY+qGnVKA="
 
 # Install dependencies
 addons:
@@ -39,7 +38,6 @@ jobs:
         # Prepare folders
         - echo $DOWNLOAD_URL
         - mkdir -p $MINICONDA_DIR
-        - mkdir -p $DOWNLOAD_DIR
         # on OSX rogue needs an older version of the MacOS SDK
         - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
             git clone https://github.com/phracker/MacOSX-SDKs;
