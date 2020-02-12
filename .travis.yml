@@ -45,7 +45,7 @@ jobs:
             sudo mv MacOSX-SDKs/MacOSX10.9.sdk /opt/;
             export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk;
             export CONDA_BUILD=1;
-            brew install p7zip
+            brew install p7zip;
           fi
 
       install:
