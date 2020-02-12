@@ -13,9 +13,10 @@ python:
 # Environment variables
 env:
   global:
+    - GH_REPO_URL: github.com/slaclab/ucsc-hn
     - PACKAGE_DIR: $HOME/packages
     - MINICONDA_DIR: $PACKAGE_DIR/miniconda
-    - DOWNLOAD_URL: https://github.com/slaclab/cryo-det/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
+    - DOWNLOAD_URL: ${GH_REPO_URL}/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
 
 # Install dependencies
 addons:
