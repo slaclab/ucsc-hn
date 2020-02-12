@@ -16,6 +16,7 @@ env:
     - GH_REPO_URL: github.com/slaclab/ucsc-hn
     - PACKAGE_DIR: $HOME/packages
     - MINICONDA_DIR: $PACKAGE_DIR/miniconda
+    - DOWNLOAD_DIR: $HOME/download
     - DOWNLOAD_URL: ${GH_REPO_URL}/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
 
 # Install dependencies
@@ -39,6 +40,7 @@ jobs:
         # Prepare folders
         - echo $DOWNLOAD_URL
         - mkdir -p $MINICONDA_DIR
+        - mkdir -p $DOWNLOAD_DIR
         # on OSX rogue needs an older version of the MacOS SDK
         - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
             git clone https://github.com/phracker/MacOSX-SDKs;
@@ -62,7 +64,7 @@ jobs:
         - conda install conda-build anaconda-client conda-verify
         - conda update -q conda conda-build
         # Download and unzip tag zipfile
-        - cd $TRAVIS_BUILD_DIR
+        - cd $DOWNLOAD_DIR
         - wget -O file.zip $DOWNLOAD_URL
         - unzip file.zip
 
