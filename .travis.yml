@@ -69,6 +69,7 @@ jobs:
              7za x file.zip
           else
              unzip file.zip
+          fi
 
       script:
         # Build conda package
