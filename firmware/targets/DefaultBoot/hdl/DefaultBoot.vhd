@@ -213,6 +213,48 @@ begin
    extAxilReadSlave    <= AXI_LITE_READ_SLAVE_INIT_C;
    --extAxilWriteMaster  : AxiLiteWriteMasterType;
    extAxilWriteSlave   <= AXI_LITE_WRITE_SLAVE_INIT_C;
+   ----------------------------------------------------
+   -- IO Buffers
+   ----------------------------------------------------
+   U_ClockInBuf : IBUFDS
+      port map(
+         I      => clockInP,
+         IB     => clockInN,
+         O      => open
+      );
+
+   U_ClockOutBuf : OBUFDS
+      port map(
+         O      => clockOutP,
+         OB     => clockOutN,
+         I      => '0'
+      );
+
+   U_SyncInBuf : IBUFDS
+      port map(
+         I      => syncInP,
+         IB     => syncInN,
+         O      => open
+      );
+
+   U_SyncOutBuf : OBUFDS
+      port map(
+         O      => syncOutP,
+         OB     => syncOutN,
+         I      => '0'
+      );
+
+   U_RxDataGen : for i in 1 to 30 generate
+
+      U_RxDataBuf : IBUFDS
+         port map(
+            I      => rxDataP(i),
+            IB     => rxDataN(i),
+            O      => open
+         );
+   end generate;
+
+   txData <= (others=>'0');
 
    dmaClk <= (others=>axiDmaClk);
    dmaClkRst <= (others=>axiDmaRst);
