@@ -29,7 +29,9 @@ use surf.AxiStreamPkg.all;
 
 entity FanInBoard is
    generic (
-      TPD_G  : time := 1 ns
+      TPD_G             : time := 1 ns;
+      DATA_WIDTH_G      : integer := 16;
+      FIFO_ADDR_WIDTH_G : integer := 4
    );
    port (
 
@@ -68,9 +70,13 @@ entity FanInBoard is
 end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
-
+type deserializeDataArray is array (1 to 30) of slv(15 downto 0);
+signal deserializeData      : deserializeDataArray;
+signal deserializeDataValid : slv(30 downto 1);
 
 begin
+
+    
 
    clockOut <= clockIn;
    syncOut  <= syncIn;
@@ -96,6 +102,41 @@ begin
          axilReadSlave   => axilReadSlave,
          axilWriteMaster => axilWriteMaster,
          axilWriteSlave  => axilWriteSlave);
+         
+   U_DeserializerGen : for i in 1 to 30 generate
+   
+      U_Deserializer : entity work.Deserializer
+         generic map (
+            TPD_G        => TPD_G)
+         port map (
+            clk          => clockIn,
+            rst          => dataClkRst,
+            boardid      => "001",
+            rx           => rxData(i),
+            outDataValid => deserializeDataValid(i),
+            outData      => deserializeData(i) );
+   end generate;
+   
+   U_FifoGen : for i in 1 to 30 generate   
+   
+      U_Fifo : entity surf.Fifo
+         generic map (
+            TPD_G           => TPD_G,
+            GEN_SYNC_FIFO_G => true,
+            FWFT_EN_G       => true,
+            DATA_WIDTH_G    => DATA_WIDTH_G,
+            ADDR_WIDTH_G    => FIFO_ADDR_WIDTH_G)
+         port map (
+            rst         => dataClkRst,
+            wr_clk      => clockIn,
+            din         => deserializeData(i),
+            not_full    => open,
+            rd_clk      => clockIn,
+            rd_en       => deserializeDataValid(i),
+            dout        => open,
+            valid       => open,
+            empty       => open);
+   end generate; 
 
 end architecture STRUCTURE;
 
