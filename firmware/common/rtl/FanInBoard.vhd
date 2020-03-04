@@ -1,10 +1,10 @@
 ------------------------------------------------------------------------------
 -- This file is part of 'RCE Development Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'RCE Development Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'RCE Development Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 ------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -29,9 +29,8 @@ use surf.AxiStreamPkg.all;
 
 entity FanInBoard is
    generic (
-      TPD_G             : time := 1 ns;
-      DATA_WIDTH_G      : integer := 16;
-      FIFO_ADDR_WIDTH_G : integer := 4
+      TPD_G         : time := 1 ns;
+      AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
    );
    port (
 
@@ -48,10 +47,10 @@ entity FanInBoard is
       -- Data Interfaces
       dataClk             : in    sl;
       dataClkRst          : in    sl;
-      dataIbMaster        : in    AxiStreamMasterType;
-      dataIbSlave         : out   AxiStreamSlaveType;
-      dataObMaster        : out   AxiStreamMasterType;
-      dataObSlave         : in    AxiStreamSlaveType;
+      dataIbMasters       : in    AxiStreamMasterArray(30 downto 0);
+      dataIbSlaves        : out   AxiStreamSlaveArray(30 downto 0);
+      dataObMasters       : out   AxiStreamMasterArray(30 downto 0);
+      dataObSlaves        : in    AxiStreamSlaveArray(30 downto 0);
 
       -- Rena fan in board clocks
       clockIn     : in    sl;
@@ -70,73 +69,54 @@ entity FanInBoard is
 end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
-type deserializeDataArray is array (1 to 30) of slv(15 downto 0);
-signal deserializeData      : deserializeDataArray;
-signal deserializeDataValid : slv(30 downto 1);
+
+   signal intObMasters  : AxiStreamMasterArray(30 downto 0);
+   signal intObSlaves   : AxiStreamSlaveArray(30 downto 0);
 
 begin
-
-    
 
    clockOut <= clockIn;
    syncOut  <= syncIn;
    txData   <= (others=>'0');
 
-   dataIbSlave <= AXI_STREAM_SLAVE_FORCE_C;
-
-   U_PrbsTx: entity surf.SsiPrbsTx 
+   U_PrbsTx: entity surf.SsiPrbsTx
       generic map (
          TPD_G                      => TPD_G,
          PRBS_SEED_SIZE_G           => 32,
          GEN_SYNC_FIFO_G            => false,
          MASTER_AXI_PIPE_STAGES_G   => 1,
-         MASTER_AXI_STREAM_CONFIG_G => RCEG3_AXIS_DMA_CONFIG_C)
+         MASTER_AXI_STREAM_CONFIG_G => AXIS_CONFIG_G)
       port map (
          mAxisClk        => dataClk,
          mAxisRst        => dataClkRst,
-         mAxisMaster     => dataObMaster,
-         mAxisSlave      => dataObSlave,
+         mAxisMaster     => dataObMasters(0),
+         mAxisSlave      => dataObSlaves(0),
          locClk          => axilClk,
          locRst          => axilRst,
          axilReadMaster  => axilReadMaster,
          axilReadSlave   => axilReadSlave,
          axilWriteMaster => axilWriteMaster,
          axilWriteSlave  => axilWriteSlave);
-         
+
    U_DeserializerGen : for i in 1 to 30 generate
-   
+
       U_Deserializer : entity work.Deserializer
          generic map (
-            TPD_G        => TPD_G)
+            TPD_G         => TPD_G,
+            AXIS_CONFIG_G => AXIS_CONFIG_G)
          port map (
-            clk          => clockIn,
-            rst          => dataClkRst,
-            boardid      => "001",
-            rx           => rxData(i),
-            outDataValid => deserializeDataValid(i),
-            outData      => deserializeData(i) );
-   end generate;
-   
-   U_FifoGen : for i in 1 to 30 generate   
-   
-      U_Fifo : entity surf.Fifo
-         generic map (
-            TPD_G           => TPD_G,
-            GEN_SYNC_FIFO_G => true,
-            FWFT_EN_G       => true,
-            DATA_WIDTH_G    => DATA_WIDTH_G,
-            ADDR_WIDTH_G    => FIFO_ADDR_WIDTH_G)
-         port map (
+            clk         => clockIn,
             rst         => dataClkRst,
-            wr_clk      => clockIn,
-            din         => deserializeData(i),
-            not_full    => open,
-            rd_clk      => clockIn,
-            rd_en       => deserializeDataValid(i),
-            dout        => open,
-            valid       => open,
-            empty       => open);
-   end generate; 
+            boardid     => "001",
+            rx          => rxData(i),
+            mAxisClk    => dataClk,
+            mAxisRst    => dataClkRst,
+            mAxisMaster => dataObMasters(i),
+            mAxisSlave  => dataObSlaves(i));
+   end generate;
+
+   -- Unused Intputs
+   dataIbSlaves(30 downto 0) <= (others=>AXI_STREAM_SLAVE_FORCE_C);
 
 end architecture STRUCTURE;
 

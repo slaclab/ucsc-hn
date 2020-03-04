@@ -14,13 +14,13 @@ use ieee.std_logic_unsigned.all;
 
 library surf;
 use surf.StdRtlPkg.all;
-use work.SapetPacketPkg.all;
+use surf.AxiStreamPkg.all;
 
 entity Deserializer is
    generic(
-      INDEX_C             : integer range 0 to 31 := 0;
-      AXI_STREAM_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C;
-      TPD_G                 : time      := 1 ns);
+      TPD_G         : time := 1 ns;
+      AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
+   );
    port(
 
       -- Input
@@ -39,8 +39,27 @@ end entity Deserializer;
 
 architecture Behavioral of Deserializer is
 
-   constant INT_AXIS_CONFIG_C : AxiStreamConfigType (
-      TSTRB_EN_C     => false,
+	constant packet_start_token_frontend_config	    : std_logic_vector(7 downto 0) := x"C0"; -- Originates in PC, goes to Frontend
+	constant packet_start_token_frontend_config_echo : std_logic_vector(7 downto 0) := x"C1"; -- Originates in the Daisychain, goes to PC
+	constant packet_start_token_frontend_diagnostic  : std_logic_vector(7 downto 0) := x"C4"; -- Originates in Frontend, goes to PC
+	constant packet_start_token_data_AND_mode        : std_logic_vector(7 downto 0) := x"C8"; -- Originates in Frontend, goes to PC
+	constant packet_start_token_data_OR_mode         : std_logic_vector(7 downto 0) := x"C9"; -- Originates in Frontend, goes to PC
+	constant packet_start_token_throughput_test      : std_logic_vector(7 downto 0) := x"CC"; -- Originates in Frontend, goes to PC
+
+	-- Function is_packet_start_byte returns true if the byte is a valid header byte
+	-- (the first byte of a packet) otherwise it returns false.
+   function is_packet_start_token(B : std_logic_vector(7 downto 0)) return boolean is
+	begin
+		return  B = packet_start_token_frontend_config
+		     or B = packet_start_token_frontend_config_echo
+		     or B = packet_start_token_frontend_diagnostic
+		     or B = packet_start_token_data_AND_mode
+		     or B = packet_start_token_data_OR_mode
+		     or B = packet_start_token_throughput_test;
+	end is_packet_start_token;
+
+   constant INT_AXIS_CONFIG_C : AxiStreamConfigType := (
+      TSTRB_EN_C     => False,
       TDATA_BYTES_C  => 2,
       TDEST_BITS_C   => 5,
       TID_BITS_C     => 0,
@@ -73,16 +92,11 @@ architecture Behavioral of Deserializer is
    constant REG_INIT_C : RegType := (
       deserializerState      => IDLE_S,
       deserializerSubState   => FIRST_BYTE_S,
-      intAxisMaster          => axiStreamMasterInit(INT_AXIS_CONFIG_C);
-      deserialData           => (others => '0'),
-      deserialDataValid      => '0',
-      deserialDataLast       => '0',
+      intAxisMaster          => axiStreamMasterInit(INT_AXIS_CONFIG_C),
       bitInByte              => (others => '0') );
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
-
-   signal intAxisMaster : AxiStreamMasterType;
 
 begin
 
@@ -118,7 +132,7 @@ begin
                when SECOND_BYTE_S =>
                   -- Disregard the rx line for 1 clock cycle
                   -- First byte received has to be a start token
-                  if is_packet_start_token(r.deserialData(7 downto 0)) then
+                  if is_packet_start_token(r.intAxisMaster.tData(7 downto 0)) then
                      -- Add ID of the src node to the data
                      v.intAxisMaster.tData(15 downto 8) := "00000" & boardid;
                      v.intAxisMaster.tValid := '1';
@@ -150,7 +164,7 @@ begin
             case r.deserializerSubState is
                when FIRST_BYTE_S =>
                   -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(15 downto 8) := rx & r.deserialData(15 downto 9);
+                  v.intAxisMaster.tData(15 downto 8) := rx & r.intAxisMaster.tData(15 downto 9);
                   v.bitInByte := r.bitInByte + 1;
                   if (r.bitInByte = 7) then
                      v.deserializerSubState := SECOND_BYTE_S;
@@ -184,7 +198,7 @@ begin
             case r.deserializerSubState is
                when FIRST_BYTE_S =>
                   -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(7 downto 0) := rx & r.deserialData(7 downto 1);
+                  v.intAxisMaster.tData(7 downto 0) := rx & r.intAxisMaster.tData(7 downto 1);
                   v.bitInByte := r.bitInByte + 1;
                   if (r.bitInByte = 7) then
                      v.deserializerSubState := END_OF_FRAME_CHECK_0_S;
@@ -211,7 +225,7 @@ begin
 
                when SECOND_BYTE_S =>
                   -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(15 downto 8) := rx & r.deserialData(15 downto 9);
+                  v.intAxisMaster.tData(15 downto 8) := rx & r.intAxisMaster.tData(15 downto 9);
                   v.bitInByte := r.bitInByte + 1;
                   if (r.bitInByte = 7) then
                      v.deserializerSubState := END_OF_FRAME_CHECK_1_S;
@@ -270,12 +284,12 @@ begin
          SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 9,
-         SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_G,
+         SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
       ) port map (
          sAxisClk    => clk,
          sAxisRst    => rst,
-         sAxisMaster => intAxisMaster,
+         sAxisMaster => r.intAxisMaster,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => mAxisMaster,

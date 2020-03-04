@@ -1,10 +1,10 @@
 ------------------------------------------------------------------------------
 -- This file is part of 'RCE Development Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'RCE Development Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'RCE Development Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 ------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -69,6 +69,15 @@ end MultiRena;
 architecture STRUCTURE of MultiRena is
 
    constant TPD_C : time := 1 ns;
+
+   constant APP_AXIS_CONFIG_C : AxiStreamConfigType := (
+      TSTRB_EN_C     => False,
+      TDATA_BYTES_C  => 8,
+      TDEST_BITS_C   => 0,
+      TID_BITS_C     => 0,
+      TKEEP_MODE_C   => TKEEP_COMP_C,
+      TUSER_BITS_C   => 2,
+      TUSER_MODE_C   => TUSER_FIRST_LAST_C);
 
    -- AXI-Lite
    constant AXIL_XBAR_MASTERS_C : integer := 3;
@@ -155,10 +164,10 @@ architecture STRUCTURE of MultiRena is
    signal localIp              : slv(31 downto 0);
    signal localMac             : slv(47 downto 0);
 
-   signal rssiObMaster    : AxiStreamMasterType;
-   signal rssiObSlave     : AxiStreamSlaveType;
-   signal rssiIbMaster    : AxiStreamMasterType;
-   signal rssiIbSlave     : AxiStreamSlaveType;
+   signal rssiObMasters   : AxiStreamMasterArray(30 downto 0);
+   signal rssiObSlaves    : AxiStreamSlaveArray(30 downto 0);
+   signal rssiIbMasters   : AxiStreamMasterArray(30 downto 0);
+   signal rssiIbSlaves    : AxiStreamSlaveArray(30 downto 0);
 
    -- ZYNQ GEM Interface
    signal armEthTx   : ArmEthTxArray(1 downto 0);
@@ -222,7 +231,7 @@ begin
          axilRst             => axilRst,
          -- External Axi Bus, (axilClk domain)
          -- 0xA0000000 - 0xAFFFFFFF (COB_MIN_C10_G = False)
-         -- 0x90000000 - 0x97FFFFFF (COB_MIN_C10_G = True)         
+         -- 0x90000000 - 0x97FFFFFF (COB_MIN_C10_G = True)
          extAxilReadMaster   => extAxilReadMaster,
          extAxilReadSlave    => extAxilReadSlave,
          extAxilWriteMaster  => extAxilWriteMaster,
@@ -245,9 +254,9 @@ begin
          armEthRx            => armEthRx,
          armEthMode          => armEthMode);
 
-   ----------------------------------------------------------------------------      
+   ----------------------------------------------------------------------------
    --                         Core AXI Crossbar                              --
-   ----------------------------------------------------------------------------      
+   ----------------------------------------------------------------------------
    U_AxiLiteCrossbar_1 : entity surf.AxiLiteCrossbar
       generic map (
          TPD_G              => TPD_C,
@@ -267,13 +276,13 @@ begin
          mAxiReadMasters     => coreAxilReadMasters,
          mAxiReadSlaves      => coreAxilReadSlaves);
 
-   ----------------------------------------------------------------------------      
+   ----------------------------------------------------------------------------
    --                         ETH GT Mapping                                 --
-   ----------------------------------------------------------------------------      
+   ----------------------------------------------------------------------------
    -- This VHDL wrapper is determined by the ZYNQ family type
    -- Zynq-7000:        rce-gen3-fw-lib/RceG3/hdl/zynq/RceEthGtMapping.vhd
    -- Zynq Ultrascale+: rce-gen3-fw-lib/RceG3/hdl/zynquplus/RceEthGtMapping.vhd
-   ----------------------------------------------------------------------------      
+   ----------------------------------------------------------------------------
    U_RceEthernet : entity rce_gen3_fw_lib.RceEthernet
       generic map (
          -- Generic Configurations
@@ -408,7 +417,7 @@ begin
          SEGMENT_ADDR_SIZE_G  => 7,
          BYPASS_CHUNKER_G     => false,
          PIPE_STAGES_G        => 1,
-         APP_STREAMS_G        => 1,
+         APP_STREAMS_G        => 31,
 --       APP_STREAM_ROUTES_G  => APP_STREAM_ROUTES_G,
          TIMEOUT_UNIT_G       => 1.0e-3,
          SERVER_G             => true,
@@ -419,16 +428,16 @@ begin
          BYP_TX_BUFFER_G      => false,
          BYP_RX_BUFFER_G      => false,
          ILEAVE_ON_NOTVALID_G => true,
-         APP_AXIS_CONFIG_G    => (0 => RCEG3_AXIS_DMA_CONFIG_C),
+         APP_AXIS_CONFIG_G    => (others => APP_AXIS_CONFIG_C),
          TSP_AXIS_CONFIG_G    => EMAC_AXIS_CONFIG_C,
          MAX_SEG_SIZE_G       => 1024)
       port map (
          clk_i                => userEthClk,
          rst_i                => userEthClkRst,
-         sAppAxisMasters_i(0) => rssiIbMaster,
-         sAppAxisSlaves_o(0)  => rssiIbSlave,
-         mAppAxisMasters_o(0) => rssiObMaster,
-         mAppAxisSlaves_i(0)  => rssiObSlave,
+         sAppAxisMasters_i    => rssiIbMasters,
+         sAppAxisSlaves_o     => rssiIbSlaves,
+         mAppAxisMasters_o    => rssiObMasters,
+         mAppAxisSlaves_i     => rssiObSlaves,
          sTspAxisMaster_i     => udpObServerMaster,
          sTspAxisSlave_o      => udpObServerSlave,
          mTspAxisMaster_o     => udpIbServerMaster,
@@ -446,7 +455,10 @@ begin
    -- Fan In Board Core
    ----------------------------------------------------
    U_FanInBoard: entity ucsc_hn.FanInBoard
-      generic map ( TPD_G  => TPD_C) port map (
+      generic map (
+         TPD_G         => TPD_C,
+         AXIS_CONFIG_G => APP_AXIS_CONFIG_C
+      ) port map (
          axilClk              => axilClk,
          axilRst              => axilRst,
          axilReadMaster       => extAxilReadMaster,
@@ -455,10 +467,10 @@ begin
          axilWriteSlave       => extAxilWriteSlave,
          dataClk              => userEthClk,
          dataClkRst           => userEthClkRst,
-         dataObMaster         => rssiIbMaster,
-         dataObSlave          => rssiIbSlave,
-         dataIbMaster         => rssiObMaster,
-         dataIbSlave          => rssiObSlave,
+         dataObMasters        => rssiIbMasters,
+         dataObSlaves         => rssiIbSlaves,
+         dataIbMasters        => rssiObMasters,
+         dataIbSlaves         => rssiObSlaves,
          clockIn              => clockIn,
          clockOut             => clockOut,
          syncIn               => syncIn,
