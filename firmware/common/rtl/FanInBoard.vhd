@@ -1,10 +1,10 @@
 ------------------------------------------------------------------------------
 -- This file is part of 'RCE Development Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'RCE Development Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'RCE Development Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 ------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -27,11 +27,12 @@ use surf.StdRtlPkg.all;
 use surf.AxiLitePkg.all;
 use surf.AxiStreamPkg.all;
 
+library ucsc_hn;
+
 entity FanInBoard is
    generic (
-      TPD_G             : time := 1 ns;
-      DATA_WIDTH_G      : integer := 16;
-      FIFO_ADDR_WIDTH_G : integer := 4
+      TPD_G         : time := 1 ns;
+      AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
    );
    port (
 
@@ -70,73 +71,136 @@ entity FanInBoard is
 end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
-type deserializeDataArray is array (1 to 30) of slv(15 downto 0);
-signal deserializeData      : deserializeDataArray;
-signal deserializeDataValid : slv(30 downto 1);
+
+   signal intObMasters  : AxiStreamMasterArray(30 downto 1);
+   signal intObSlaves   : AxiStreamSlaveArray(30 downto 1);
+
+   signal sysClk        : sl;
+   signal sysClkRst     : sl;
+   signal renaClk       : sl;
+   signal renaClkRst    : sl;
+
+   signal intReadMaster  : AxiLiteReadMasterType;
+   signal intReadSlave   : AxiLiteReadSlaveType;
+   signal intWriteMaster : AxiLiteWriteMasterType;
+   signal intWriteSlave  : AxiLiteWriteSlaveType;
+
+   signal countRst  : sl;
+   signal rxPackets : Slv32Array(30 downto 1);
+   signal dropBytes : Slv32Array(30 downto 1);
 
 begin
 
-    
+   -------------------------------
+   -- AXI Bus
+   -------------------------------
+   U_AxiLiteAsync: entity surf.AxiLiteAsync
+      generic map ( TPD_G => TPD_G) port map (
+         sAxiClk          => axilClk,
+         sAxiClkRst       => axilRst,
+         sAxiReadMaster   => axilReadMaster,
+         sAxiReadSlave    => axilReadSlave,
+         sAxiWriteMaster  => axilWriteMaster,
+         sAxiWriteSlave   => axilWriteSlave,
+         mAxiClk          => sysClk,
+         mAxiClkRst       => sysClkRst,
+         mAxiReadMaster   => intReadMaster,
+         mAxiReadSlave    => intReadSlave,
+         mAxiWriteMaster  => intWriteMaster,
+         mAxiWriteSlave   => intWriteSlave);
 
-   clockOut <= clockIn;
-   syncOut  <= syncIn;
-   txData   <= (others=>'0');
-
-   dataIbSlave <= AXI_STREAM_SLAVE_FORCE_C;
-
-   U_PrbsTx: entity surf.SsiPrbsTx 
-      generic map (
-         TPD_G                      => TPD_G,
-         PRBS_SEED_SIZE_G           => 32,
-         GEN_SYNC_FIFO_G            => false,
-         MASTER_AXI_PIPE_STAGES_G   => 1,
-         MASTER_AXI_STREAM_CONFIG_G => RCEG3_AXIS_DMA_CONFIG_C)
+   U_Regs: entity ucsc_hn.FanInRegs
+      generic map ( TPD_G => TPD_G)
       port map (
-         mAxisClk        => dataClk,
-         mAxisRst        => dataClkRst,
-         mAxisMaster     => dataObMaster,
-         mAxisSlave      => dataObSlave,
-         locClk          => axilClk,
-         locRst          => axilRst,
-         axilReadMaster  => axilReadMaster,
-         axilReadSlave   => axilReadSlave,
-         axilWriteMaster => axilWriteMaster,
-         axilWriteSlave  => axilWriteSlave);
-         
+         axiClk          => sysClk,
+         axiRst          => sysClkRst,
+         axiReadMaster   => intReadMaster,
+         axiReadSlave    => intReadSlave,
+         axiWriteMaster  => intWriteMaster,
+         axiWriteSlave   => intWriteSlave,
+         countRst        => countRst,
+         rxPackets       => rxPackets,
+         dropBytes       => dropBytes);
+
+   -------------------------------
+   -- Clocking
+   -------------------------------
+   U_MMCM : entity surf.ClockManager7
+      generic map(
+         TPD_G              => TPD_G,
+         TYPE_G             => "MMCM",
+         INPUT_BUFG_G       => false,
+         FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
+         RST_IN_POLARITY_G  => '1',
+         NUM_CLOCKS_G       => 2,
+         -- MMCM attributes
+         CLKIN_PERIOD_G     => 6.4,
+         CLKFBOUT_MULT_F_G  => 6.4,
+         CLKOUT0_DIVIDE_F_G => 5.0,
+         CLKOUT1_DIVIDE_G   => 20)
+      port map(
+         clkIn     => dataClk,
+         rstIn     => dataClkRst,
+         clkOut(0) => sysClk,
+         clkOut(1) => renaClk,
+         rstOut(0) => sysClkRst,
+         rstOut(1) => renaClkRst);
+
+   -- Drive output clock using DDR buffer
+   ODDR_I : ODDR
+    port map (
+      C  => renaClk,
+      Q  => clockOut,
+      CE => '1',
+      D1 => '1',
+      D2 => '0',
+      R  => renaClkRst,
+      S  => '0');
+
+   syncOut  <= syncIn;
+
+   -------------------------------
+   -- Inbound Path
+   -------------------------------
+
    U_DeserializerGen : for i in 1 to 30 generate
-   
-      U_Deserializer : entity work.Deserializer
+      U_Deserializer : entity ucsc_hn.Deserializer
          generic map (
-            TPD_G        => TPD_G)
+            TPD_G         => TPD_G,
+            AXIS_CONFIG_G => AXIS_CONFIG_G)
          port map (
-            clk          => clockIn,
-            rst          => dataClkRst,
-            boardid      => "001",
-            rx           => rxData(i),
-            outDataValid => deserializeDataValid(i),
-            outData      => deserializeData(i) );
+            sysClk      => sysClk,
+            sysClkRst   => sysClkRst,
+            rx          => rxData(i),
+            countRst    => countRst,
+            rxPackets   => rxPackets(i),
+            dropBytes   => dropBytes(i),
+            mAxisClk    => dataClk,
+            mAxisRst    => dataClkRst,
+            mAxisMaster => intObMasters(i),
+            mAxisSlave  => intObSlaves(i));
    end generate;
-   
-   U_FifoGen : for i in 1 to 30 generate   
-   
-      U_Fifo : entity surf.Fifo
-         generic map (
-            TPD_G           => TPD_G,
-            GEN_SYNC_FIFO_G => true,
-            FWFT_EN_G       => true,
-            DATA_WIDTH_G    => DATA_WIDTH_G,
-            ADDR_WIDTH_G    => FIFO_ADDR_WIDTH_G)
-         port map (
-            rst         => dataClkRst,
-            wr_clk      => clockIn,
-            din         => deserializeData(i),
-            not_full    => open,
-            rd_clk      => clockIn,
-            rd_en       => deserializeDataValid(i),
-            dout        => open,
-            valid       => open,
-            empty       => open);
-   end generate; 
+
+   --Outbound mux
+   U_ObMux: entity surf.AxiStreamMux
+      generic map (
+         TPD_G        => TPD_G,
+         NUM_SLAVES_G => 30
+      ) port map (
+         axisClk      => dataClk,
+         axisRst      => dataClkRst,
+         sAxisMasters => intObMasters,
+         sAxisSlaves  => intObSlaves,
+         mAxisMaster  => dataObMaster,
+         mAxisSlave   => dataObSlave);
+
+   -------------------------------
+   -- Outbound Path
+   -------------------------------
+
+   --dataIbMaster
+   dataIbSlave <= AXI_STREAM_SLAVE_FORCE_C;
+   txData      <= (others=>'0');
 
 end architecture STRUCTURE;
 
