@@ -60,7 +60,7 @@ architecture rtl of FanInRegs is
 
 begin
 
-   comb : process (axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes ) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
