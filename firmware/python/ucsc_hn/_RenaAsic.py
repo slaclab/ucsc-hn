@@ -9,7 +9,7 @@ class RenaAsic(pr.Device):
         self._rena  = rena # Rena Index 0,1
 
         for i in range(36):
-            self.add(ucsc_hn.RenaChannel(channel=i,name=f'Channel[i]'))
+            self.add(ucsc_hn.RenaChannel(channel=i,name=f'Channel[{i}]'))
 
 
     @property

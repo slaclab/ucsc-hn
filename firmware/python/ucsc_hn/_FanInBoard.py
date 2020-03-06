@@ -12,19 +12,11 @@ class FanInBoard(pr.Device):
         # Remote memory for FPGA reigsters
         self._remMem = rogue.interfaces.memory.TcpClient(host, 9000)
 
-        # RSSI For interface to RENA Boards
-        self._remRssi = pyrogue.protocols.UdpRssiPack(port=8192,host=host,packVer=2)
-        self.add(self._remRssi)
-
-        #self._remRssi.application(0) >> self._prbsRx
-
         # Core FPGA Registers
         self.add(RceG3.RceVersion(memBase=self._remMem))
         self.add(RceG3.RceEthernet(memBase=self._remMem))
-        self.add(surf.ethernet.udp.UdpEngineServer(offset = 0xB0010000))
-        self.add(surf.protocols.rssi.RssiCore(offset=0xB0020000))
+        self.add(surf.ethernet.udp.UdpEngineServer(memBase=self._remMem,offset = 0xB0010000))
+        self.add(surf.protocols.rssi.RssiCore(memBase=self._remMem,offset=0xB0020000))
         self.add(ucsc_hn.FanInRegs(memBase=self._remMem,offset=0xA0000000))
 
-        for i in range(30):
-            self.add(ucsc_hn.RenaBoard(board=i,name=f'RenaBoard[i]'))
-
+        self.add(ucsc_hn.RenaArray(host=host))
