@@ -164,10 +164,10 @@ architecture STRUCTURE of MultiRena is
    signal localIp              : slv(31 downto 0);
    signal localMac             : slv(47 downto 0);
 
-   signal rssiObMasters   : AxiStreamMasterArray(30 downto 0);
-   signal rssiObSlaves    : AxiStreamSlaveArray(30 downto 0);
-   signal rssiIbMasters   : AxiStreamMasterArray(30 downto 0);
-   signal rssiIbSlaves    : AxiStreamSlaveArray(30 downto 0);
+   signal rssiObMaster    : AxiStreamMasterType;
+   signal rssiObSlave     : AxiStreamSlaveType;
+   signal rssiIbMaster    : AxiStreamMasterType;
+   signal rssiIbSlave     : AxiStreamSlaveType;
 
    -- ZYNQ GEM Interface
    signal armEthTx   : ArmEthTxArray(1 downto 0);
@@ -417,8 +417,7 @@ begin
          SEGMENT_ADDR_SIZE_G  => 7,
          BYPASS_CHUNKER_G     => false,
          PIPE_STAGES_G        => 1,
-         APP_STREAMS_G        => 31,
---       APP_STREAM_ROUTES_G  => APP_STREAM_ROUTES_G,
+         APP_STREAMS_G        => 1,
          TIMEOUT_UNIT_G       => 1.0e-3,
          SERVER_G             => true,
          RETRANSMIT_ENABLE_G  => true,
@@ -428,16 +427,16 @@ begin
          BYP_TX_BUFFER_G      => false,
          BYP_RX_BUFFER_G      => false,
          ILEAVE_ON_NOTVALID_G => true,
-         APP_AXIS_CONFIG_G    => (others => APP_AXIS_CONFIG_C),
+         APP_AXIS_CONFIG_G    => (0 => APP_AXIS_CONFIG_C),
          TSP_AXIS_CONFIG_G    => EMAC_AXIS_CONFIG_C,
          MAX_SEG_SIZE_G       => 1024)
       port map (
          clk_i                => userEthClk,
          rst_i                => userEthClkRst,
-         sAppAxisMasters_i    => rssiIbMasters,
-         sAppAxisSlaves_o     => rssiIbSlaves,
-         mAppAxisMasters_o    => rssiObMasters,
-         mAppAxisSlaves_i     => rssiObSlaves,
+         sAppAxisMasters_i(0) => rssiIbMaster,
+         sAppAxisSlaves_o(0)  => rssiIbSlave,
+         mAppAxisMasters_o(0) => rssiObMaster,
+         mAppAxisSlaves_i(0)  => rssiObSlave,
          sTspAxisMaster_i     => udpObServerMaster,
          sTspAxisSlave_o      => udpObServerSlave,
          mTspAxisMaster_o     => udpIbServerMaster,
@@ -467,10 +466,10 @@ begin
          axilWriteSlave       => extAxilWriteSlave,
          dataClk              => userEthClk,
          dataClkRst           => userEthClkRst,
-         dataObMasters        => rssiIbMasters,
-         dataObSlaves         => rssiIbSlaves,
-         dataIbMasters        => rssiObMasters,
-         dataIbSlaves         => rssiObSlaves,
+         dataObMaster         => rssiIbMaster,
+         dataObSlave          => rssiIbSlave,
+         dataIbMaster         => rssiObMaster,
+         dataIbSlave          => rssiObSlave,
          clockIn              => clockIn,
          clockOut             => clockOut,
          syncIn               => syncIn,
@@ -482,7 +481,7 @@ begin
    ----------------------------------------------------
    -- IO Buffers
    ----------------------------------------------------
-   U_ClockInBuf : IBUFDS
+   U_ClockInBuf : IBUFGDS
       port map(
          I      => clockInP,
          IB     => clockInN,

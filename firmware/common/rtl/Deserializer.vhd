@@ -24,10 +24,14 @@ entity Deserializer is
    port(
 
       -- Input
-      rst            : in sl;
-      clk            : in sl;
-      boardid        : in slv(2 downto 0);
-      rx             : in sl;
+      sysClk      : in sl;
+      sysClkRst   : in sl;
+      rx          : in sl;
+
+      -- Counters
+      countRst    : in  sl;
+      rxPackets   : out slv(31 downto 0);
+      dropBytes   : out slv(31 downto 0);
 
       -- Output
       mAxisClk    : in  sl;
@@ -60,209 +64,120 @@ architecture Behavioral of Deserializer is
 
    constant INT_AXIS_CONFIG_C : AxiStreamConfigType := (
       TSTRB_EN_C     => False,
-      TDATA_BYTES_C  => 2,
-      TDEST_BITS_C   => 5,
+      TDATA_BYTES_C  => 1,
+      TDEST_BITS_C   => 0,
       TID_BITS_C     => 0,
       TKEEP_MODE_C   => TKEEP_COMP_C,
       TUSER_BITS_C   => 2,
       TUSER_MODE_C   => TUSER_FIRST_LAST_C);
 
-   type DeserializerStateType is (
+   type StateType is (
       IDLE_S,
-      FIRST_WORD_S,
-      SECOND_WORD_S,
-      OTHER_WORD_S);
-
-   type DeserializerSubStateType is (
-      FIRST_BYTE_S,
-      SECOND_BYTE_S,
-      OTHER_BYTE_S,
-      END_OF_FRAME_CHECK_0_S,
-      END_OF_FRAME_CHECK_1_S,
-      WAIT_0_S,
-      WAIT_1_S );
+      SRC_S,
+      DST_S,
+      DATA_S);
 
    type RegType is record
-      deserializerState      : DeserializerStateType;
-      deserializerSubState   : DeserializerSubStateType;
-      intAxisMaster          : AxiStreamMasterType;
-      bitInByte              : slv(7 downto 0);
+      state         : StateType;
+      uartRd        : sl;
+      rxPackets     : slv(31 downto 0);
+      dropBytes     : slv(31 downto 0);
+      intAxisMaster : AxiStreamMasterType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
-      deserializerState      => IDLE_S,
-      deserializerSubState   => FIRST_BYTE_S,
-      intAxisMaster          => axiStreamMasterInit(INT_AXIS_CONFIG_C),
-      bitInByte              => (others => '0') );
+      state         => IDLE_S,
+      uartRd        => '0',
+      rxPackets     => (others=>'0'),
+      dropBytes     => (others=>'0'),
+      intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
+   signal uartData : slv(7 downto 0);
+   signal uartDen  : sl;
+   signal uartRd   : sl;
+
 begin
 
-   comb : process(r, rx, rst) is
+   -- Receiving UART
+   U_UartRx: entity surf.UartRx
+      generic map (
+         TPD_G        => TPD_G,
+         PARITY_G     => "NONE",
+         BAUD_MULT_G  => 4,
+         DATA_WIDTH_G => 8
+      ) port map (
+         clk         => sysClk,
+         rst         => sysClkRst,
+         clkEn       => '1',
+         rdData      => uartData,
+         rdValid     => uartDen,
+         rdReady     => uartRd,
+         rx          => rx);
+
+   comb : process(r, uartData, uartDen, sysClkRst, countRst) is
       variable v : RegType;
-
    begin
-      v := r;
-      v.intAxisMaster.tValid := '0';
 
-      -- NOTE: The state names FIRST_BYTE_S, FIRST_WORD_S etc. refers to the order of operation rather than the structure of the data
-      case r.deserializerState is
+      v := r;
+
+      v.intAxisMaster.tValid := '0';
+      v.intAxisMaster.tLast  := '0';
+      v.uartRd := '0';
+
+      if countRst = '1' then
+         v.rxPackets := (others=>'0');
+         v.dropBytes := (others=>'0');
+      end if;
+
+      case r.state is
+
          when IDLE_S =>
-            v.intAxisMaster := axiStreamMasterInit(INT_AXIS_CONFIG_C);
-            v.bitInByte     := x"00";
-            -- Wait for start rx line to go LOW to indicate start
-            if (rx = '0') then
-               v.deserializerState    := FIRST_WORD_S;
-               v.deserializerSubState := FIRST_BYTE_S;
+            v.uartRd := '1';
+            v.intAxisMaster.tData(7 downto 0) := uartData;
+
+            if uartDen = '1' then
+               if is_packet_start_token(uartData) then
+                  v.intAxisMaster.tValid := '1';
+                  v.state := SRC_S;
+               else
+                  v.dropBytes := r.dropBytes + 1;
+               end if;
             end if;
 
-         -- The first 16 bits received contain the packet start token and the source node (board id)
-         when FIRST_WORD_S =>
-            case r.deserializerSubState is
-               when FIRST_BYTE_S =>
-                  -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(7 downto 0) := rx & r.intAxisMaster.tData(7 downto 1);
-                  v.bitInByte := r.bitInByte + 1;
-                  if (r.bitInByte = 7) then
-                     v.deserializerSubState := SECOND_BYTE_S;
-                  end if;
+         when SRC_S =>
+            v.intAxisMaster.tData(7 downto 0) := x"00";
+            v.intAxisMaster.tValid := '1';
+            v.state := DST_S;
 
-               when SECOND_BYTE_S =>
-                  -- Disregard the rx line for 1 clock cycle
-                  -- First byte received has to be a start token
-                  if is_packet_start_token(r.intAxisMaster.tData(7 downto 0)) then
-                     -- Add ID of the src node to the data
-                     v.intAxisMaster.tData(15 downto 8) := "00000" & boardid;
-                     v.intAxisMaster.tValid := '1';
-                     v.deserializerSubState := WAIT_0_S;
-                  else
-                     -- If first byte is not start token, discard and wait for next transaction
-                     v.intAxisMaster.tData := (others=>'0');
-                     v.deserializerState   := IDLE_S;
-                  end if;
+         when DST_S =>
+            v.intAxisMaster.tData(7 downto 0) := x"00";
+            v.intAxisMaster.tValid := '1';
+            v.state := DATA_S;
 
-               when WAIT_0_S =>
-                  v.intAxisMaster.tData := (others=>'0');
-                  -- wait for rx to go low again to signal start
-                  if (rx = '0') then
-                     v.deserializerState    := SECOND_WORD_S;
-                     v.bitInByte            := x"00";
-                     v.deserializerSubState := FIRST_BYTE_S;
-                  end if;
+         when DATA_S =>
+            v.uartRd := '1';
+            v.intAxisMaster.tData(7 downto 0) := uartData;
+            v.intAxisMaster.tValid := uartDen;
 
-               when others =>
-                  v.intAxisMaster.tData  := (others=>'0');
-                  v.deserializerState    := IDLE_S;
-                  v.deserializerSubState := FIRST_BYTE_S;
-
-            end case;
-
-         -- The next 16 bits contain the destination (PC node) and the Rena Board ID
-         when SECOND_WORD_S =>
-            case r.deserializerSubState is
-               when FIRST_BYTE_S =>
-                  -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(15 downto 8) := rx & r.intAxisMaster.tData(15 downto 9);
-                  v.bitInByte := r.bitInByte + 1;
-                  if (r.bitInByte = 7) then
-                     v.deserializerSubState := SECOND_BYTE_S;
-                  end if;
-
-               when SECOND_BYTE_S =>
-                  -- Disregard the rx line for 1 clock cycle
-                  -- Add the destination ID (PC -> node0 -> x"00")
-                  v.intAxisMaster.tData(7 downto 0) := x"00";
-                  v.intAxisMaster.tValid := '1';
-                  v.deserializerSubState := WAIT_0_S;
-
-               when WAIT_0_S =>
-                  v.intAxisMaster.tData := (others =>'0');
-                  -- wait for rx to go low again to signal start
-                  if (rx = '0') then
-                     v.deserializerState    := OTHER_WORD_S;
-                     v.bitInByte            := x"00";
-                     v.deserializerSubState := FIRST_BYTE_S;
-                  end if;
-
-               when others =>
-                  v.intAxisMaster.tData  := (others =>'0');
-                  v.deserializerState    := IDLE_S;
-                  v.deserializerSubState := FIRST_BYTE_S;
-
-               end case;
-
-         -- The rest of the data (time, channel, ADC values, etc)
-         when OTHER_WORD_S =>
-            case r.deserializerSubState is
-               when FIRST_BYTE_S =>
-                  -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(7 downto 0) := rx & r.intAxisMaster.tData(7 downto 1);
-                  v.bitInByte := r.bitInByte + 1;
-                  if (r.bitInByte = 7) then
-                     v.deserializerSubState := END_OF_FRAME_CHECK_0_S;
-                  end if;
-
-               when END_OF_FRAME_CHECK_0_S =>
-                  -- Disregard the rx line for 1 clock cycle
-                  -- If end of frame 0xFF detected, finish transaction early and wait for new data
-                  if (r.intAxisMaster.tData(7 downto 0) = x"FF") then
-                     v.intAxisMaster.tKeep  := genTKeep(1);
-                     v.intAxisMaster.tValid := '1';
-                     v.intAxisMaster.tLast  := '1';
-                     v.deserializerState    := IDLE_S;
-                  else
-                     v.deserializerSubState := WAIT_0_S;
-                  end if;
-
-               when WAIT_0_S =>
-                  -- Wait for rx to go low again to signal start
-                  if (rx = '0') then
-                     v.bitInByte            := x"00";
-                     v.deserializerSubState := SECOND_BYTE_S;
-                  end if;
-
-               when SECOND_BYTE_S =>
-                  -- Shift rx data into deserialData until the first byte is filled
-                  v.intAxisMaster.tData(15 downto 8) := rx & r.intAxisMaster.tData(15 downto 9);
-                  v.bitInByte := r.bitInByte + 1;
-                  if (r.bitInByte = 7) then
-                     v.deserializerSubState := END_OF_FRAME_CHECK_1_S;
-                  end if;
-
-               when END_OF_FRAME_CHECK_1_S =>
-                  -- Disregard the rx line for 1 clock cycle
-                  -- If end of frame 0xFF detected, finish transaction and wait for new data
-                  v.intAxisMaster.tValid := '1';
-                  if (r.intAxisMaster.tData(15 downto 8) = x"FF") then
-                     v.deserializerState   := IDLE_S;
-                     v.intAxisMaster.tLast := '1';
-                  else
-                     v.deserializerSubState := WAIT_1_S;
-                  end if;
-
-               when WAIT_1_S =>
-                  -- Wait for rx to go low again to signal start
-                  if (rx = '0') then
-                     v.bitInByte            := x"00";
-                     v.deserializerSubState := FIRST_BYTE_S;
-                  end if;
-
-               when others =>
-                  v.deserializerState    := IDLE_S;
-                  v.deserializerSubState := FIRST_BYTE_S;
-
-            end case;
+            if uartData = x"FF" then
+               v.intAxisMaster.tLast := '1';
+               v.rxPackets := r.rxPackets + 1;
+               v.state := IDLE_S;
+            end if;
 
          when others =>
-            v.deserializerState    := IDLE_S;
-            v.deserializerSubState := FIRST_BYTE_S;
-
+            v.state := IDLE_S;
       end case;
 
+      uartRd    <= v.uartRd;
+      rxPackets <= r.rxPackets;
+      dropBytes <= r.dropBytes;
+
       -- Synchronous Reset
-      if (rst = '1') then
+      if (sysClkRst = '1') then
          v := REG_INIT_C;
       end if;
 
@@ -271,14 +186,14 @@ begin
 
    end process comb;
 
-   seq : process (clk) is
+   seq : process (sysClk) is
    begin
-      if (rising_edge(clk)) then
+      if (rising_edge(sysClk)) then
          r <= rin after TPD_G;
       end if;
    end process seq;
 
-   U_AxiFifo: entity work.AxiStreamFifoV2
+   U_AxiFifo: entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => false,
@@ -287,8 +202,8 @@ begin
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
       ) port map (
-         sAxisClk    => clk,
-         sAxisRst    => rst,
+         sAxisClk    => sysClk,
+         sAxisRst    => sysClkRst,
          sAxisMaster => r.intAxisMaster,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
