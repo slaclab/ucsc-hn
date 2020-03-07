@@ -88,6 +88,8 @@ architecture STRUCTURE of FanInBoard is
    signal countRst  : sl;
    signal rxPackets : Slv32Array(30 downto 1);
    signal dropBytes : Slv32Array(30 downto 1);
+   
+   signal tx : sl;
 
 begin
 
@@ -197,10 +199,20 @@ begin
    -------------------------------
    -- Outbound Path
    -------------------------------
-
+   U_Serializer : entity work.Serializer
+      generic map (
+         TPD_G       => TPD_G)
+      port map (
+         clk         => clockIn,
+         rst         => dataClkRst,
+		 tx          => tx,
+		 mAxisClk    => dataClk,
+	     mAxisRst    => dataClkRst,
+         mAxisMaster => dataIbMaster,
+         mAxisSlave  => dataIbSlave);
    --dataIbMaster
    dataIbSlave <= AXI_STREAM_SLAVE_FORCE_C;
-   txData      <= (others=>'0');
+   txData      <= (others => tx);
 
 end architecture STRUCTURE;
 
