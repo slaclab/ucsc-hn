@@ -2,7 +2,7 @@ import pyrogue as pr
 import rogue
 
 class FanInRegs(pr.Device):
-    def __init__ (self, host, **kwargs):
+    def __init__ (self, **kwargs):
         super().__init__(description="FanInBoard Registers.", **kwargs)
 
         self.add(pr.RemoteCommand(
@@ -18,7 +18,7 @@ class FanInRegs(pr.Device):
 
         for i in range(1,31):
             self.add(pr.RemoteVariable(
-                name         = 'RxPackets',
+                name         = f'RxPackets[{i}]',
                 description  = 'Receive Packets',
                 offset       = 0x100 + (i-1)*4,
                 bitSize      = 32,
@@ -29,7 +29,7 @@ class FanInRegs(pr.Device):
 
         for i in range(1,31):
             self.add(pr.RemoteVariable(
-                name         = 'DropBytes',
+                name         = f'DropBytes[{i}]',
                 description  = 'Dropped Bytes',
                 offset       = 0x200 + (i-1)*4,
                 bitSize      = 32,

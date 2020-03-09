@@ -9,7 +9,7 @@ class RenaBoard(pr.Device):
         self._board = board # Rena FPGA
 
         for i in range(2):
-            self.add(ucsc_hn.RenaAsic(rena=i,name=f'Rena[i]'))
+            self.add(ucsc_hn.RenaAsic(rena=i,name=f'Rena[{i}]'))
 
         self.add(pr.LocalVariable(name='ReadoutEnable',
                                   value=0,
