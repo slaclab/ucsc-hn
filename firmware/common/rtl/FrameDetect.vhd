@@ -17,7 +17,8 @@ use surf.StdRtlPkg.all;
 
 entity FrameDetect is
 	generic(
-		TPD_G			: time		:= 1 ns);
+		TPD_G			: time		:= 1 ns;
+		REMOVE_SRC_DST_G: sl		:= '0');
 	port(
 		clk         	: in sl;
 		rst				: in sl;
@@ -41,14 +42,14 @@ architecture Behavioral of FrameDetect is
 		state		: StateType;
 		dout		: slv(7 downto 0);
 		doutValid	: sl;
-		counter		: integer range 0 to 3;
+		dropByte	: integer range 0 to 3;
 	end record RegType;
 	
 	constant REG_INIT_C : RegType := (
 		state		=> DETECT_START_S,
 		dout		=> (others => '0'),
 		doutValid	=> '0',
-		counter		=> 0);
+		dropByte	=> 0);
 	
 	signal r	: RegType := REG_INIT_C;
 	signal rin	: RegType;
@@ -69,16 +70,20 @@ begin
 				v.dout 		:= din;
 				if (din = packet_start_token_frontend_config and dinValid = '1') then
 					v.doutValid	:= '1';
-					v.state := THROW_AWAY_S;
+					if (REMOVE_SRC_DST_G = '1') then
+						v.state := THROW_AWAY_S;
+					else
+						v.state	:= DETECT_END_S;
+					end if;
 				end if;
 
 			-- Throw away the next two bytes which should be src_id and dst_id;
 			when THROW_AWAY_S =>
 			    if (dinValid = '1') then
-				    v.counter := r.counter + 1;
+				    v.dropByte := r.dropByte + 1;
 				end if;
-				if (r.counter = 2) then
-					v.counter 	:= 0;
+				if (r.dropByte = 2) then
+					v.dropByte 	:= 0;
 					v.state		:= DETECT_END_S;
 				end if;
 			
@@ -105,7 +110,6 @@ begin
 		-- Outputs
 		doutValid <= r.doutValid;
 		dout      <= r.dout;
-			
 	end process comb;
 	
 	seq : process (clk) is
