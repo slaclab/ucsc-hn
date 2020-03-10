@@ -11,13 +11,13 @@
 -- MultiRena.vhd
 -------------------------------------------------------------------------------
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.STD_LOGIC_UNSIGNED.all;
+use IEEE.STD_LOGIC_ARITH.all;
 use IEEE.numeric_std.all;
 
 library UNISIM;
-use UNISIM.VCOMPONENTS.ALL;
+use UNISIM.VCOMPONENTS.all;
 
 library rce_gen3_fw_lib;
 use rce_gen3_fw_lib.RceG3Pkg.all;
@@ -31,54 +31,54 @@ library ucsc_hn;
 
 entity FanInBoard is
    generic (
-      TPD_G         : time := 1 ns;
+      TPD_G         : time                := 1 ns;
       AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
-   );
+      );
    port (
 
       -- AXI-Lite clock and reset
-      axilClk             : in    sl;
-      axilRst             : in    sl;
+      axilClk : in sl;
+      axilRst : in sl;
 
       -- External Axi Bus, 0xA0000000 - 0xAFFFFFFF  (axilClk domain)
-      axilReadMaster      : in    AxiLiteReadMasterType;
-      axilReadSlave       : out   AxiLiteReadSlaveType;
-      axilWriteMaster     : in    AxiLiteWriteMasterType;
-      axilWriteSlave      : out   AxiLiteWriteSlaveType;
+      axilReadMaster  : in  AxiLiteReadMasterType;
+      axilReadSlave   : out AxiLiteReadSlaveType;
+      axilWriteMaster : in  AxiLiteWriteMasterType;
+      axilWriteSlave  : out AxiLiteWriteSlaveType;
 
       -- Data Interfaces
-      dataClk             : in    sl;
-      dataClkRst          : in    sl;
-      dataIbMaster        : in    AxiStreamMasterType;
-      dataIbSlave         : out   AxiStreamSlaveType;
-      dataObMaster        : out   AxiStreamMasterType;
-      dataObSlave         : in    AxiStreamSlaveType;
+      dataClk      : in  sl;
+      dataClkRst   : in  sl;
+      dataIbMaster : in  AxiStreamMasterType;
+      dataIbSlave  : out AxiStreamSlaveType;
+      dataObMaster : out AxiStreamMasterType;
+      dataObSlave  : in  AxiStreamSlaveType;
 
       -- Rena fan in board clocks
-      clockIn     : in    sl;
-      clockOut    : out   sl;
+      clockIn  : in  sl;
+      clockOut : out sl;
 
       -- Sync signals
-      syncIn      : in    sl;
-      syncOut     : out   sl;
+      syncIn  : in  sl;
+      syncOut : out sl;
 
       -- Data inputs
-      rxData      : in    slv(30 downto 1);
+      rxData : in slv(30 downto 1);
 
       -- Control outputs
-      txData      : out   slv(6  downto 1)
-   );
+      txData : out slv(6 downto 1)
+      );
 end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
 
-   signal intObMasters  : AxiStreamMasterArray(30 downto 1);
-   signal intObSlaves   : AxiStreamSlaveArray(30 downto 1);
+   signal intObMasters : AxiStreamMasterArray(30 downto 1);
+   signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
 
-   signal sysClk        : sl;
-   signal sysClkRst     : sl;
-   signal renaClk       : sl;
-   signal renaClkRst    : sl;
+   signal sysClk     : sl;
+   signal sysClkRst  : sl;
+   signal renaClk    : sl;
+   signal renaClkRst : sl;
 
    signal intReadMaster  : AxiLiteReadMasterType;
    signal intReadSlave   : AxiLiteReadSlaveType;
@@ -89,38 +89,40 @@ architecture STRUCTURE of FanInBoard is
    signal rxPackets : Slv32Array(30 downto 1);
    signal dropBytes : Slv32Array(30 downto 1);
 
+   signal tx : sl;
+
 begin
 
    -------------------------------
    -- AXI Bus
    -------------------------------
-   U_AxiLiteAsync: entity surf.AxiLiteAsync
-      generic map ( TPD_G => TPD_G) port map (
-         sAxiClk          => axilClk,
-         sAxiClkRst       => axilRst,
-         sAxiReadMaster   => axilReadMaster,
-         sAxiReadSlave    => axilReadSlave,
-         sAxiWriteMaster  => axilWriteMaster,
-         sAxiWriteSlave   => axilWriteSlave,
-         mAxiClk          => sysClk,
-         mAxiClkRst       => sysClkRst,
-         mAxiReadMaster   => intReadMaster,
-         mAxiReadSlave    => intReadSlave,
-         mAxiWriteMaster  => intWriteMaster,
-         mAxiWriteSlave   => intWriteSlave);
+   U_AxiLiteAsync : entity surf.AxiLiteAsync
+      generic map (TPD_G => TPD_G) port map (
+         sAxiClk         => axilClk,
+         sAxiClkRst      => axilRst,
+         sAxiReadMaster  => axilReadMaster,
+         sAxiReadSlave   => axilReadSlave,
+         sAxiWriteMaster => axilWriteMaster,
+         sAxiWriteSlave  => axilWriteSlave,
+         mAxiClk         => sysClk,
+         mAxiClkRst      => sysClkRst,
+         mAxiReadMaster  => intReadMaster,
+         mAxiReadSlave   => intReadSlave,
+         mAxiWriteMaster => intWriteMaster,
+         mAxiWriteSlave  => intWriteSlave);
 
-   U_Regs: entity ucsc_hn.FanInRegs
-      generic map ( TPD_G => TPD_G)
+   U_Regs : entity ucsc_hn.FanInRegs
+      generic map (TPD_G => TPD_G)
       port map (
-         axiClk          => sysClk,
-         axiRst          => sysClkRst,
-         axiReadMaster   => intReadMaster,
-         axiReadSlave    => intReadSlave,
-         axiWriteMaster  => intWriteMaster,
-         axiWriteSlave   => intWriteSlave,
-         countRst        => countRst,
-         rxPackets       => rxPackets,
-         dropBytes       => dropBytes);
+         axiClk         => sysClk,
+         axiRst         => sysClkRst,
+         axiReadMaster  => intReadMaster,
+         axiReadSlave   => intReadSlave,
+         axiWriteMaster => intWriteMaster,
+         axiWriteSlave  => intWriteSlave,
+         countRst       => countRst,
+         rxPackets      => rxPackets,
+         dropBytes      => dropBytes);
 
    -------------------------------
    -- Clocking
@@ -148,16 +150,16 @@ begin
 
    -- Drive output clock using DDR buffer
    ODDR_I : ODDR
-    port map (
-      C  => renaClk,
-      Q  => clockOut,
-      CE => '1',
-      D1 => '1',
-      D2 => '0',
-      R  => renaClkRst,
-      S  => '0');
+      port map (
+         C  => renaClk,
+         Q  => clockOut,
+         CE => '1',
+         D1 => '1',
+         D2 => '0',
+         R  => renaClkRst,
+         S  => '0');
 
-   syncOut  <= syncIn;
+   syncOut <= syncIn;
 
    -------------------------------
    -- Inbound Path
@@ -182,25 +184,35 @@ begin
    end generate;
 
    --Outbound mux
-   U_ObMux: entity surf.AxiStreamMux
+   U_ObMux : entity surf.AxiStreamMux
       generic map (
          TPD_G        => TPD_G,
          NUM_SLAVES_G => 30
-      ) port map (
-         axisClk      => dataClk,
-         axisRst      => dataClkRst,
-         sAxisMasters => intObMasters,
-         sAxisSlaves  => intObSlaves,
-         mAxisMaster  => dataObMaster,
-         mAxisSlave   => dataObSlave);
+         ) port map (
+            axisClk      => dataClk,
+            axisRst      => dataClkRst,
+            sAxisMasters => intObMasters,
+            sAxisSlaves  => intObSlaves,
+            mAxisMaster  => dataObMaster,
+            mAxisSlave   => dataObSlave);
 
    -------------------------------
    -- Outbound Path
    -------------------------------
-
+   U_Serializer : entity work.Serializer
+      generic map (
+         TPD_G => TPD_G)
+      port map (
+         clk         => clockIn,
+         rst         => dataClkRst,
+         tx          => tx,
+         mAxisClk    => dataClk,
+         mAxisRst    => dataClkRst,
+         mAxisMaster => dataIbMaster,
+         mAxisSlave  => dataIbSlave);
    --dataIbMaster
    dataIbSlave <= AXI_STREAM_SLAVE_FORCE_C;
-   txData      <= (others=>'0');
+   txData      <= (others => tx);
 
 end architecture STRUCTURE;
 
