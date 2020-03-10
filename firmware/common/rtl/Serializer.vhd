@@ -42,7 +42,7 @@ architecture Behavioral of Serializer is
 
    signal fifoDin       : slv(7 downto 0);
    signal fifoDinValid  : sl;
-   signal fifoWrEn      : sl;
+   signal fifoNotFull     : sl;
    signal fifoDout      : slv(7 downto 0);
    signal fifoDoutValid : sl;
 
@@ -92,7 +92,7 @@ begin
          wr_clk   => clk,
          wr_en    => fifoDinValid,
          din      => fifoDin,
-         not_full => fifoWrEn,
+         not_full => fifoNotFull,
          rd_clk   => clk,
          rd_en    => uartWrReady,
          dout     => fifoDout,
@@ -118,7 +118,7 @@ begin
          tx      => uartTx);
 
    -- Output
-   mAxisSlave.tReady <= fifoWrEn;
+   mAxisSlave.tReady <= fifoNotFull;
    tx                <= uartTx;
 end Behavioral;
 
