@@ -1,10 +1,10 @@
 ------------------------------------------------------------------------------
 -- This file is part of 'RCE Development Firmware'.
--- It is subject to the license terms in the LICENSE.txt file found in the 
--- top-level directory of this distribution and at: 
---    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html. 
--- No part of 'RCE Development Firmware', including this file, 
--- may be copied, modified, propagated, or distributed except according to 
+-- It is subject to the license terms in the LICENSE.txt file found in the
+-- top-level directory of this distribution and at:
+--    https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+-- No part of 'RCE Development Firmware', including this file,
+-- may be copied, modified, propagated, or distributed except according to
 -- the terms contained in the LICENSE.txt file.
 ------------------------------------------------------------------------------
 
@@ -19,9 +19,7 @@ use surf.AxiStreamPkg.all;
 entity Serializer is
    generic(
       TPD_G             : time                 := 1 ns;
-      MEMORY_TYPE_G     : string               := "distributed";
-      FIFO_ADDR_WIDTH_G : positive             := 8;
-      DATA_WIDTH_G      : integer range 5 to 8 := 8);
+      AXIS_CONFIG_G     : AxiStreamConfigType  := AXI_STREAM_CONFIG_INIT_C);
    port(
       clk         : in  sl;
       rst         : in  sl;
@@ -35,90 +33,52 @@ end entity Serializer;
 
 architecture Behavioral of Serializer is
 
-   signal dinFrameDetect       : slv(7 downto 0);
-   signal dinFrameDetectValid  : sl;
-   signal doutFrameDetect      : slv(7 downto 0);
-   signal doutFrameDetectValid : sl;
+   constant INT_AXIS_CONFIG_C : AxiStreamConfigType := (
+      TSTRB_EN_C    => false,
+      TDATA_BYTES_C => 1,
+      TDEST_BITS_C  => 0,
+      TID_BITS_C    => 0,
+      TKEEP_MODE_C  => TKEEP_COMP_C,
+      TUSER_BITS_C  => 2,
+      TUSER_MODE_C  => TUSER_FIRST_LAST_C);
 
-   signal fifoDin       : slv(7 downto 0);
-   signal fifoDinValid  : sl;
-   signal fifoNotFull     : sl;
-   signal fifoDout      : slv(7 downto 0);
-   signal fifoDoutValid : sl;
-
-   signal uartWrData  : slv(7 downto 0);
-   signal uartWrValid : sl;
-   signal uartWrReady : sl;
-   signal uartTx      : sl;
+   signal intAxisMaster : AxiStreamMasterType;
+   signal intAxisSlave  : AxiStreamSlaveType);
 
 begin
 
-------------------------------------------------------------------------------------------------
--- Detect start (0xC0) and stop (0xFF) frame. Also remove src and dst id from data.
-------------------------------------------------------------------------------------------------
-   dinFrameDetect      <= mAxisMaster.tData(7 downto 0);
-   dinFrameDetectValid <= mAxisMaster.tValid;
-   U_FrameDetect : entity work.FrameDetect
+   U_AxiFifo : entity surf.AxiStreamFifoV2
       generic map (
-         TPD_G            => TPD_G,
-         REMOVE_SRC_DST_G => '1')
-      port map (
-         -- Clock and Reset
-         clk       => clk,
-         rst       => rst,
-         -- Data Interface
-         din       => dinFrameDetect,
-         dinValid  => dinFrameDetectValid,
-         dout      => doutFrameDetect,
-         doutValid => doutFrameDetectValid);
+         TPD_G               => TPD_G,
+         GEN_SYNC_FIFO_G     => false,
+         FIFO_ADDR_WIDTH_G   => 9,
+         SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_G,
+         MASTER_AXI_CONFIG_G => INT_AXIS_CONFIG_C
+      ) port map (
+         sAxisClk    => mAxisClk,
+         sAxisRst    => mAxisRst,
+         sAxisMaster => mAxisMaster,
+         sAxisSlave  => mAxisSlave,
+         mAxisClk    => clk,
+         mAxisRst    => rst,
+         mAxisMaster => intAxisMaster,
+         mAxisSlave  => intAxisSlave);
 
-------------------------------------------------------------------------------------------------
--- UART Tx
-------------------------------------------------------------------------------------------------
-   --Fifo Tx
-   fifoDin      <= doutFrameDetect;
-   fifoDinValid <= doutFrameDetectValid;
-   U_Fifo_Tx : entity surf.Fifo
-      generic map (
-         TPD_G           => TPD_G,
-         GEN_SYNC_FIFO_G => true,
-         MEMORY_TYPE_G   => MEMORY_TYPE_G,
-         FWFT_EN_G       => true,
-         PIPE_STAGES_G   => 0,
-         DATA_WIDTH_G    => DATA_WIDTH_G,
-         ADDR_WIDTH_G    => FIFO_ADDR_WIDTH_G)
-      port map (
-         rst      => rst,
-         wr_clk   => clk,
-         wr_en    => fifoDinValid,
-         din      => fifoDin,
-         not_full => fifoNotFull,
-         rd_clk   => clk,
-         rd_en    => uartWrReady,
-         dout     => fifoDout,
-         valid    => fifoDoutValid); 
-
-   -- UART TX
-   uartWrData  <= fifoDout;
-   uartWrValid <= fifoDoutValid;
    U_UartTx : entity surf.UartTx
       generic map (
          TPD_G        => TPD_G,
          STOP_BITS_G  => 1,
          PARITY_G     => "NONE",
          BAUD_MULT_G  => 4,
-         DATA_WIDTH_G => DATA_WIDTH_G)
+         DATA_WIDTH_G => 8)
       port map (
          clk     => clk,
          rst     => rst,
          clkEn   => '1',
-         wrData  => uartWrData,
-         wrValid => uartWrValid,
-         wrReady => uartWrReady,
-         tx      => uartTx);
+         wrData  => intAxisMaster.tData(7 downto 0),
+         wrValid => intAxisMaster.tValid,
+         wrReady => intAxisSlave.tReady,
+         tx      => tx);
 
-   -- Output
-   mAxisSlave.tReady <= fifoNotFull;
-   tx                <= uartTx;
 end Behavioral;
 

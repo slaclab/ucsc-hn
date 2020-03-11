@@ -201,18 +201,18 @@ begin
    -------------------------------
    U_Serializer : entity work.Serializer
       generic map (
-         TPD_G => TPD_G)
+         TPD_G         => TPD_G,
+         AXIS_CONFIG_G => AXIS_CONFIG_G)
       port map (
-         clk         => clockIn,
+         clk         => dataClk,
          rst         => dataClkRst,
          tx          => tx,
          mAxisClk    => dataClk,
          mAxisRst    => dataClkRst,
          mAxisMaster => dataIbMaster,
          mAxisSlave  => dataIbSlave);
-   --dataIbMaster
-   dataIbSlave <= AXI_STREAM_SLAVE_FORCE_C;
-   txData      <= (others => tx);
+
+   txData <= (others => tx);
 
 end architecture STRUCTURE;
 

@@ -73,8 +73,6 @@ architecture Behavioral of Deserializer is
 
    type StateType is (
       IDLE_S,
-      SRC_S,
-      DST_S,
       DATA_S);
 
    type RegType is record
@@ -141,21 +139,11 @@ begin
             if uartDen = '1' then
                if is_packet_start_token(uartData) then
                   v.intAxisMaster.tValid := '1';
-                  v.state                := SRC_S;
+                  v.state                := DATA_S;
                else
                   v.dropBytes := r.dropBytes + 1;
                end if;
             end if;
-
-         when SRC_S =>
-            v.intAxisMaster.tData(7 downto 0) := x"00";
-            v.intAxisMaster.tValid            := '1';
-            v.state                           := DST_S;
-
-         when DST_S =>
-            v.intAxisMaster.tData(7 downto 0) := x"00";
-            v.intAxisMaster.tValid            := '1';
-            v.state                           := DATA_S;
 
          when DATA_S =>
             v.uartRd                          := '1';
@@ -201,14 +189,14 @@ begin
          FIFO_ADDR_WIDTH_G   => 9,
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
-         ) port map (
-            sAxisClk    => sysClk,
-            sAxisRst    => sysClkRst,
-            sAxisMaster => r.intAxisMaster,
-            mAxisClk    => mAxisClk,
-            mAxisRst    => mAxisRst,
-            mAxisMaster => mAxisMaster,
-            mAxisSlave  => mAxisSlave);
+      ) port map (
+         sAxisClk    => sysClk,
+         sAxisRst    => sysClkRst,
+         sAxisMaster => r.intAxisMaster,
+         mAxisClk    => mAxisClk,
+         mAxisRst    => mAxisRst,
+         mAxisMaster => mAxisMaster,
+         mAxisSlave  => mAxisSlave);
 
 end Behavioral;
 
