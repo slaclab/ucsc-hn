@@ -43,7 +43,7 @@ architecture Behavioral of Serializer is
       TUSER_MODE_C  => TUSER_FIRST_LAST_C);
 
    signal intAxisMaster : AxiStreamMasterType;
-   signal intAxisSlave  : AxiStreamSlaveType);
+   signal intAxisSlave  : AxiStreamSlaveType;
 
 begin
 

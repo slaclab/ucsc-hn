@@ -68,113 +68,99 @@ class RenaBoard(pr.Device):
 
 
     def buildBoardIdSub(self,bcast=False):
-        data = bytearray(7)
+        data = bytearray(5)
         data[0] = 0xC0 # Packet start
-        data[1] = 0x00 # Source address, unused
-        data[2] = 0x00 # Dest addres, unused
-        data[3] = 0x81 # Clear buffer
+        data[1] = 0x81 # Clear buffer
 
         if bcast:
-            data[4] = 0x3f # Broadcast
+            data[2] = 0x3f # Broadcast
         else:
-            data[4] = self.board & 0x3F # Rena Board address
+            data[2] = self.board & 0x3F # Rena Board address
 
-        data[5] = 0x83 # Store address
-        data[6] = 0xFF # End of packet
+        data[3] = 0x83 # Store address
+        data[4] = 0xFF # End of packet
 
         return data
 
 
     def buildReadoutEnableSub(self,enable):
-        data = bytearray(7)
+        data = bytearray(5)
 
         data[0] = 0xC0 # Packet start
-        data[1] = 0x00 # Source address, unused
-        data[2] = 0x00 # Dest addres, unused
-        data[3] = 0x81 # Clear buffer
+        data[1] = 0x81 # Clear buffer
 
         if enable or self.ReadoutEnable.value():
-            data[4] = 0x03
+            data[2] = 0x03
 
-        data[5] = 0x49
-        data[6] = 0xFF  # End of packaget
+        data[3] = 0x49
+        data[4] = 0xFF  # End of packaget
 
         return data
 
 
     def buildOrModeSub(self,enable):
-        data = bytearray(7)
+        data = bytearray(5)
 
-        data[2][0] = 0xC0 # Packet start
-        data[2][1] = 0x00 # Source address, unused
-        data[2][2] = 0x00 # Dest addres, unused
-        data[2][3] = 0x81 # Clear buffer
+        data[0] = 0xC0 # Packet start
+        data[1] = 0x81 # Clear buffer
 
         if enable or self.OrMode.value():
-            data[2][4] = 0x03
+            data[2] = 0x03
 
-        data[2][5] = 0x46
-        data[2][6] = 0xFF  # End of packaget
+        data[3] = 0x46
+        data[4] = 0xFF  # End of packaget
 
         return data
 
 
     def buildForceTriggerSub(self,enable):
-        data = bytearray(7)
+        data = bytearray(5)
 
         data[0] = 0xC0 # Packet start
-        data[1] = 0x00 # Source address, unused
-        data[2] = 0x00 # Dest addres, unused
-        data[3] = 0x81 # Clear buffer
+        data[1] = 0x81 # Clear buffer
 
         if enable or self.ForceTrig.value():
-            data[4] = 0x03
+            data[2] = 0x03
 
-        data[5] = 0x47
-        data[6] = 0xFF  # End of packaget
+        data[3] = 0x47
+        data[4] = 0xFF  # End of packaget
 
 
     def buildSelectiveReadSub(self):
-        data = bytearray(7)
+        data = bytearray(5)
 
-        data[4][0] = 0xC0 # Packet start
-        data[4][1] = 0x00 # Source address, unused
-        data[4][2] = 0x00 # Dest addres, unused
-        data[4][3] = 0x81 # Clear buffer
+        data[0] = 0xC0 # Packet start
+        data[1] = 0x81 # Clear buffer
 
         if self.SelectiveRead.value():
-            data[4][4] = 0x01
+            data[2] = 0x01
 
-        data[4][5] = 0x48
-        data[4][6] = 0xFF  # End of packaget
+        data[3] = 0x48
+        data[4] = 0xFF  # End of packaget
 
         return data
 
 
     def buildIntermediateBoardSub(self):
-        data = bytearray(7)
+        data = bytearray(5)
 
-        data[5][0] = 0xC0 # Packet start
-        data[5][1] = 0x00 # Source address, unused
-        data[5][2] = 0x00 # Dest addres, unused
-        data[5][3] = 0x81 # Clear buffer
-        data[5][4] = self.IntermediateBoard.value() & 0x3f
-        data[5][5] = 0x4a
-        data[5][6] = 0xFF  # End of packaget
+        data[0] = 0xC0 # Packet start
+        data[1] = 0x81 # Clear buffer
+        data[2] = self.IntermediateBoard.value() & 0x3f
+        data[3] = 0x4a
+        data[4] = 0xFF  # End of packaget
 
         return data
 
 
     def buildDiagnosticSub(self):
-        data = bytearray(7)
+        data = bytearray(5)
 
         data[0] = 0xC0 # Packet start
-        data[1] = 0x00 # Source address, unused
-        data[2] = 0x00 # Dest addres, unused
-        data[3] = 0x81 # Clear buffer
-        data[4] = self.board & 0x3F # Rena Board address
-        data[5] = 0x4E
-        data[6] = 0xFF # End of packet
+        data[1] = 0x81 # Clear buffer
+        data[2] = self.board & 0x3F # Rena Board address
+        data[3] = 0x4E
+        data[4] = 0xFF # End of packet
 
         return data
 
@@ -182,35 +168,31 @@ class RenaBoard(pr.Device):
     def buildFollowerConfigSub(self):
 
         if self.FollowerEnable.value():
-            data = bytearray(9)
+            data = bytearray(7)
 
             data[0] = 0xC0 # Packet start
-            data[1] = 0x00 # Source address, unused
-            data[2] = 0x00 # Dest addres, unused
-            data[3] = 0x81 # Clear buffer
+            data[1] = 0x81 # Clear buffer
 
             if self.FollowerAsic.value() == 0:
-                data[4] = 0x01
+                data[2] = 0x01
             else:
-                data[4] = 0x02
+                data[2] = 0x02
 
-            data[5] = self.FollowerChannel.value() & 0x3F
-            data[6] = 0x00 # Number of times to toggle TCLK 0 for PHA, 1 for U?, 2 for V?
-            data[7] = 0x4D
-            data[8] = 0xFF # End of packet
+            data[3] = self.FollowerChannel.value() & 0x3F
+            data[4] = 0x00 # Number of times to toggle TCLK 0 for PHA, 1 for U?, 2 for V?
+            data[5] = 0x4D
+            data[6] = 0xFF # End of packet
 
             return data
 
         else:
-            data = bytearray(7)
+            data = bytearray(5)
 
             data[0] = 0xC0 # Packet start
-            data[1] = 0x00 # Source address, unused
-            data[2] = 0x00 # Dest addres, unused
-            data[3] = 0x81 # Clear buffer
-            data[4] = 0x3F # Turn off follower mode
-            data[5] = 0x4D
-            data[6] = 0xFF # End of packet
+            data[1] = 0x81 # Clear buffer
+            data[2] = 0x3F # Turn off follower mode
+            data[3] = 0x4D
+            data[4] = 0xFF # End of packet
 
             return data
 
