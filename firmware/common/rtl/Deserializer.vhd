@@ -164,8 +164,7 @@ begin
                v.rxPackets := r.rxPackets + 1;
                v.count     := (others=>'0');
                v.state     := IDLE_S;
-
-            else r.count = MAX_FRAME_C then
+            elsif r.count = MAX_FRAME_C then
                v.intAxisMaster.tLast := '1';
                v.overSize := r.overSize + 1;
                v.state    := IDLE_S;
