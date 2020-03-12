@@ -186,6 +186,7 @@ begin
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => false,
+         VALID_THOLD_G       => 0,
          FIFO_ADDR_WIDTH_G   => 9,
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
