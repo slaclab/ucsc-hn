@@ -76,7 +76,7 @@ begin
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
 
-      axiWrDetect(axilEp, x"008", currRxData);
+      axiSlaveRegisterR(axilEp, x"008", 0, currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
 
       -- Rx Packet Registers, 0x100 - 0x174
