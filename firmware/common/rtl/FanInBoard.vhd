@@ -120,6 +120,7 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
+         currRxData     => rxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
          dropBytes      => dropBytes);
