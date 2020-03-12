@@ -174,8 +174,7 @@ begin
          port map (
             sysClk      => sysClk,
             sysClkRst   => sysClkRst,
-            --rx          => rxData(i),
-            rx          => tx,
+            rx          => rxData(i),
             countRst    => countRst,
             rxPackets   => rxPackets(i),
             dropBytes   => dropBytes(i),
