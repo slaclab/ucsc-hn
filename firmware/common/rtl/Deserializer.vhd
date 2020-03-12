@@ -31,6 +31,7 @@ entity Deserializer is
       -- Counters
       countRst  : in  sl;
       rxPackets : out slv(31 downto 0);
+      lastSize  : out slv(31 downto 0);
       dropBytes : out slv(31 downto 0);
 
       -- Output
@@ -150,7 +151,7 @@ begin
             v.intAxisMaster.tData(7 downto 0) := uartData;
             v.intAxisMaster.tValid            := uartDen;
 
-            if uartData = x"FF" then
+            if uartDen = '1' and uartData = x"FF" then
                v.intAxisMaster.tLast := '1';
                v.rxPackets           := r.rxPackets + 1;
                v.state               := IDLE_S;
