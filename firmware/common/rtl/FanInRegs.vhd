@@ -36,9 +36,10 @@ entity FanInRegs is
       axiWriteSlave  : out   AxiLiteWriteSlaveType;
 
       -- Values
-      countRst  : out sl;
-      rxPackets : in  Slv32Array(30 downto 1);
-      dropBytes : in  Slv32Array(30 downto 1));
+      currRxData : in  slv(30 downto 1);
+      countRst   : out sl;
+      rxPackets  : in  Slv32Array(30 downto 1);
+      dropBytes  : in  Slv32Array(30 downto 1));
 
 end FanInRegs;
 
@@ -73,8 +74,9 @@ begin
       ------------------------
 
       -- Determine the transaction type
-      axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
+      axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave, currRxData);
 
+      axiWrDetect(axilEp, x"00*", currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
 
       -- Rx Packet Registers, 0x100 - 0x174

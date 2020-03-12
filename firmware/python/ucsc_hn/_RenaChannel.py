@@ -165,7 +165,7 @@ class RenaChannel(pr.Device):
         setValueToBits(cfgBits, 35, 6, self.channel)
         setValueToBits(cfgBits, 34, 1, self.FbResistor.value())
         setValueToBits(cfgBits, 33, 1, self.TestInputEnable.value())
-        setValueToBits(cfgBits, 32, 1, self.FastChaPowerDown.value())
+        setValueToBits(cfgBits, 32, 1, self.FastChanPowerDown.value())
         setValueToBits(cfgBits, 31, 1, self.FbType.value())
         setValueToBits(cfgBits, 29, 2, self.Gain.value())
         setValueToBits(cfgBits, 28, 1, self.PowerDown.value())

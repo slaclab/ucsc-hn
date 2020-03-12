@@ -62,6 +62,13 @@ class RenaBoard(pr.Device):
                                   mode='RW',
                                   description='Follower Channel'))
 
+
+        @self.command()
+        def ConfigBoard():
+            for data in self.buildBoardConfigMessage(True):
+                self.parent.sendData(data)
+
+
     @property
     def board(self):
         return self._board
@@ -167,7 +174,7 @@ class RenaBoard(pr.Device):
 
     def buildFollowerConfigSub(self):
 
-        if self.FollowerEnable.value():
+        if self.FollowerEn.value():
             data = bytearray(7)
 
             data[0] = 0xC0 # Packet start
@@ -197,14 +204,15 @@ class RenaBoard(pr.Device):
             return data
 
 
+
     def buildForceTriggerMessage(self,enable):
-        yield self.buildBoardId()
+        yield self.buildBoardIdSub()
         yield self.buildForceTrigger(enable)
         yield self.buildReadoutEnable(enable)
 
 
     def buildReadoutModeMessage(self,enable):
-        yield self.buildBoardId()
+        yield self.buildBoardIdSub()
         yield self.buildReadoutEnable(False)
         yield self.buildOrModeSub()
         yield self.buildForceTriggerSub(False)
@@ -215,12 +223,18 @@ class RenaBoard(pr.Device):
     def buildBoardConfigMessage(self,diagEnable):
         for rena in range(2):
             for channel in range(36):
-                yield self.buildBoardId()
+                yield self.buildBoardIdSub()
                 yield self.node(f'Rena[{rena}]').node(f'Channel[{channel}]').buildChannelConfigSub()
-                if digaEnable:
+                if diagEnable:
                     yield self.buildDiagnosticSub()
 
         yield self.buildFollowerConfigSub()
+
+
+    def buildBoardDiagMessage(self):
+        yield self.buildBoardIdSub()
+        yield self.buildDiagnosticSub()
+
 
 
     def _rxDiagnostic(self,ba):
