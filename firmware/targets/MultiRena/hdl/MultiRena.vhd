@@ -482,6 +482,7 @@ begin
    -- IO Buffers
    ----------------------------------------------------
    U_ClockInBuf : IBUFGDS
+      generic map ( DIFF_TERM => true )
       port map(
          I      => clockInP,
          IB     => clockInN,
@@ -496,6 +497,7 @@ begin
       );
 
    U_SyncInBuf : IBUFDS
+      generic map ( DIFF_TERM => true )
       port map(
          I      => syncInP,
          IB     => syncInN,
@@ -512,6 +514,7 @@ begin
    U_RxDataGen : for i in 1 to 30 generate
 
       U_RxDataBuf : IBUFDS
+         generic map ( DIFF_TERM => true )
          port map(
             I      => rxDataP(i),
             IB     => rxDataN(i),

@@ -5,6 +5,16 @@ class FanInRegs(pr.Device):
     def __init__ (self, **kwargs):
         super().__init__(description="FanInBoard Registers.", **kwargs)
 
+        self.add(pr.RemoteVariable(
+            name         = 'SerialBits',
+            description  = 'Serial Bit Status',
+            offset       = 0x008,
+            bitSize      = 32,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            mode         = 'RO',
+        ))
+
         self.add(pr.RemoteCommand(
             name         = 'CountReset',
             description  = 'Reset Counters',
