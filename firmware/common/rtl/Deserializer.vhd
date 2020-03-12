@@ -165,7 +165,7 @@ begin
                v.count     := (others=>'0');
                v.state     := IDLE_S;
 
-            elsif r.count == MAX_FRAME_C then
+            else r.count = MAX_FRAME_C then
                v.intAxisMaster.tLast := '1';
                v.overSize := r.overSize + 1;
                v.state    := IDLE_S;
