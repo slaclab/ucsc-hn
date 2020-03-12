@@ -185,17 +185,21 @@ begin
    end generate;
 
    --Outbound mux
-   U_ObMux : entity surf.AxiStreamMux
-      generic map (
-         TPD_G        => TPD_G,
-         NUM_SLAVES_G => 30
-      ) port map (
-         axisClk      => dataClk,
-         axisRst      => dataClkRst,
-         sAxisMasters => intObMasters,
-         sAxisSlaves  => intObSlaves,
-         mAxisMaster  => dataObMaster,
-         mAxisSlave   => dataObSlave);
+   --U_ObMux : entity surf.AxiStreamMux
+      --generic map (
+         --TPD_G        => TPD_G,
+         --NUM_SLAVES_G => 30
+      --) port map (
+         --axisClk      => dataClk,
+         --axisRst      => dataClkRst,
+         --sAxisMasters => intObMasters,
+         --sAxisSlaves  => intObSlaves,
+         --mAxisMaster  => dataObMaster,
+         --mAxisSlave   => dataObSlave);
+
+   dataObMaster   <= intObMasters(1);
+   intObSlaves(1) <= dataObSlave;
+   intObSlaves(30 downto 2) <= (others=>'0');
 
    -------------------------------
    -- Outbound Path
