@@ -106,14 +106,14 @@ begin
          PARITY_G     => "NONE",
          BAUD_MULT_G  => 4,
          DATA_WIDTH_G => 8
-         ) port map (
-            clk     => sysClk,
-            rst     => sysClkRst,
-            clkEn   => '1',
-            rdData  => uartData,
-            rdValid => uartDen,
-            rdReady => uartRd,
-            rx      => rx);
+      ) port map (
+         clk     => sysClk,
+         rst     => sysClkRst,
+         clkEn   => '1',
+         rdData  => uartData,
+         rdValid => uartDen,
+         rdReady => uartRd,
+         rx      => rx);
 
    comb : process(r, uartData, uartDen, sysClkRst, countRst) is
       variable v : RegType;

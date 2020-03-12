@@ -190,13 +190,14 @@ begin
       generic map (
          TPD_G        => TPD_G,
          NUM_SLAVES_G => 30
-         ) port map (
-            axisClk      => dataClk,
-            axisRst      => dataClkRst,
-            sAxisMasters => intObMasters,
-            sAxisSlaves  => intObSlaves,
-            mAxisMaster  => dataObMaster,
-            mAxisSlave   => dataObSlave);
+      ) port map (
+         axisClk      => dataClk,
+         axisRst      => dataClkRst,
+         sAxisMasters => intObMasters,
+         sAxisSlaves  => intObSlaves,
+         --mAxisMaster  => dataObMaster,
+         mAxisMaster  => open,
+         mAxisSlave   => dataObSlave);
 
    -------------------------------
    -- Outbound Path
@@ -212,9 +213,14 @@ begin
          mAxisClk    => dataClk,
          mAxisRst    => dataClkRst,
          mAxisMaster => dataIbMaster,
-         mAxisSlave  => dataIbSlave);
+         --mAxisSlave  => dataIbSlave);
+         mAxisSlave  => open);
 
    txData <= (others => tx);
+
+   dataObMaster <= dataIbMaster;
+   dataIbSlave  <= dataObSlave;
+
 
 end architecture STRUCTURE;
 
