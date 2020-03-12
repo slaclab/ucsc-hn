@@ -195,8 +195,7 @@ begin
          axisRst      => dataClkRst,
          sAxisMasters => intObMasters,
          sAxisSlaves  => intObSlaves,
-         --mAxisMaster  => dataObMaster,
-         mAxisMaster  => open,
+         mAxisMaster  => dataObMaster,
          mAxisSlave   => dataObSlave);
 
    -------------------------------
@@ -207,20 +206,15 @@ begin
          TPD_G         => TPD_G,
          AXIS_CONFIG_G => AXIS_CONFIG_G)
       port map (
-         clk         => dataClk,
-         rst         => dataClkRst,
+         clk         => sysClk,
+         rst         => sysClkRst,
          tx          => tx,
          mAxisClk    => dataClk,
          mAxisRst    => dataClkRst,
          mAxisMaster => dataIbMaster,
-         --mAxisSlave  => dataIbSlave);
-         mAxisSlave  => open);
+         mAxisSlave  => dataIbSlave);
 
    txData <= (others => tx);
-
-   dataObMaster <= dataIbMaster;
-   dataIbSlave  <= dataObSlave;
-
 
 end architecture STRUCTURE;
 
