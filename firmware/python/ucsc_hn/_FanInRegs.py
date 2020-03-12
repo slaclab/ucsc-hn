@@ -48,3 +48,14 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
+        for i in range(1,31):
+            self.add(pr.RemoteVariable(
+                name         = f'OverSize[{i}]',
+                description  = 'OverSize Frames',
+                offset       = 0x300 + (i-1)*4,
+                bitSize      = 32,
+                bitOffset    = 0x00,
+                base         = pr.UInt,
+                mode         = 'RO',
+            ))
+

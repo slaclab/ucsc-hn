@@ -31,8 +31,8 @@ entity Deserializer is
       -- Counters
       countRst  : in  sl;
       rxPackets : out slv(31 downto 0);
-      lastSize  : out slv(31 downto 0);
       dropBytes : out slv(31 downto 0);
+      overSize  : out slv(31 downto 0);
 
       -- Output
       mAxisClk    : in  sl;
@@ -43,6 +43,8 @@ entity Deserializer is
 end entity Deserializer;
 
 architecture Behavioral of Deserializer is
+
+   constant MAX_FRAME_C : integer := 1024;
 
    constant packet_start_token_frontend_config      : std_logic_vector(7 downto 0) := x"C0";  -- Originates in PC, goes to Frontend
    constant packet_start_token_frontend_config_echo : std_logic_vector(7 downto 0) := x"C1";  -- Originates in the Daisychain, goes to PC
@@ -81,6 +83,8 @@ architecture Behavioral of Deserializer is
       uartRd        : sl;
       rxPackets     : slv(31 downto 0);
       dropBytes     : slv(31 downto 0);
+      overSize      : slv(31 downto 0);
+      count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
    end record RegType;
 
@@ -89,6 +93,8 @@ architecture Behavioral of Deserializer is
       uartRd        => '0',
       rxPackets     => (others => '0'),
       dropBytes     => (others => '0'),
+      overSize      => (others => '0'),
+      count         => (others => '0'),
       intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
    signal r   : RegType := REG_INIT_C;
@@ -129,6 +135,7 @@ begin
       if countRst = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
+         v.overSize  := (others => '0');
       end if;
 
       case r.state is
@@ -140,7 +147,8 @@ begin
             if uartDen = '1' then
                if is_packet_start_token(uartData) then
                   v.intAxisMaster.tValid := '1';
-                  v.state                := DATA_S;
+                  v.count := r.count + 1;
+                  v.state := DATA_S;
                else
                   v.dropBytes := r.dropBytes + 1;
                end if;
@@ -153,8 +161,14 @@ begin
 
             if uartDen = '1' and uartData = x"FF" then
                v.intAxisMaster.tLast := '1';
-               v.rxPackets           := r.rxPackets + 1;
-               v.state               := IDLE_S;
+               v.rxPackets := r.rxPackets + 1;
+               v.count     := (others=>'0');
+               v.state     := IDLE_S;
+
+            elsif r.count == MAX_FRAME_C then
+               v.intAxisMaster.tLast := '1';
+               v.overSize := r.overSize + 1;
+               v.state    := IDLE_S;
             end if;
 
          when others =>
@@ -164,6 +178,7 @@ begin
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
       dropBytes <= r.dropBytes;
+      overSize  <= r.overSize;
 
       -- Synchronous Reset
       if (sysClkRst = '1') then
@@ -187,7 +202,6 @@ begin
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => false,
-         --VALID_THOLD_G       => 0,
          FIFO_ADDR_WIDTH_G   => 9,
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
