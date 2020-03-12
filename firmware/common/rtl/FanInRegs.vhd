@@ -61,7 +61,7 @@ architecture rtl of FanInRegs is
 
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -74,7 +74,7 @@ begin
       ------------------------
 
       -- Determine the transaction type
-      axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave, currRxData);
+      axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
 
       axiWrDetect(axilEp, x"008", currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
