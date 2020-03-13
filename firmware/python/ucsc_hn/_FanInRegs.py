@@ -26,7 +26,7 @@ class FanInRegs(pr.Device):
             hidden       = False,
         ))
 
-        for i in range(1,31):
+        for i in range(1,2):
             self.add(pr.RemoteVariable(
                 name         = f'RxPackets[{i}]',
                 description  = 'Receive Packets',
@@ -37,7 +37,7 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
-        for i in range(1,31):
+        for i in range(1,2):
             self.add(pr.RemoteVariable(
                 name         = f'DropBytes[{i}]',
                 description  = 'Dropped Bytes',
@@ -48,7 +48,7 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
-        for i in range(1,31):
+        for i in range(1,2):
             self.add(pr.RemoteVariable(
                 name         = f'OverSize[{i}]',
                 description  = 'OverSize Frames',

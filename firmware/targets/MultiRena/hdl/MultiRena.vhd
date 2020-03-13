@@ -70,6 +70,10 @@ architecture STRUCTURE of MultiRena is
 
    constant TPD_C : time := 1 ns;
 
+   constant SERVER_PORTS_C : PositiveArray(1 downto 0) := (
+      1 => 2542,   -- Xilinx XVC
+      0 => 8192);
+
    constant APP_AXIS_CONFIG_C : AxiStreamConfigType := (
       TSTRB_EN_C     => False,
       TDATA_BYTES_C  => 8,
@@ -140,10 +144,10 @@ architecture STRUCTURE of MultiRena is
    signal udpAxilWriteMaster : AxiLiteWriteMasterType;
    signal udpAxilWriteSlave  : AxiLiteWriteSlaveType;
 
-   signal udpObServerMaster : AxiStreamMasterType;
-   signal udpObServerSlave  : AxiStreamSlaveType;
-   signal udpIbServerMaster : AxiStreamMasterType;
-   signal udpIbServerSlave  : AxiStreamSlaveType;
+   signal udpObServerMasters : AxiStreamMasterArray(1 downto 0);
+   signal udpObServerSlaves  : AxiStreamSlaveArray(1 downto 0);
+   signal udpIbServerMasters : AxiStreamMasterArray(1 downto 0);
+   signal udpIbServerSlaves  : AxiStreamSlaveArray(1 downto 0);
 
    -- DMA Interfaces (dmaClk domain)
    signal dmaClk      : slv(3 downto 0);
@@ -293,8 +297,8 @@ begin
          EN_JUMBO_G         => false,
          -- User ETH Configurations
          UDP_SERVER_EN_G    => true,
-         UDP_SERVER_SIZE_G  => 1,
-         UDP_SERVER_PORTS_G => (0=>8192),
+         UDP_SERVER_SIZE_G  => 2,
+         UDP_SERVER_PORTS_G => SERVER_PORTS_C,
          BYP_EN_G           => false,
          VLAN_EN_G          => false)
       port map (
@@ -383,8 +387,8 @@ begin
       generic map (
          TPD_G          => TPD_C,
          SERVER_EN_G    => true,
-         SERVER_SIZE_G  => 1,
-         SERVER_PORTS_G => (0=>8192),
+         SERVER_SIZE_G  => 2,
+         SERVER_PORTS_G => SERVER_PORTS_C,
          CLIENT_EN_G    => false,
          DHCP_G         => false,
          CLK_FREQ_G     => 125.0e6)
@@ -395,16 +399,29 @@ begin
          obMacSlave         => userEthUdpObSlave,
          ibMacMaster        => userEthUdpIbMaster,
          ibMacSlave         => userEthUdpIbSlave,
-         obServerMasters(0) => udpObServerMaster,
-         obServerSlaves(0)  => udpObServerSlave,
-         ibServerMasters(0) => udpIbServerMaster,
-         ibServerSlaves(0)  => udpIbServerSlave,
+         obServerMasters    => udpObServerMasters,
+         obServerSlaves     => udpObServerSlaves,
+         ibServerMasters    => udpIbServerMasters,
+         ibServerSlaves     => udpIbServerSlaves,
          axilWriteMaster    => udpAxilWriteMaster,
          axilWriteSlave     => udpAxilWriteSlave,
          axilReadMaster     => udpAxilReadMaster,
          axilReadSlave      => udpAxilReadSlave,
          clk                => userEthClk,
          rst                => userEthClkRst);
+
+   U_Debug : entity surf.UdpDebugBridgeWrapper
+      generic map (
+         TPD_G => TPD_C)
+      port map (
+         -- Clock and Reset
+         clk        => userEthClk,
+         rst        => userEthClkRst,
+         -- UDP XVC Interface
+         obServerMaster => udpObServerMasters(1),
+         obServerSlave  => udpObServerSlaves(1),
+         ibServerMaster => udpIbServerMasters(1),
+         ibServerSlave  => udpIbServerSlaves(1));
 
    -------------------------------------------------------------------------------------------------
    -- RSSI Engines
@@ -437,10 +454,10 @@ begin
          sAppAxisSlaves_o(0)  => rssiIbSlave,
          mAppAxisMasters_o(0) => rssiObMaster,
          mAppAxisSlaves_i(0)  => rssiObSlave,
-         sTspAxisMaster_i     => udpObServerMaster,
-         sTspAxisSlave_o      => udpObServerSlave,
-         mTspAxisMaster_o     => udpIbServerMaster,
-         mTspAxisSlave_i      => udpIbServerSlave,
+         sTspAxisMaster_i     => udpObServerMasters(0),
+         sTspAxisSlave_o      => udpObServerSlaves(0),
+         mTspAxisMaster_o     => udpIbServerMasters(0),
+         mTspAxisSlave_i      => udpIbServerSlaves(0),
          openRq_i             => '1',
          axiClk_i             => axilClk,
          axiRst_i             => axilRst,

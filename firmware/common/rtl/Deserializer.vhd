@@ -83,6 +83,7 @@ architecture Behavioral of Deserializer is
       uartRd        : sl;
       rxPackets     : slv(31 downto 0);
       dropBytes     : slv(31 downto 0);
+      dropCntEn     : sl;
       overSize      : slv(31 downto 0);
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
@@ -93,6 +94,7 @@ architecture Behavioral of Deserializer is
       uartRd        => '0',
       rxPackets     => (others => '0'),
       dropBytes     => (others => '0'),
+      dropCntEn     => '0',
       overSize      => (others => '0'),
       count         => (others => '0'),
       intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
@@ -130,12 +132,17 @@ begin
 
       v.intAxisMaster.tValid := '0';
       v.intAxisMaster.tLast  := '0';
-      v.uartRd               := '0';
+      v.uartRd    := '0';
+      v.dropCntEn := '0';
 
       if countRst = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
          v.overSize  := (others => '0');
+      end if;
+
+      if r.dropCntEn = '1' then
+         v.dropBytes := r.dropBytes + 1;
       end if;
 
       case r.state is
@@ -150,7 +157,7 @@ begin
                   v.count := r.count + 1;
                   v.state := DATA_S;
                else
-                  v.dropBytes := r.dropBytes + 1;
+                  v.dropCntEn := '1';
                end if;
             end if;
 
