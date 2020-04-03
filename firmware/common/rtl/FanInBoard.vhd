@@ -159,7 +159,7 @@ begin
          CE => '1',
          D1 => '1',
          D2 => '0',
-         R  => renaClkRst,
+         R  => '0',
          S  => '0');
 
    syncOut <= syncIn;

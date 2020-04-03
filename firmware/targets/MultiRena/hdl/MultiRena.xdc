@@ -27,7 +27,9 @@ set_property PACKAGE_PIN P3 [get_ports clockOutP]
 set_property PACKAGE_PIN P2 [get_ports clockOutN]
 
 set_property IOSTANDARD LVDS [get_ports clockInP]
+set_property IOSTANDARD LVDS [get_ports clockInN]
 set_property IOSTANDARD LVDS [get_ports clockOutP]
+set_property IOSTANDARD LVDS [get_ports clockOutN]
 
 # sync signals
 set_property PACKAGE_PIN M2 [get_ports syncInP]
@@ -36,7 +38,9 @@ set_property PACKAGE_PIN N1 [get_ports syncOutP]
 set_property PACKAGE_PIN P1 [get_ports syncOutN]
 
 set_property IOSTANDARD LVDS [get_ports syncInP]
+set_property IOSTANDARD LVDS [get_ports syncInN]
 set_property IOSTANDARD LVDS [get_ports syncOutP]
+set_property IOSTANDARD LVDS [get_ports syncOutN]
 
 # RX_BRD_XX signals (BANK 34 & 35)
 set_property PACKAGE_PIN F5 [get_ports rxDataP[1]]
