@@ -11,8 +11,8 @@
 set_property PACKAGE_PIN AA16 [get_ports i2cScl]
 set_property PACKAGE_PIN AA17 [get_ports i2cSda]
 
-set_property IOSTANDARD LVCMOS25 [get_ports i2cScl]
-set_property IOSTANDARD LVCMOS25 [get_ports i2cSda]
+set_property IOSTANDARD LVCMOS [get_ports i2cScl]
+set_property IOSTANDARD LVCMOS [get_ports i2cSda]
 
 # Ethernet signals
 set_property PACKAGE_PIN AA7  [get_ports ethRxP]
