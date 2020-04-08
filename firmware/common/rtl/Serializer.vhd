@@ -90,6 +90,7 @@ begin
             tx <= '0' after TPD_G;
          else
             tx <= intTx after TPD_G;
+         end if;
       end if;
    end process;
 
