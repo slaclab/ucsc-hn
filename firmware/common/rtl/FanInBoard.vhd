@@ -72,6 +72,8 @@ end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
 
+   constant TDEST_ROUTES_C : Slv8Array(30 downto 1) := (others=> "00000000");
+
    signal intObMasters : AxiStreamMasterArray(30 downto 1);
    signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
 
@@ -190,8 +192,9 @@ begin
    --Outbound mux
    U_ObMux : entity surf.AxiStreamMux
       generic map (
-         TPD_G        => TPD_G,
-         NUM_SLAVES_G => 30
+         TPD_G          => TPD_G,
+         TDEST_ROUTES_G => TDEST_ROUTES_C,
+         NUM_SLAVES_G   => 30
       ) port map (
          axisClk      => dataClk,
          axisRst      => dataClkRst,
@@ -199,10 +202,6 @@ begin
          sAxisSlaves  => intObSlaves,
          mAxisMaster  => dataObMaster,
          mAxisSlave   => dataObSlave);
-
-   --dataObMaster   <= intObMasters(1);
-   --intObSlaves(1) <= dataObSlave;
-   --intObSlaves(30 downto 2) <= (others=>AXI_STREAM_SLAVE_INIT_C);
 
    -------------------------------
    -- Outbound Path
