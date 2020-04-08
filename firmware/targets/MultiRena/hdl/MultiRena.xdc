@@ -49,7 +49,7 @@ set_property IOSTANDARD LVDS [get_ports syncOutN]
 #set_property PACKAGE_PIN V18 [get_ports renaTck]
 #set_property PACKAGE_PIN W18 [get_ports renaTms]
 
-# RX_BRD_XX signals (BANK 34 & 35)
+# RX_BRD_XX
 set_property PACKAGE_PIN F5 [get_ports rxDataP[1]]
 set_property PACKAGE_PIN E5 [get_ports rxDataN[1]]
 set_property PACKAGE_PIN F2 [get_ports rxDataP[2]]
@@ -172,7 +172,7 @@ set_property IOSTANDARD LVDS [get_ports rxDataN[29]]
 set_property IOSTANDARD LVDS [get_ports rxDataP[30]]
 set_property IOSTANDARD LVDS [get_ports rxDataN[30]]
 
-#TX_BUFF_X (BANK 34)
+#TX_BUFF_X
 set_property PACKAGE_PIN G17  [get_ports txData[1]]
 set_property PACKAGE_PIN C18  [get_ports txData[2]]
 set_property PACKAGE_PIN AA19 [get_ports txData[3]]
@@ -186,6 +186,13 @@ set_property IOSTANDARD LVCMOS [get_ports txData[3]]
 set_property IOSTANDARD LVCMOS [get_ports txData[4]]
 set_property IOSTANDARD LVCMOS [get_ports txData[5]]
 set_property IOSTANDARD LVCMOS [get_ports txData[6]]
+
+set_property SLEW FAST [get_ports txData[1]]
+set_property SLEW FAST [get_ports txData[2]]
+set_property SLEW FAST [get_ports txData[3]]
+set_property SLEW FAST [get_ports txData[4]]
+set_property SLEW FAST [get_ports txData[5]]
+set_property SLEW FAST [get_ports txData[6]]
 
 ####################
 # Timing Constraints

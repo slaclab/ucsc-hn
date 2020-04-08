@@ -21,8 +21,10 @@ entity Serializer is
       TPD_G             : time                 := 1 ns;
       AXIS_CONFIG_G     : AxiStreamConfigType  := AXI_STREAM_CONFIG_INIT_C);
    port(
-      clk         : in  sl;
-      rst         : in  sl;
+      sysClk      : in  sl;
+      sysRst      : in  sl;
+      renaClk     : in  sl;
+      renaRst     : in  sl;
       tx          : out sl;
       --AXI
       mAxisClk    : in  sl;
@@ -44,6 +46,7 @@ architecture Behavioral of Serializer is
 
    signal intAxisMaster : AxiStreamMasterType;
    signal intAxisSlave  : AxiStreamSlaveType;
+   signal intTx : sl;
 
 begin
 
@@ -59,8 +62,8 @@ begin
          sAxisRst    => mAxisRst,
          sAxisMaster => mAxisMaster,
          sAxisSlave  => mAxisSlave,
-         mAxisClk    => clk,
-         mAxisRst    => rst,
+         mAxisClk    => sysClk,
+         mAxisRst    => sysRst,
          mAxisMaster => intAxisMaster,
          mAxisSlave  => intAxisSlave);
 
@@ -72,13 +75,23 @@ begin
          BAUD_MULT_G  => 4,
          DATA_WIDTH_G => 8)
       port map (
-         clk     => clk,
-         rst     => rst,
+         clk     => sysClk,
+         rst     => sysRst,
          clkEn   => '1',
          wrData  => intAxisMaster.tData(7 downto 0),
          wrValid => intAxisMaster.tValid,
          wrReady => intAxisSlave.tReady,
-         tx      => tx);
+         tx      => intTx);
+
+   process (renaClk) is
+   begin
+      if (rising_edge(renaClk)) then
+         if renaRst = '1' then
+            tx <= '0' after TPD_G;
+         else
+            tx <= intTx after TPD_G;
+      end if;
+   end process;
 
 end Behavioral;
 

@@ -159,7 +159,7 @@ begin
          CE => '1',
          D1 => '1',
          D2 => '0',
-         R  => '0',
+         R  => renaClkRst,
          S  => '0');
 
    syncOut <= syncIn;
@@ -212,8 +212,10 @@ begin
          TPD_G         => TPD_G,
          AXIS_CONFIG_G => AXIS_CONFIG_G)
       port map (
-         clk         => sysClk,
-         rst         => sysClkRst,
+         sysClk      => sysClk,
+         sysRst      => sysClkRst,
+         renaClk     => renaClk,
+         renaRst     => renaClkRst,
          tx          => tx,
          mAxisClk    => dataClk,
          mAxisRst    => dataClkRst,
