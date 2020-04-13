@@ -46,23 +46,17 @@ architecture Behavioral of Deserializer is
 
    constant MAX_FRAME_C : integer := 1024;
 
-   constant packet_start_token_frontend_config      : std_logic_vector(7 downto 0) := x"C0";  -- Originates in PC, goes to Frontend
-   constant packet_start_token_frontend_config_echo : std_logic_vector(7 downto 0) := x"C1";  -- Originates in the Daisychain, goes to PC
    constant packet_start_token_frontend_diagnostic  : std_logic_vector(7 downto 0) := x"C4";  -- Originates in Frontend, goes to PC
    constant packet_start_token_data_AND_mode        : std_logic_vector(7 downto 0) := x"C8";  -- Originates in Frontend, goes to PC
    constant packet_start_token_data_OR_mode         : std_logic_vector(7 downto 0) := x"C9";  -- Originates in Frontend, goes to PC
-   constant packet_start_token_throughput_test      : std_logic_vector(7 downto 0) := x"CC";  -- Originates in Frontend, goes to PC
 
    -- Function is_packet_start_byte returns true if the byte is a valid header byte
    -- (the first byte of a packet) otherwise it returns false.
    function is_packet_start_token(B : std_logic_vector(7 downto 0)) return boolean is
    begin
-      return B = packet_start_token_frontend_config
-         or B = packet_start_token_frontend_config_echo
-         or B = packet_start_token_frontend_diagnostic
+      return B = packet_start_token_frontend_diagnostic
          or B = packet_start_token_data_AND_mode
-         or B = packet_start_token_data_OR_mode
-         or B = packet_start_token_throughput_test;
+         or B = packet_start_token_data_OR_mode;
    end is_packet_start_token;
 
    constant INT_AXIS_CONFIG_C : AxiStreamConfigType := (
