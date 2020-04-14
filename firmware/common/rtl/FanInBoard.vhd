@@ -203,10 +203,10 @@ begin
          --mAxisMaster  => dataObMaster,
          --mAxisSlave   => dataObSlave);
 
-   dataObMaster   <= intObMasters(20);
-   intObSlaves(20) <= dataObSlave;
-   intObSlaves(30 downto 21) <= (others=>AXI_STREAM_SLAVE_INIT_C);
-   intObSlaves(19 downto  1) <= (others=>AXI_STREAM_SLAVE_INIT_C);
+   dataObMaster   <= intObMasters(25);
+   intObSlaves(25) <= dataObSlave;
+   intObSlaves(30 downto 26) <= (others=>AXI_STREAM_SLAVE_INIT_C);
+   intObSlaves(24 downto  1) <= (others=>AXI_STREAM_SLAVE_INIT_C);
 
    -------------------------------
    -- Outbound Path
