@@ -141,10 +141,10 @@ begin
          RST_IN_POLARITY_G  => '1',
          NUM_CLOCKS_G       => 2,
          -- MMCM attributes
-         CLKIN_PERIOD_G     => 6.4,
-         CLKFBOUT_MULT_F_G  => 6.4,
-         CLKOUT0_DIVIDE_F_G => 5.0,
-         CLKOUT1_DIVIDE_G   => 20)
+         CLKIN_PERIOD_G     => 8.0, -- 125Mhz
+         CLKFBOUT_MULT_F_G  => 8.0, -- 1Ghz
+         CLKOUT0_DIVIDE_F_G => 5.0, -- 200Mhz
+         CLKOUT1_DIVIDE_G   => 20)  -- 50Mhz
       port map(
          clkIn     => dataClk,
          rstIn     => dataClkRst,
