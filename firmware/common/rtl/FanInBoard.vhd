@@ -212,6 +212,7 @@ begin
             sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
             mAxisMaster  => muxObMaster(i),
             mAxisSlave   => muxObSlave(i));
+   end generate;
 
    -- Outbound mux
    U_ObMux : entity surf.AxiStreamMux
