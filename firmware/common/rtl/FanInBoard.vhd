@@ -195,7 +195,7 @@ begin
             mAxisSlave  => intObSlaves(i));
    end generate;
 
-   Outbound mux
+   -- Outbound mux
    U_ObMux : entity surf.AxiStreamMux
       generic map (
          TPD_G          => TPD_G,
