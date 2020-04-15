@@ -80,7 +80,7 @@ begin
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
 
-      axiSlaveRegister(axilEp, x"004", 1, rxEnable);
+      axiSlaveRegister(axilEp, x"004", 1, v.rxEnable);
       axiSlaveRegisterR(axilEp, x"008", 1, currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
 
