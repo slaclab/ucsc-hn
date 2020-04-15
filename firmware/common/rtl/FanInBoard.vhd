@@ -210,8 +210,8 @@ begin
             axisRst      => dataClkRst,
             sAxisMasters => intObMasters(i*6+6 downto i*6+1),
             sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
-            mAxisMaster  => muxObMaster(i),
-            mAxisSlave   => muxObSlave(i));
+            mAxisMaster  => muxObMasters(i),
+            mAxisSlave   => muxObSlaves(i));
    end generate;
 
    -- Outbound mux
