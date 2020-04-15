@@ -199,7 +199,7 @@ begin
    end generate;
 
    -- First stage muxes
-   U_PreMux : for i in 0 to 3 generate
+   U_PreMux : for i in 0 to 4 generate
       U_Mux : entity surf.AxiStreamMux
          generic map (
             TPD_G          => TPD_G,
@@ -219,7 +219,7 @@ begin
       generic map (
          TPD_G          => TPD_G,
          TDEST_ROUTES_G => TDEST_ROUTES_C,
-         NUM_SLAVES_G   => 4
+         NUM_SLAVES_G   => 5
       ) port map (
          axisClk      => dataClk,
          axisRst      => dataClkRst,
