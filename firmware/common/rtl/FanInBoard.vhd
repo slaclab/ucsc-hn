@@ -92,6 +92,9 @@ architecture STRUCTURE of FanInBoard is
    signal dropBytes : Slv32Array(30 downto 1);
    signal overSize  : Slv32Array(30 downto 1);
 
+   signal currRxData : slv(30 downto 1);
+   signal rxEnable   : slv(30 downto 1);
+
    signal tx : sl;
 
 begin
@@ -123,7 +126,8 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
-         currRxData     => rxData,
+         rxEnable       => rxEnable,
+         currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
          dropBytes      => dropBytes,
@@ -179,6 +183,8 @@ begin
             sysClk      => sysClk,
             sysClkRst   => sysClkRst,
             rx          => rxData(i),
+            rxEnable    => rxEnable(i),
+            currRxData  => currRxData(i),
             countRst    => countRst,
             rxPackets   => rxPackets(i),
             dropBytes   => dropBytes(i),
@@ -189,24 +195,19 @@ begin
             mAxisSlave  => intObSlaves(i));
    end generate;
 
-   --Outbound mux
-   --U_ObMux : entity surf.AxiStreamMux
-      --generic map (
-         --TPD_G          => TPD_G,
-         --TDEST_ROUTES_G => TDEST_ROUTES_C,
-         --NUM_SLAVES_G   => 30
-      --) port map (
-         --axisClk      => dataClk,
-         --axisRst      => dataClkRst,
-         --sAxisMasters => intObMasters,
-         --sAxisSlaves  => intObSlaves,
-         --mAxisMaster  => dataObMaster,
-         --mAxisSlave   => dataObSlave);
-
-   dataObMaster   <= intObMasters(25);
-   intObSlaves(25) <= dataObSlave;
-   intObSlaves(30 downto 26) <= (others=>AXI_STREAM_SLAVE_INIT_C);
-   intObSlaves(24 downto  1) <= (others=>AXI_STREAM_SLAVE_INIT_C);
+   Outbound mux
+   U_ObMux : entity surf.AxiStreamMux
+      generic map (
+         TPD_G          => TPD_G,
+         TDEST_ROUTES_G => TDEST_ROUTES_C,
+         NUM_SLAVES_G   => 30
+      ) port map (
+         axisClk      => dataClk,
+         axisRst      => dataClkRst,
+         sAxisMasters => intObMasters,
+         sAxisSlaves  => intObSlaves,
+         mAxisMaster  => dataObMaster,
+         mAxisSlave   => dataObSlave);
 
    -------------------------------
    -- Outbound Path

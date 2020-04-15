@@ -29,10 +29,12 @@ entity Deserializer is
       rx        : in sl;
 
       -- Counters
-      countRst  : in  sl;
-      rxPackets : out slv(31 downto 0);
-      dropBytes : out slv(31 downto 0);
-      overSize  : out slv(31 downto 0);
+      countRst   : in  sl;
+      rxEnable   : in  sl;
+      currRxData : in  sl;
+      rxPackets  : out slv(31 downto 0);
+      dropBytes  : out slv(31 downto 0);
+      overSize   : out slv(31 downto 0);
 
       -- Output
       mAxisClk    : in  sl;
@@ -100,7 +102,25 @@ architecture Behavioral of Deserializer is
    signal uartDen  : sl;
    signal uartRd   : sl;
 
+   signal rxTmp : sl;
+   signal rxInt : sl;
+
 begin
+
+   currRxData <= rxTmp;
+
+   process (sysClk) is
+   begin
+      if (rising_edge(sysClk)) then
+         if renaRst = '1' then
+            rxTmp <= '0' after TPD_G;
+            rxInt <= '0' after TPD_G;
+         else
+            rxTmp <= rx after TPD_G;
+            rxInt <= rxTmp and rxMask after TPD_G;
+         end if;
+      end if;
+   end process;
 
    -- Receiving UART
    U_UartRx : entity surf.UartRx
@@ -116,7 +136,8 @@ begin
          rdData  => uartData,
          rdValid => uartDen,
          rdReady => uartRd,
-         rx      => rx);
+         rx      => rxInt);
+
 
    comb : process(r, uartData, uartDen, sysClkRst, countRst) is
       variable v : RegType;
