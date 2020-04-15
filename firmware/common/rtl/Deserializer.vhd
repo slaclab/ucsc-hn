@@ -31,7 +31,7 @@ entity Deserializer is
       -- Counters
       countRst   : in  sl;
       rxEnable   : in  sl;
-      currRxData : in  sl;
+      currRxData : out sl;
       rxPackets  : out slv(31 downto 0);
       dropBytes  : out slv(31 downto 0);
       overSize   : out slv(31 downto 0);
