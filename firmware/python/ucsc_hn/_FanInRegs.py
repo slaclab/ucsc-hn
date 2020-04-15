@@ -6,6 +6,16 @@ class FanInRegs(pr.Device):
         super().__init__(description="FanInBoard Registers.", **kwargs)
 
         self.add(pr.RemoteVariable(
+            name         = 'ChanEnable',
+            description  = 'Serial Channel Enable',
+            offset       = 0x004,
+            bitSize      = 32,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            mode         = 'RW',
+        ))
+
+        self.add(pr.RemoteVariable(
             name         = 'SerialBits',
             description  = 'Serial Bit Status',
             offset       = 0x008,
@@ -26,7 +36,7 @@ class FanInRegs(pr.Device):
             hidden       = False,
         ))
 
-        for i in range(1,2):
+        for i in range(1,31):
             self.add(pr.RemoteVariable(
                 name         = f'RxPackets[{i}]',
                 description  = 'Receive Packets',
@@ -37,7 +47,7 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
-        for i in range(1,2):
+        for i in range(1,31):
             self.add(pr.RemoteVariable(
                 name         = f'DropBytes[{i}]',
                 description  = 'Dropped Bytes',
@@ -48,7 +58,7 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
-        for i in range(1,2):
+        for i in range(1,31):
             self.add(pr.RemoteVariable(
                 name         = f'OverSize[{i}]',
                 description  = 'OverSize Frames',

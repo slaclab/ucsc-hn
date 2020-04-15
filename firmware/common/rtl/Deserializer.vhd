@@ -106,7 +106,21 @@ architecture Behavioral of Deserializer is
    signal uartDen  : sl;
    signal uartRd   : sl;
 
+   signal rxInt    : sl;
 begin
+
+   -- Sample
+   process (renaClk) is
+   begin
+      if (falling_edge(renaClk)) then
+         if renaRst = '1' then
+            rxInt <= '0' after TPD_G;
+         else
+            rxInt <= tx after TPD_G;
+         end if;
+      end if;
+   end process;
+
 
    -- Receiving UART
    U_UartRx : entity surf.UartRx
@@ -122,7 +136,7 @@ begin
          rdData  => uartData,
          rdValid => uartDen,
          rdReady => uartRd,
-         rx      => rx);
+         rx      => rxInt);
 
    comb : process(r, uartData, uartDen, sysClkRst, countRst) is
       variable v : RegType;

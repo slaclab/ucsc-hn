@@ -11,6 +11,9 @@ import pyrogue.gui
 import rogue
 import logging
 
+#host = "192.168.2.50"
+host = "172.16.20.90"
+
 from ucsc_hn import MultiRenaRoot
 
 #rogue.Logging.setFilter('pyrogue.memory.block.InterCardRoot.PcieControl[0].Fpga.PrbsTx',rogue.Logging.Debug)
@@ -21,7 +24,7 @@ from ucsc_hn import MultiRenaRoot
 #logger = logging.getLogger('pyrogue.PollQueue')
 #logger.setLevel(logging.DEBUG)
 
-with MultiRenaRoot(host="192.168.2.50",pollEn=True) as root:
+with MultiRenaRoot(host=host,pollEn=True) as root:
 
     pyrogue.pydm.runPyDM(root=root)
     #pyrogue.gui.runGui(root=root)
