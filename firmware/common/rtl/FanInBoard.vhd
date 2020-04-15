@@ -77,6 +77,9 @@ architecture STRUCTURE of FanInBoard is
    signal intObMasters : AxiStreamMasterArray(30 downto 1);
    signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
 
+   signal muxObMasters : AxiStreamMasterArray(3 downto 0);
+   signal muxObSlaves  : AxiStreamSlaveArray(3 downto 0);
+
    signal sysClk     : sl;
    signal sysClkRst  : sl;
    signal renaClk    : sl;
@@ -195,17 +198,32 @@ begin
             mAxisSlave  => intObSlaves(i));
    end generate;
 
+   -- First stage muxes
+   U_PreMux : for i in 0 to 3 generate
+      U_Mux : entity surf.AxiStreamMux
+         generic map (
+            TPD_G          => TPD_G,
+            TDEST_ROUTES_G => TDEST_ROUTES_C,
+            NUM_SLAVES_G   => 6
+         ) port map (
+            axisClk      => dataClk,
+            axisRst      => dataClkRst,
+            sAxisMasters => intObMasters(i*6+6 downto i*6+1),
+            sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
+            mAxisMaster  => muxObMaster(i),
+            mAxisSlave   => muxObSlave(i));
+
    -- Outbound mux
    U_ObMux : entity surf.AxiStreamMux
       generic map (
          TPD_G          => TPD_G,
          TDEST_ROUTES_G => TDEST_ROUTES_C,
-         NUM_SLAVES_G   => 30
+         NUM_SLAVES_G   => 4
       ) port map (
          axisClk      => dataClk,
          axisRst      => dataClkRst,
-         sAxisMasters => intObMasters,
-         sAxisSlaves  => intObSlaves,
+         sAxisMasters => muxObMasters,
+         sAxisSlaves  => muxObSlaves,
          mAxisMaster  => dataObMaster,
          mAxisSlave   => dataObSlave);
 
