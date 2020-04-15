@@ -112,12 +112,12 @@ begin
    process (sysClk) is
    begin
       if (rising_edge(sysClk)) then
-         if renaRst = '1' then
+         if sysClkRst = '1' then
             rxTmp <= '0' after TPD_G;
             rxInt <= '0' after TPD_G;
          else
             rxTmp <= rx after TPD_G;
-            rxInt <= rxTmp and rxMask after TPD_G;
+            rxInt <= rxTmp and rxEnable after TPD_G;
          end if;
       end if;
    end process;
