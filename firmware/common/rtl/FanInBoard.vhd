@@ -77,8 +77,8 @@ architecture STRUCTURE of FanInBoard is
    signal intObMasters : AxiStreamMasterArray(30 downto 1);
    signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
 
-   signal muxObMasters : AxiStreamMasterArray(3 downto 0);
-   signal muxObSlaves  : AxiStreamSlaveArray(3 downto 0);
+   signal muxObMasters : AxiStreamMasterArray(4 downto 0);
+   signal muxObSlaves  : AxiStreamSlaveArray(4 downto 0);
 
    signal sysClk     : sl;
    signal sysClkRst  : sl;
