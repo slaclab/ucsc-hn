@@ -40,8 +40,7 @@ entity FanInRegs is
       currRxData : in  slv(30 downto 1);
       countRst   : out sl;
       rxPackets  : in  Slv32Array(30 downto 1);
-      dropBytes  : in  Slv32Array(30 downto 1);
-      overSize   : in  Slv32Array(30 downto 1));
+      dropBytes  : in  Slv32Array(30 downto 1));
 
 end FanInRegs;
 
@@ -65,7 +64,7 @@ architecture rtl of FanInRegs is
 
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData, overSize) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -92,11 +91,6 @@ begin
       -- Rx Drop Bytes Registers, 0x200 - 0x274
       for i in 1 to 30 loop
          axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytes(i));
-      end loop;
-
-      -- Oversize counter
-      for i in 1 to 30 loop
-         axiSlaveRegisterR(axilEp, toSlv(768 + (i-1)*4,12), 0, overSize(i));
       end loop;
 
       -- Close the transaction

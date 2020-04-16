@@ -34,7 +34,6 @@ entity Deserializer is
       currRxData : out sl;
       rxPackets  : out slv(31 downto 0);
       dropBytes  : out slv(31 downto 0);
-      overSize   : out slv(31 downto 0);
 
       -- Output
       mAxisClk    : in  sl;
@@ -80,7 +79,6 @@ architecture Behavioral of Deserializer is
       rxPackets     : slv(31 downto 0);
       dropBytes     : slv(31 downto 0);
       dropCntEn     : sl;
-      overSize      : slv(31 downto 0);
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
    end record RegType;
@@ -91,7 +89,6 @@ architecture Behavioral of Deserializer is
       rxPackets     => (others => '0'),
       dropBytes     => (others => '0'),
       dropCntEn     => '0',
-      overSize      => (others => '0'),
       count         => (others => '0'),
       intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
@@ -153,7 +150,6 @@ begin
       if countRst = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
-         v.overSize  := (others => '0');
       end if;
 
       if r.dropCntEn = '1' then
@@ -188,7 +184,6 @@ begin
                v.state     := IDLE_S;
             elsif r.count = MAX_FRAME_C then
                v.intAxisMaster.tLast := '1';
-               v.overSize := r.overSize + 1;
                v.state    := IDLE_S;
             end if;
 
@@ -199,7 +194,6 @@ begin
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
       dropBytes <= r.dropBytes;
-      overSize  <= r.overSize;
 
       -- Synchronous Reset
       if (sysClkRst = '1') then

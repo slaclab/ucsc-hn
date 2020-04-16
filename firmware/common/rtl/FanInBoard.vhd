@@ -93,7 +93,6 @@ architecture STRUCTURE of FanInBoard is
    signal countRst  : sl;
    signal rxPackets : Slv32Array(30 downto 1);
    signal dropBytes : Slv32Array(30 downto 1);
-   signal overSize  : Slv32Array(30 downto 1);
 
    signal currRxData : slv(30 downto 1);
    signal rxEnable   : slv(30 downto 1);
@@ -133,8 +132,7 @@ begin
          currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
-         dropBytes      => dropBytes,
-         overSize       => overSize);
+         dropBytes      => dropBytes);
 
    -------------------------------
    -- Clocking
@@ -191,7 +189,6 @@ begin
             countRst    => countRst,
             rxPackets   => rxPackets(i),
             dropBytes   => dropBytes(i),
-            overSize    => overSize(i),
             mAxisClk    => dataClk,
             mAxisRst    => dataClkRst,
             mAxisMaster => intObMasters(i),
