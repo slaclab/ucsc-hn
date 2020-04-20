@@ -173,8 +173,8 @@ set_property IOSTANDARD LVDS [get_ports rxDataP[30]]
 set_property IOSTANDARD LVDS [get_ports rxDataN[30]]
 
 #TX_BUFF_X
-set_property PACKAGE_PIN G17  [get_ports txData[1]]
-set_property PACKAGE_PIN C18  [get_ports txData[2]]
+#set_property PACKAGE_PIN G17  [get_ports txData[1]]
+#set_property PACKAGE_PIN C18  [get_ports txData[2]]
 set_property PACKAGE_PIN AA19 [get_ports txData[3]]
 set_property PACKAGE_PIN AA20 [get_ports txData[4]]
 set_property PACKAGE_PIN AB22 [get_ports txData[5]]
