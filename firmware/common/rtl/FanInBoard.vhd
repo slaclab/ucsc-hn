@@ -201,6 +201,7 @@ begin
          generic map (
             TPD_G          => TPD_G,
             TDEST_ROUTES_G => TDEST_ROUTES_C,
+            PIPE_STAGES_G  => 2,
             NUM_SLAVES_G   => 6
          ) port map (
             axisClk      => dataClk,
@@ -216,6 +217,7 @@ begin
       generic map (
          TPD_G          => TPD_G,
          TDEST_ROUTES_G => TDEST_ROUTES_C,
+         PIPE_STAGES_G  => 2,
          NUM_SLAVES_G   => 5
       ) port map (
          axisClk      => dataClk,
