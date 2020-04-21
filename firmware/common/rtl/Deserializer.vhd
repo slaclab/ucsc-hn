@@ -80,6 +80,7 @@ architecture Behavioral of Deserializer is
       dropBytes     : slv(31 downto 0);
       dropCntEn     : sl;
       timeoutCnt    : slv(23 downto 0);
+      timeout       : sl;
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
    end record RegType;
@@ -91,6 +92,7 @@ architecture Behavioral of Deserializer is
       dropBytes     => (others => '0'),
       dropCntEn     => '0',
       timeoutCnt    => (others => '0'),
+      timeout       => '0',
       count         => (others => '0'),
       intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
@@ -149,6 +151,12 @@ begin
       v.uartRd    := '0';
       v.dropCntEn := '0';
 
+      if r.timeoutCnt = 0 then
+         v.timeout := '1';
+      end if;
+
+      v.timeoutCnt := r.timeoutCnt - 1;
+
       if countRst = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
@@ -164,6 +172,7 @@ begin
             v.uartRd                          := '1';
             v.intAxisMaster.tData(7 downto 0) := uartData;
             v.timeoutCnt := (others => '0');
+            v.timeout := '0';
 
             if uartDen = '1' then
                if is_packet_start_token(uartData) then
@@ -180,8 +189,6 @@ begin
             v.intAxisMaster.tData(7 downto 0) := uartData;
             v.intAxisMaster.tValid            := uartDen;
 
-            v.timeoutCnt := r.timeoutCnt - 1;
-
             if uartDen = '1' and uartData = x"FF" then
                v.intAxisMaster.tLast := '1';
                v.rxPackets := r.rxPackets + 1;
@@ -191,7 +198,7 @@ begin
                v.intAxisMaster.tValid := '1';
                v.intAxisMaster.tLast := '1';
                v.state    := IDLE_S;
-            elsif r.timeoutCnt = 0 then
+            elsif r.timeout = '1' then
                v.intAxisMaster.tValid := '1';
                v.intAxisMaster.tLast := '1';
                v.state    := IDLE_S;
