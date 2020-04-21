@@ -77,6 +77,9 @@ architecture STRUCTURE of FanInBoard is
    signal intObMasters : AxiStreamMasterArray(30 downto 1);
    signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
 
+   signal muxObMasters : AxiStreamMasterArray(4 downto 0);
+   signal muxObSlaves  : AxiStreamSlaveArray(4 downto 0);
+
    signal sysClk     : sl;
    signal sysClkRst  : sl;
    signal renaClk    : sl;
@@ -90,7 +93,9 @@ architecture STRUCTURE of FanInBoard is
    signal countRst  : sl;
    signal rxPackets : Slv32Array(30 downto 1);
    signal dropBytes : Slv32Array(30 downto 1);
-   signal overSize  : Slv32Array(30 downto 1);
+
+   signal currRxData : slv(30 downto 1);
+   signal rxEnable   : slv(30 downto 1);
 
    signal tx : sl;
 
@@ -123,11 +128,11 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
-         currRxData     => rxData,
+         rxEnable       => rxEnable,
+         currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
-         dropBytes      => dropBytes,
-         overSize       => overSize);
+         dropBytes      => dropBytes);
 
    -------------------------------
    -- Clocking
@@ -141,10 +146,10 @@ begin
          RST_IN_POLARITY_G  => '1',
          NUM_CLOCKS_G       => 2,
          -- MMCM attributes
-         CLKIN_PERIOD_G     => 6.4,
-         CLKFBOUT_MULT_F_G  => 6.4,
-         CLKOUT0_DIVIDE_F_G => 5.0,
-         CLKOUT1_DIVIDE_G   => 20)
+         CLKIN_PERIOD_G     => 8.0, -- 125Mhz
+         CLKFBOUT_MULT_F_G  => 8.0, -- 1Ghz
+         CLKOUT0_DIVIDE_F_G => 5.0, -- 200Mhz
+         CLKOUT1_DIVIDE_G   => 20)  -- 50Mhz
       port map(
          clkIn     => dataClk,
          rstIn     => dataClkRst,
@@ -179,34 +184,48 @@ begin
             sysClk      => sysClk,
             sysClkRst   => sysClkRst,
             rx          => rxData(i),
+            rxEnable    => rxEnable(i),
+            currRxData  => currRxData(i),
             countRst    => countRst,
             rxPackets   => rxPackets(i),
             dropBytes   => dropBytes(i),
-            overSize    => overSize(i),
             mAxisClk    => dataClk,
             mAxisRst    => dataClkRst,
             mAxisMaster => intObMasters(i),
             mAxisSlave  => intObSlaves(i));
    end generate;
 
-   --Outbound mux
-   --U_ObMux : entity surf.AxiStreamMux
-      --generic map (
-         --TPD_G          => TPD_G,
-         --TDEST_ROUTES_G => TDEST_ROUTES_C,
-         --NUM_SLAVES_G   => 30
-      --) port map (
-         --axisClk      => dataClk,
-         --axisRst      => dataClkRst,
-         --sAxisMasters => intObMasters,
-         --sAxisSlaves  => intObSlaves,
-         --mAxisMaster  => dataObMaster,
-         --mAxisSlave   => dataObSlave);
+   -- First stage muxes
+   U_PreMux : for i in 0 to 4 generate
+      U_Mux : entity surf.AxiStreamMux
+         generic map (
+            TPD_G          => TPD_G,
+            TDEST_ROUTES_G => TDEST_ROUTES_C,
+            PIPE_STAGES_G  => 2,
+            NUM_SLAVES_G   => 6
+         ) port map (
+            axisClk      => dataClk,
+            axisRst      => dataClkRst,
+            sAxisMasters => intObMasters(i*6+6 downto i*6+1),
+            sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
+            mAxisMaster  => muxObMasters(i),
+            mAxisSlave   => muxObSlaves(i));
+   end generate;
 
-   dataObMaster   <= intObMasters(20);
-   intObSlaves(20) <= dataObSlave;
-   intObSlaves(30 downto 21) <= (others=>AXI_STREAM_SLAVE_INIT_C);
-   intObSlaves(19 downto  1) <= (others=>AXI_STREAM_SLAVE_INIT_C);
+   -- Outbound mux
+   U_ObMux : entity surf.AxiStreamMux
+      generic map (
+         TPD_G          => TPD_G,
+         TDEST_ROUTES_G => TDEST_ROUTES_C,
+         PIPE_STAGES_G  => 2,
+         NUM_SLAVES_G   => 5
+      ) port map (
+         axisClk      => dataClk,
+         axisRst      => dataClkRst,
+         sAxisMasters => muxObMasters,
+         sAxisSlaves  => muxObSlaves,
+         mAxisMaster  => dataObMaster,
+         mAxisSlave   => dataObSlave);
 
    -------------------------------
    -- Outbound Path

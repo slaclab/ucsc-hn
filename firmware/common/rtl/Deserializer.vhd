@@ -29,10 +29,11 @@ entity Deserializer is
       rx        : in sl;
 
       -- Counters
-      countRst  : in  sl;
-      rxPackets : out slv(31 downto 0);
-      dropBytes : out slv(31 downto 0);
-      overSize  : out slv(31 downto 0);
+      countRst   : in  sl;
+      rxEnable   : in  sl;
+      currRxData : out sl;
+      rxPackets  : out slv(31 downto 0);
+      dropBytes  : out slv(31 downto 0);
 
       -- Output
       mAxisClk    : in  sl;
@@ -46,23 +47,17 @@ architecture Behavioral of Deserializer is
 
    constant MAX_FRAME_C : integer := 1024;
 
-   constant packet_start_token_frontend_config      : std_logic_vector(7 downto 0) := x"C0";  -- Originates in PC, goes to Frontend
-   constant packet_start_token_frontend_config_echo : std_logic_vector(7 downto 0) := x"C1";  -- Originates in the Daisychain, goes to PC
    constant packet_start_token_frontend_diagnostic  : std_logic_vector(7 downto 0) := x"C4";  -- Originates in Frontend, goes to PC
    constant packet_start_token_data_AND_mode        : std_logic_vector(7 downto 0) := x"C8";  -- Originates in Frontend, goes to PC
    constant packet_start_token_data_OR_mode         : std_logic_vector(7 downto 0) := x"C9";  -- Originates in Frontend, goes to PC
-   constant packet_start_token_throughput_test      : std_logic_vector(7 downto 0) := x"CC";  -- Originates in Frontend, goes to PC
 
    -- Function is_packet_start_byte returns true if the byte is a valid header byte
    -- (the first byte of a packet) otherwise it returns false.
    function is_packet_start_token(B : std_logic_vector(7 downto 0)) return boolean is
    begin
-      return B = packet_start_token_frontend_config
-         or B = packet_start_token_frontend_config_echo
-         or B = packet_start_token_frontend_diagnostic
+      return B = packet_start_token_frontend_diagnostic
          or B = packet_start_token_data_AND_mode
-         or B = packet_start_token_data_OR_mode
-         or B = packet_start_token_throughput_test;
+         or B = packet_start_token_data_OR_mode;
    end is_packet_start_token;
 
    constant INT_AXIS_CONFIG_C : AxiStreamConfigType := (
@@ -84,7 +79,6 @@ architecture Behavioral of Deserializer is
       rxPackets     : slv(31 downto 0);
       dropBytes     : slv(31 downto 0);
       dropCntEn     : sl;
-      overSize      : slv(31 downto 0);
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
    end record RegType;
@@ -95,7 +89,6 @@ architecture Behavioral of Deserializer is
       rxPackets     => (others => '0'),
       dropBytes     => (others => '0'),
       dropCntEn     => '0',
-      overSize      => (others => '0'),
       count         => (others => '0'),
       intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
@@ -106,21 +99,25 @@ architecture Behavioral of Deserializer is
    signal uartDen  : sl;
    signal uartRd   : sl;
 
-   signal rxInt    : sl;
+   signal rxTmp : sl;
+   signal rxInt : sl;
+
 begin
 
-   -- Sample
-   process (renaClk) is
+   currRxData <= rxTmp;
+
+   process (sysClk) is
    begin
-      if (falling_edge(renaClk)) then
-         if renaRst = '1' then
+      if (rising_edge(sysClk)) then
+         if sysClkRst = '1' then
+            rxTmp <= '0' after TPD_G;
             rxInt <= '0' after TPD_G;
          else
-            rxInt <= tx after TPD_G;
+            rxTmp <= rx after TPD_G;
+            rxInt <= rxTmp and rxEnable after TPD_G;
          end if;
       end if;
    end process;
-
 
    -- Receiving UART
    U_UartRx : entity surf.UartRx
@@ -138,6 +135,7 @@ begin
          rdReady => uartRd,
          rx      => rxInt);
 
+
    comb : process(r, uartData, uartDen, sysClkRst, countRst) is
       variable v : RegType;
    begin
@@ -152,7 +150,6 @@ begin
       if countRst = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
-         v.overSize  := (others => '0');
       end if;
 
       if r.dropCntEn = '1' then
@@ -187,7 +184,6 @@ begin
                v.state     := IDLE_S;
             elsif r.count = MAX_FRAME_C then
                v.intAxisMaster.tLast := '1';
-               v.overSize := r.overSize + 1;
                v.state    := IDLE_S;
             end if;
 
@@ -198,7 +194,6 @@ begin
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
       dropBytes <= r.dropBytes;
-      overSize  <= r.overSize;
 
       -- Synchronous Reset
       if (sysClkRst = '1') then

@@ -85,7 +85,7 @@ begin
 
    process (renaClk) is
    begin
-      if (falling_edge(renaClk)) then
+      if (rising_edge(renaClk)) then
          if renaRst = '1' then
             tx <= '0' after TPD_G;
          else

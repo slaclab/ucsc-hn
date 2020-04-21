@@ -36,11 +36,11 @@ entity FanInRegs is
       axiWriteSlave  : out   AxiLiteWriteSlaveType;
 
       -- Values
+      rxEnable   : out slv(30 downto 1);
       currRxData : in  slv(30 downto 1);
       countRst   : out sl;
       rxPackets  : in  Slv32Array(30 downto 1);
-      dropBytes  : in  Slv32Array(30 downto 1);
-      overSize   : in  Slv32Array(30 downto 1));
+      dropBytes  : in  Slv32Array(30 downto 1));
 
 end FanInRegs;
 
@@ -48,12 +48,14 @@ architecture rtl of FanInRegs is
 
    type RegType is record
       countRst       : sl;
+      rxEnable       : slv(30 downto 1);
       axiReadSlave   : AxiLiteReadSlaveType;
       axiWriteSlave  : AxiLiteWriteSlaveType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
       countRst       => '0',
+      rxEnable       => (others=>'0'),
       axiReadSlave   => AXI_LITE_READ_SLAVE_INIT_C,
       axiWriteSlave  => AXI_LITE_WRITE_SLAVE_INIT_C);
 
@@ -62,7 +64,7 @@ architecture rtl of FanInRegs is
 
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData, overSize) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -77,7 +79,8 @@ begin
       -- Determine the transaction type
       axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
 
-      axiSlaveRegisterR(axilEp, x"008", 0, currRxData);
+      axiSlaveRegister(axilEp, x"004", 1, v.rxEnable);
+      axiSlaveRegisterR(axilEp, x"008", 1, currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
 
       -- Rx Packet Registers, 0x100 - 0x174
@@ -88,11 +91,6 @@ begin
       -- Rx Drop Bytes Registers, 0x200 - 0x274
       for i in 1 to 30 loop
          axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytes(i));
-      end loop;
-
-      -- Oversize counter
-      for i in 1 to 30 loop
-         axiSlaveRegisterR(axilEp, toSlv(768 + (i-1)*4,12), 0, overSize(i));
       end loop;
 
       -- Close the transaction
@@ -112,6 +110,7 @@ begin
       axiReadSlave   <= r.axiReadSlave;
       axiWriteSlave  <= r.axiWriteSlave;
       countRst       <= r.countRst;
+      rxEnable       <= r.rxEnable;
 
    end process comb;
 
