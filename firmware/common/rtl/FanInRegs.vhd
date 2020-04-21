@@ -72,6 +72,8 @@ begin
       -- Latch the current value
       v := r;
 
+      v.countRst := '0';
+
       ------------------------
       -- AXI-Lite Transactions
       ------------------------
