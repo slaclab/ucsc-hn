@@ -196,36 +196,39 @@ begin
    end generate;
 
    -- First stage muxes
-   U_PreMux : for i in 0 to 4 generate
-      U_Mux : entity surf.AxiStreamMux
-         generic map (
-            TPD_G          => TPD_G,
-            TDEST_ROUTES_G => TDEST_ROUTES_C,
-            PIPE_STAGES_G  => 2,
-            NUM_SLAVES_G   => 6
-         ) port map (
-            axisClk      => dataClk,
-            axisRst      => dataClkRst,
-            sAxisMasters => intObMasters(i*6+6 downto i*6+1),
-            sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
-            mAxisMaster  => muxObMasters(i),
-            mAxisSlave   => muxObSlaves(i));
-   end generate;
+--   U_PreMux : for i in 0 to 4 generate
+--      U_Mux : entity surf.AxiStreamMux
+--         generic map (
+--            TPD_G          => TPD_G,
+--            TDEST_ROUTES_G => TDEST_ROUTES_C,
+--            PIPE_STAGES_G  => 2,
+--            NUM_SLAVES_G   => 6
+--         ) port map (
+--            axisClk      => dataClk,
+--            axisRst      => dataClkRst,
+--            sAxisMasters => intObMasters(i*6+6 downto i*6+1),
+--            sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
+--            mAxisMaster  => muxObMasters(i),
+--            mAxisSlave   => muxObSlaves(i));
+--   end generate;
+--
+--   -- Outbound mux
+--   U_ObMux : entity surf.AxiStreamMux
+--      generic map (
+--         TPD_G          => TPD_G,
+--         TDEST_ROUTES_G => TDEST_ROUTES_C,
+--         PIPE_STAGES_G  => 2,
+--         NUM_SLAVES_G   => 5
+--      ) port map (
+--         axisClk      => dataClk,
+--         axisRst      => dataClkRst,
+--         sAxisMasters => muxObMasters,
+--         sAxisSlaves  => muxObSlaves,
+--         mAxisMaster  => dataObMaster,
+--         mAxisSlave   => dataObSlave);
 
-   -- Outbound mux
-   U_ObMux : entity surf.AxiStreamMux
-      generic map (
-         TPD_G          => TPD_G,
-         TDEST_ROUTES_G => TDEST_ROUTES_C,
-         PIPE_STAGES_G  => 2,
-         NUM_SLAVES_G   => 5
-      ) port map (
-         axisClk      => dataClk,
-         axisRst      => dataClkRst,
-         sAxisMasters => muxObMasters,
-         sAxisSlaves  => muxObSlaves,
-         mAxisMaster  => dataObMaster,
-         mAxisSlave   => dataObSlave);
+   dataObMaster    <= intObMasters(25);
+   intObSlaves(25) <= dmaObSlaves;
 
    -------------------------------
    -- Outbound Path
