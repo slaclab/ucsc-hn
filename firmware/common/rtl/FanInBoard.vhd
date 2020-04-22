@@ -228,7 +228,7 @@ begin
 --         mAxisSlave   => dataObSlave);
 
    dataObMaster    <= intObMasters(25);
-   intObSlaves(25) <= dmaObSlaves;
+   intObSlaves(25) <= dmaObSlave;
 
    -------------------------------
    -- Outbound Path
