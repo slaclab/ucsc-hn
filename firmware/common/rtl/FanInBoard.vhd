@@ -99,6 +99,8 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
+   signal syncReg : sl;
+
 begin
 
    -------------------------------
@@ -128,11 +130,22 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
+         syncReg        => syncReg,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
          dropBytes      => dropBytes);
+
+   U_RstSync: entity surf.SynchronizerOneShot
+      generic map (
+         TPD_G => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaRst,
+         dataIn  => syncReg,
+         dataOut => syncOut);
+
 
    -------------------------------
    -- Clocking
