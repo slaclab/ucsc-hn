@@ -142,7 +142,7 @@ begin
          TPD_G => TPD_G
       ) port map (
          clk     => renaClk,
-         rst     => renaRst,
+         rst     => renaClkRst,
          dataIn  => syncReg,
          dataOut => syncOut);
 
