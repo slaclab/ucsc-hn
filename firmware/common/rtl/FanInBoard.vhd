@@ -130,6 +130,7 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
+         syncIn         => syncIn,
          syncReg        => syncReg,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
@@ -181,8 +182,6 @@ begin
          D2 => '0',
          R  => renaClkRst,
          S  => '0');
-
-   syncOut <= syncIn;
 
    -------------------------------
    -- Inbound Path

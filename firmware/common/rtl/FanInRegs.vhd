@@ -37,6 +37,7 @@ entity FanInRegs is
 
       -- Values
       syncReg    : out sl;
+      syncIn     : in  sl;
       rxEnable   : out slv(30 downto 1);
       currRxData : in  slv(30 downto 1);
       countRst   : out sl;
@@ -71,7 +72,7 @@ architecture rtl of FanInRegs is
 
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData, syncIn) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -102,6 +103,7 @@ begin
       axiSlaveRegisterR(axilEp, x"008", 1, currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
       axiWrDetect(axilEp, x"010", v.syncReg);
+      axiSlaveRegisterR(axilEp, x"014", 0, syncIn);
 
       -- Rx Packet Registers, 0x100 - 0x174
       for i in 1 to 30 loop
