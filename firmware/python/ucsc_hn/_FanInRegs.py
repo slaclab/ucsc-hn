@@ -43,6 +43,7 @@ class FanInRegs(pr.Device):
                 offset       = 0x100 + (i-1)*4,
                 bitSize      = 32,
                 bitOffset    = 0x00,
+                disp         = '{:#}',
                 base         = pr.UInt,
                 mode         = 'RO',
             ))
@@ -54,6 +55,7 @@ class FanInRegs(pr.Device):
                 offset       = 0x200 + (i-1)*4,
                 bitSize      = 32,
                 bitOffset    = 0x00,
+                disp         = '{:#}',
                 base         = pr.UInt,
                 mode         = 'RO',
             ))

@@ -17,3 +17,20 @@ class RenaAsic(pr.Device):
         return self._rena
 
 
+    def _rxDiagnostic(self, rena):
+
+        # Swap byte order
+        cfgBytes = rena[::-1]
+
+        # Extract channel
+        chanRaw = cfgBytes[0] & 0x3F
+        chan = 0
+
+        # Bit swap
+        for i in range(6):
+            bit = (chanRaw >> (5-i)) & 0x1
+            chan |= (bit << i)
+
+        if chan < 36:
+            self.Channel[chan]._rxDiagnostic(cfgBytes)
+

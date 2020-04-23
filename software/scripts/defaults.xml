@@ -1,0 +1,32 @@
+MultiRenaRoot:
+  FanInBoard:
+    FanInRegs:
+      ChanEnable: 0x2000000
+    RenaArray:
+      RenaBoard[:]:
+        Rena[:]:
+          Channel[:]:
+            FbResistor: 200MOhm
+            TestInputEnable: Disable
+            FastChanPowerDown: PowerOff
+            FbType: Res. Mult.
+            Gain: '1.6'
+            PowerDown: PowerOn
+            PoleZero: Disable
+            FbCapacitor: 15 fF
+            ShapeTime: 0.29 uS
+            FbFetSize: 450 um
+            FastDac: 0
+            Polarity: Negative
+            SlowDac: 0
+            FastTrigEnable: Disable
+            SlowTrigEnable: Disable
+        ReadoutEnable: Enable
+        ForceTrig: Disable
+        SerialNumber: 0
+        OrMode: Disable
+        SelectiveRead: Disable
+        IntermediateBoard: Even
+        FollowerEn: Disable
+        FollowerAsic: 0
+        FollowerChannel: 0

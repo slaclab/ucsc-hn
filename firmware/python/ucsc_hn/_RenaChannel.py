@@ -156,7 +156,7 @@ class RenaChannel(pr.Device):
             return False
 
 
-    def configBytes(self):
+    def configBits(self):
 
         # Init a bit array
         cfgBits = [0] * 41
@@ -195,6 +195,11 @@ class RenaChannel(pr.Device):
         # Append rena bit to array in position 41
         cfgBits.append(self.parent.rena)
 
+        return cfgBits
+
+    def configBytes(self):
+        cfgBits = self.configBits()
+
         # Pack values to 6 bit chunks
         return bytearray([getValueFromBits(cfgBits,x*6,6) for x in range(7)])
 
@@ -214,4 +219,23 @@ class RenaChannel(pr.Device):
 
         # Return the data
         return data
+
+
+    def _rxDiagnostic(self, rena):
+        cfg = self.configBytes()
+
+        # Mask rena bit
+        rena[6] &= 0x1F
+        cfg[6]  &= 0x1F
+
+        for i,vals in enumerate(zip(rena,cfg)):
+            board = self.parent.parent.board
+            asic = self.parent.rena
+            chan = self.channel
+
+            if vals[0] != vals[1]:
+                #print("Cfg: " + ''.join(' {:02x}'.format(x) for x in cfg))
+                #print("Got: " + ''.join(' {:02x}'.format(x) for x in rena))
+                err = f"Diganostic config mismatch for board {board}, rena {asic}, channel {chan}. Idx={i} {vals[0]} != {vals[1]}"
+                raise(Exception(err))
 
