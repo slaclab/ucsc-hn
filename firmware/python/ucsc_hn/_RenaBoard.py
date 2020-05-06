@@ -79,6 +79,10 @@ class RenaBoard(pr.Device):
             for data in self.buildBoardConfigMessage(True):
                 self.parent.sendData(data)
 
+        @self.command()
+        def ConfigReadout():
+            for data in self.buildReadoutModeMessage():
+                self.parent.sendData(data)
 
     @property
     def board(self):

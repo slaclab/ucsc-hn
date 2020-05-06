@@ -36,6 +36,16 @@ class FanInRegs(pr.Device):
             hidden       = False,
         ))
 
+        self.add(pr.RemoteCommand(
+            name         = 'SendReset',
+            description  = 'Send Reset Pulse',
+            offset       = 0x010,
+            bitSize      = 1,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            function     = lambda cmd: cmd.post(1)
+        ))
+
         for i in range(1,31):
             self.add(pr.RemoteVariable(
                 name         = f'RxPackets[{i}]',

@@ -23,13 +23,8 @@ class RenaAsic(pr.Device):
         cfgBytes = rena[::-1]
 
         # Extract channel
-        chanRaw = cfgBytes[0] & 0x3F
-        chan = 0
-
-        # Bit swap
-        for i in range(6):
-            bit = (chanRaw >> (5-i)) & 0x1
-            chan |= (bit << i)
+        chan =  (cfgBytes[6] << 1) & 0x3E
+        chan += (cfgBytes[5] >> 5) & 0x01
 
         if chan < 36:
             self.Channel[chan]._rxDiagnostic(cfgBytes)

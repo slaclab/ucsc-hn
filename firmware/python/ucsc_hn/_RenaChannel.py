@@ -30,14 +30,14 @@ class RenaChannel(pr.Device):
         self.add(pr.LocalVariable(name='TestInputEnable',
                                   value=0,
                                   mode='RW',
-                                  enum={0:'Disable',1:'Disable'},
+                                  enum={0:'Disable',1:'Enable'},
                                   description='Channel Test Input Enable'))
 
         # Bit 32
         self.add(pr.LocalVariable(name='FastChanPowerDown',
                                   value=0,
                                   mode='RW',
-                                  enum={0:'PowerOff',1:'PowerOn'},
+                                  enum={0:'PowerOn',1:'PowerOff'},
                                   description='Channel Fast Path Power Down'))
 
         # Bit 31
@@ -58,7 +58,7 @@ class RenaChannel(pr.Device):
         self.add(pr.LocalVariable(name='PowerDown',
                                   value=0,
                                   mode='RW',
-                                  enum={0:'PowerOff',1:'PowerOn'},
+                                  enum={0:'PowerOn',1:'PowerOff'},
                                   description='Channel Power Down'))
 
         # Bit 27
@@ -189,9 +189,6 @@ class RenaChannel(pr.Device):
         else:
             setValueToBits(cfgBits, 11, 1, 1) # Bit 11 = Positive
 
-        # Reverse Bit order
-        cfgBits = cfgBits[::-1]
-
         # Append rena bit to array in position 41
         cfgBits.append(self.parent.rena)
 
@@ -234,8 +231,8 @@ class RenaChannel(pr.Device):
             chan = self.channel
 
             if vals[0] != vals[1]:
-                #print("Cfg: " + ''.join(' {:02x}'.format(x) for x in cfg))
-                #print("Got: " + ''.join(' {:02x}'.format(x) for x in rena))
                 err = f"Diganostic config mismatch for board {board}, rena {asic}, channel {chan}. Idx={i} {vals[0]} != {vals[1]}"
                 raise(Exception(err))
+                #print(err)
+
 
