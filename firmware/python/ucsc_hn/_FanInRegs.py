@@ -33,7 +33,7 @@ class FanInRegs(pr.Device):
             bitOffset    = 0x00,
             base         = pr.UInt,
             function     = lambda cmd: cmd.post(1),
-            hidden       = False,
+            hidden       = True,
         ))
 
         self.add(pr.RemoteCommand(
@@ -69,4 +69,9 @@ class FanInRegs(pr.Device):
                 base         = pr.UInt,
                 mode         = 'RO',
             ))
+
+
+    def countReset(self):
+        self.CountReset()
+        super().countReset()
 

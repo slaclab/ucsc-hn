@@ -15,4 +15,5 @@ class MultiRenaRoot(pyrogue.Root):
         pyrogue.Root.__init__(self,name='MultiRenaRoot',description='tester', pollEn=pollEn)
 
         self.add(ucsc_hn.FanInBoard(host=host))
+        self.add(ucsc_hn.DataWriter())
 

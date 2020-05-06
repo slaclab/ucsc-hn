@@ -6,3 +6,4 @@ from ._RenaArray     import *
 from ._RenaBoard     import *
 from ._RenaAsic      import *
 from ._RenaChannel   import *
+from ._DataWriter    import *
