@@ -5,12 +5,11 @@ import rogue.interfaces.stream as ris
 import crc8
 
 class RenaArray(pr.Device,ris.Master,ris.Slave):
-    def __init__(self, host, node=0, **kwargs):
+    def __init__(self, host, **kwargs):
         pr.Device.__init__(self,description="FanInBoard Registers.", **kwargs)
         ris.Master.__init__(self)
         ris.Slave.__init__(self)
 
-        self._nodeId = 0
 
         # RSSI For interface to RENA Boards
         self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
@@ -54,9 +53,6 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
 
             self.sendData(data)
 
-    @property
-    def nodeId(self):
-        return self._nodeId
 
     #def writeBlocks(self, force=False, recurse=True, variable=None, checkEach=False):
         #pass
@@ -92,7 +88,7 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
 
         if not self._parseDiagnostic(data):
             #print(f'Got non diag data {l}:' + ''.join(' {:02x}'.format(x) for x in data))
-            self.root.DataWriter._parseDataPacket(data, self)
+            self.root.DataWriter._parseDataPacket(data, self.parent)
 
 
     def _parseDiagnostic(self, data):

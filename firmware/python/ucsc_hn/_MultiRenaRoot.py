@@ -14,6 +14,20 @@ class MultiRenaRoot(pyrogue.Root):
     def __init__(self,host="",pollEn=True):
         pyrogue.Root.__init__(self,name='MultiRenaRoot',description='tester', pollEn=pollEn)
 
-        self.add(ucsc_hn.FanInBoard(host=host))
+        self.add(ucsc_hn.RenaNode(host=host,name='Node[0]'))
         self.add(ucsc_hn.DataWriter())
+        self.add(ucsc_hn.RunControl())
+
+        self.LoadConfig.replaceFunction(self._loadConfig)
+
+    def _loadConfig(self,arg):
+        self.loadYaml(name=arg,
+                      writeEach=False,
+                      modes=['RW','WO'],
+                      incGroups=None,
+                      excGroups='NoConfig')
+
+
+        for kn,n in self.getNodes(typ=ucsc_hn.RenaNode).items():
+            n.RenaArray.ConfigBoards()
 

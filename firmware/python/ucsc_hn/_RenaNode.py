@@ -5,8 +5,8 @@ import surf.ethernet.udp
 import RceG3
 import ucsc_hn
 
-class FanInBoard(pr.Device):
-    def __init__ (self, host, **kwargs):
+class RenaNode(pr.Device):
+    def __init__ (self, host, node=0, **kwargs):
         super().__init__(description="FanInBoard Registers.", **kwargs)
 
         # Remote memory for FPGA reigsters
@@ -20,3 +20,10 @@ class FanInBoard(pr.Device):
         self.add(ucsc_hn.FanInRegs(memBase=self._remMem,offset=0xA0000000))
 
         self.add(ucsc_hn.RenaArray(host=host))
+
+        self._nodeId = node
+
+    @property
+    def nodeId(self):
+        return self._nodeId
+
