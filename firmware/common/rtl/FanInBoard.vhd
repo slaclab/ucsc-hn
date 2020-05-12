@@ -72,7 +72,7 @@ end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
 
-   constant TDEST_ROUTES_C : Slv8Array(30 downto 1) := (others=> "00000000");
+   constant TDEST_ROUTES_C : Slv8Array(30 downto 0) := (others=> "--------");
 
    signal intObMasters : AxiStreamMasterArray(30 downto 1);
    signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
@@ -191,6 +191,7 @@ begin
       U_Deserializer : entity ucsc_hn.Deserializer
          generic map (
             TPD_G         => TPD_G,
+            TDEST_G       => (i-1), -- TDEST = [29:0]
             AXIS_CONFIG_G => AXIS_CONFIG_G)
          port map (
             sysClk      => sysClk,
@@ -208,39 +209,41 @@ begin
    end generate;
 
    -- First stage muxes
---   U_PreMux : for i in 0 to 4 generate
---      U_Mux : entity surf.AxiStreamMux
---         generic map (
---            TPD_G          => TPD_G,
---            TDEST_ROUTES_G => TDEST_ROUTES_C,
---            PIPE_STAGES_G  => 2,
---            NUM_SLAVES_G   => 6
---         ) port map (
---            axisClk      => dataClk,
---            axisRst      => dataClkRst,
---            sAxisMasters => intObMasters(i*6+6 downto i*6+1),
---            sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
---            mAxisMaster  => muxObMasters(i),
---            mAxisSlave   => muxObSlaves(i));
---   end generate;
---
---   -- Outbound mux
---   U_ObMux : entity surf.AxiStreamMux
---      generic map (
---         TPD_G          => TPD_G,
---         TDEST_ROUTES_G => TDEST_ROUTES_C,
---         PIPE_STAGES_G  => 2,
---         NUM_SLAVES_G   => 5
---      ) port map (
---         axisClk      => dataClk,
---         axisRst      => dataClkRst,
---         sAxisMasters => muxObMasters,
---         sAxisSlaves  => muxObSlaves,
---         mAxisMaster  => dataObMaster,
---         mAxisSlave   => dataObSlave);
+  U_PreMux : for i in 0 to 4 generate
+     U_Mux : entity surf.AxiStreamMux
+        generic map (
+           TPD_G          => TPD_G,
+           MODE_G         => "ROUTED",
+           TDEST_ROUTES_G => TDEST_ROUTES_C,
+           PIPE_STAGES_G  => 1,
+           NUM_SLAVES_G   => 6
+        ) port map (
+           axisClk      => dataClk,
+           axisRst      => dataClkRst,
+           sAxisMasters => intObMasters(i*6+6 downto i*6+1),
+           sAxisSlaves  => intObSlaves(i*6+6 downto i*6+1),
+           mAxisMaster  => muxObMasters(i),
+           mAxisSlave   => muxObSlaves(i));
+  end generate;
 
-   dataObMaster    <= intObMasters(25);
-   intObSlaves(25) <= dataObSlave;
+  -- Outbound mux
+  U_ObMux : entity surf.AxiStreamMux
+     generic map (
+        TPD_G          => TPD_G,
+        MODE_G         => "ROUTED",
+        TDEST_ROUTES_G => TDEST_ROUTES_C,
+        PIPE_STAGES_G  => 1,
+        NUM_SLAVES_G   => 5
+     ) port map (
+        axisClk      => dataClk,
+        axisRst      => dataClkRst,
+        sAxisMasters => muxObMasters,
+        sAxisSlaves  => muxObSlaves,
+        mAxisMaster  => dataObMaster,
+        mAxisSlave   => dataObSlave);
+
+--   dataObMaster    <= intObMasters(25);
+--   intObSlaves(25) <= dataObSlave;
 
    -------------------------------
    -- Outbound Path
