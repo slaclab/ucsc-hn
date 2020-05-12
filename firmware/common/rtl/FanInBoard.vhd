@@ -213,11 +213,14 @@ begin
   U_PreMux : for i in 0 to 4 generate
      U_Mux : entity surf.AxiStreamMux
         generic map (
-           TPD_G          => TPD_G,
-           MODE_G         => "ROUTED",
-           TDEST_ROUTES_G => TDEST_ROUTES0_C,
-           PIPE_STAGES_G  => 1,
-           NUM_SLAVES_G   => 6
+           TPD_G                => TPD_G,
+           MODE_G               => "ROUTED",
+           TDEST_ROUTES_G       => TDEST_ROUTES0_C,
+           ILEAVE_EN_G          => true,
+           ILEAVE_ON_NOTVALID_G => true,
+           ILEAVE_REARB_G       => 128,
+           PIPE_STAGES_G        => 1,
+           NUM_SLAVES_G         => 6
         ) port map (
            axisClk      => dataClk,
            axisRst      => dataClkRst,
@@ -230,11 +233,14 @@ begin
   -- Outbound mux
   U_ObMux : entity surf.AxiStreamMux
      generic map (
-        TPD_G          => TPD_G,
-        MODE_G         => "ROUTED",
-        TDEST_ROUTES_G => TDEST_ROUTES1_C,
-        PIPE_STAGES_G  => 1,
-        NUM_SLAVES_G   => 5
+        TPD_G                => TPD_G,
+        MODE_G               => "ROUTED",
+        TDEST_ROUTES_G       => TDEST_ROUTES1_C,
+        ILEAVE_EN_G          => true,
+        ILEAVE_ON_NOTVALID_G => true,
+        ILEAVE_REARB_G       => 128,
+        PIPE_STAGES_G        => 1,
+        NUM_SLAVES_G         => 5
      ) port map (
         axisClk      => dataClk,
         axisRst      => dataClkRst,
