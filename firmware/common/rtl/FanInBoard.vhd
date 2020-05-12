@@ -72,7 +72,8 @@ end FanInBoard;
 
 architecture STRUCTURE of FanInBoard is
 
-   constant TDEST_ROUTES_C : Slv8Array(30 downto 0) := (others=> "--------");
+   constant TDEST_ROUTES0_C : Slv8Array(5 downto 0) := (others=> "--------");
+   constant TDEST_ROUTES1_C : Slv8Array(4 downto 0) := (others=> "--------");
 
    signal intObMasters : AxiStreamMasterArray(30 downto 1);
    signal intObSlaves  : AxiStreamSlaveArray(30 downto 1);
@@ -214,7 +215,7 @@ begin
         generic map (
            TPD_G          => TPD_G,
            MODE_G         => "ROUTED",
-           TDEST_ROUTES_G => TDEST_ROUTES_C,
+           TDEST_ROUTES_G => TDEST_ROUTES0_C,
            PIPE_STAGES_G  => 1,
            NUM_SLAVES_G   => 6
         ) port map (
@@ -231,7 +232,7 @@ begin
      generic map (
         TPD_G          => TPD_G,
         MODE_G         => "ROUTED",
-        TDEST_ROUTES_G => TDEST_ROUTES_C,
+        TDEST_ROUTES_G => TDEST_ROUTES1_C,
         PIPE_STAGES_G  => 1,
         NUM_SLAVES_G   => 5
      ) port map (
