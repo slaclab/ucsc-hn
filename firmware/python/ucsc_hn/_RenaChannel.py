@@ -140,7 +140,7 @@ class RenaChannel(pr.Device):
                                   description='Channel Slow Trigger Enable'))
 
         self.add(pr.LocalVariable(name='PhaHistogram',
-                                  value=[],
+                                  value=[0],
                                   mode='RW',
                                   hidden=True,
                                   description='Channel data histogram'))

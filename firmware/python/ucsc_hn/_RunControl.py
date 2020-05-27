@@ -25,5 +25,5 @@ class RunControl(pr.RunControl):
         pass
 
     def _increment(self):
-        with self.runCount.lock():
+        with self.runCount.lock:
             self.runCount.set(self.runCount.value() + 1, write=False)

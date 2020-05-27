@@ -120,7 +120,8 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
 
 
     def _parseDataPacket(self, data):
-        store = self.DoHistograms.value()
+        store = self.DoHistogram.value()
+        tcount = self.root.RunControl.runCount.value()
         records = []
 
         # AND Mode
@@ -229,7 +230,7 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
                            'nodeId'     : self.parent.nodeId,
                            'polarity'   : self.RenaBoard[fpgaId].Rena[renaId].Channel[i].Polarity.value(),
                            'timeStamp'  : timeStamp,
-                           'triggerNum' : self._triggerCount,
+                           'triggerNum' : tcount,
                            'PHA'        : -1,
                            'U'          : -1,
                            'V'          : -1 }
