@@ -253,6 +253,8 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
                 if store:
                     self.RenaBoard[fpgaId].Rena[renaId].Channel[i]._storeData(hitData)
 
+                records.append(hitData)
+
         self.root.RunControl._increment()
         self.root.DataWriter._writeDataPacket(records)
 
