@@ -139,6 +139,15 @@ class RenaChannel(pr.Device):
                                   enum={0:'Disable',1:'Enable'},
                                   description='Channel Slow Trigger Enable'))
 
+        self.add(pr.LocalVariable(name='PhaHistogram',
+                                  value=[],
+                                  mode='RW',
+                                  hidden=True,
+                                  description='Channel data histogram'))
+
+        @self.command()
+        def ResetHistogram():
+            self.PhaHistogram.set([],write=True)
 
     @property
     def channel(self):
@@ -235,4 +244,6 @@ class RenaChannel(pr.Device):
                 raise(Exception(err))
                 #print(err)
 
+    def _storeData(self,hitData):
+        self.PhaHistogram.value().append(hitData['PHA'])
 
