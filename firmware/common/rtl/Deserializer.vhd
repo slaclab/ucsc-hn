@@ -19,6 +19,7 @@ use surf.AxiStreamPkg.all;
 entity Deserializer is
    generic(
       TPD_G         : time                := 1 ns;
+      TDEST_G       : natural             := 0;
       AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
       );
    port(
@@ -61,13 +62,13 @@ architecture Behavioral of Deserializer is
    end is_packet_start_token;
 
    constant INT_AXIS_CONFIG_C : AxiStreamConfigType := (
-      TSTRB_EN_C    => false,
-      TDATA_BYTES_C => 1,
-      TDEST_BITS_C  => 0,
-      TID_BITS_C    => 0,
-      TKEEP_MODE_C  => TKEEP_COMP_C,
-      TUSER_BITS_C  => 2,
-      TUSER_MODE_C  => TUSER_FIRST_LAST_C);
+      TSTRB_EN_C    => AXIS_CONFIG_G.TSTRB_EN_C,
+      TDATA_BYTES_C => 1, -- 8-bit data width (1 byte)
+      TDEST_BITS_C  => AXIS_CONFIG_G.TDEST_BITS_C,
+      TID_BITS_C    => AXIS_CONFIG_G.TID_BITS_C,
+      TKEEP_MODE_C  => AXIS_CONFIG_G.TKEEP_MODE_C,
+      TUSER_BITS_C  => AXIS_CONFIG_G.TUSER_BITS_C,
+      TUSER_MODE_C  => AXIS_CONFIG_G.TUSER_MODE_C);
 
    type StateType is (
       IDLE_S,
@@ -79,6 +80,9 @@ architecture Behavioral of Deserializer is
       rxPackets     : slv(31 downto 0);
       dropBytes     : slv(31 downto 0);
       dropCntEn     : sl;
+      timeoutCnt    : slv(23 downto 0);
+      timeoutRst    : sl;
+      timeout       : sl;
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
    end record RegType;
@@ -89,6 +93,9 @@ architecture Behavioral of Deserializer is
       rxPackets     => (others => '0'),
       dropBytes     => (others => '0'),
       dropCntEn     => '0',
+      timeoutCnt    => (others => '1'),
+      timeoutRst    => '0',
+      timeout       => '0',
       count         => (others => '0'),
       intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
@@ -101,6 +108,9 @@ architecture Behavioral of Deserializer is
 
    signal rxTmp : sl;
    signal rxInt : sl;
+
+   signal txAxisMaster : AxiStreamMasterType;
+   signal txAxisSlave  : AxiStreamSlaveType;
 
 begin
 
@@ -144,8 +154,18 @@ begin
 
       v.intAxisMaster.tValid := '0';
       v.intAxisMaster.tLast  := '0';
+      v.intAxisMaster.tDest  := toSlv(TDEST_G,8);
       v.uartRd    := '0';
       v.dropCntEn := '0';
+
+      if r.timeoutRst = '1' then
+         v.timeoutCnt := (others=>'1');
+         v.timeout    := '0';
+      elsif r.timeoutCnt = 0 then
+         v.timeout    := '1';
+      else
+         v.timeoutCnt := r.timeoutCnt - 1;
+      end if;
 
       if countRst = '1' then
          v.rxPackets := (others => '0');
@@ -161,6 +181,7 @@ begin
          when IDLE_S =>
             v.uartRd                          := '1';
             v.intAxisMaster.tData(7 downto 0) := uartData;
+            v.timeoutRst := '1';
 
             if uartDen = '1' then
                if is_packet_start_token(uartData) then
@@ -183,6 +204,11 @@ begin
                v.count     := (others=>'0');
                v.state     := IDLE_S;
             elsif r.count = MAX_FRAME_C then
+               v.intAxisMaster.tValid := '1';
+               v.intAxisMaster.tLast := '1';
+               v.state    := IDLE_S;
+            elsif v.timeout = '1' then
+               v.intAxisMaster.tValid := '1';
                v.intAxisMaster.tLast := '1';
                v.state    := IDLE_S;
             end if;
@@ -218,6 +244,8 @@ begin
          SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 9,
+         VALID_THOLD_G       => 128,  -- Hold until enough to burst into the interleaving MUX
+         VALID_BURST_MODE_G  => true,
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
       ) port map (
@@ -226,8 +254,27 @@ begin
          sAxisMaster => r.intAxisMaster,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
+         mAxisMaster => txAxisMaster,
+         mAxisSlave  => txAxisSlave);
+         
+   U_Sof : entity surf.SsiInsertSof
+      generic map (
+         TPD_G               => TPD_G,
+         COMMON_CLK_G        => true,
+         SLAVE_FIFO_G        => false,
+         MASTER_FIFO_G       => false,
+         SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_G,
+         MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
+      ) port map (
+         -- Slave Port
+         sAxisClk    => mAxisClk,
+         sAxisRst    => mAxisRst,
+         sAxisMaster => txAxisMaster,
+         sAxisSlave  => txAxisSlave,
+         -- Master Port
+         mAxisClk    => mAxisClk,
+         mAxisRst    => mAxisRst,
          mAxisMaster => mAxisMaster,
          mAxisSlave  => mAxisSlave);
 
 end Behavioral;
-
