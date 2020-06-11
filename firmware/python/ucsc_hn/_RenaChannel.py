@@ -193,14 +193,15 @@ class RenaChannel(pr.Device):
             setValueToBits(cfgBits, 1, 1, self.SlowTrigEnable.value())
 
         # Polarity controls two bits, 11 & 25
-        if self.Polarity.value():
-            setValueToBits(cfgBits, 25, 1, 1) # Bit 25 = VREFHI for negative
-        else:
+        if self.Polarity.value() == 1:
             setValueToBits(cfgBits, 11, 1, 1) # Bit 11 = Positive
+        else:
+            setValueToBits(cfgBits, 25, 1, 1) # Bit 25 = VREFHI for negative
 
         # Append rena bit to array in position 41
         cfgBits.append(self.parent.rena)
 
+        #print(f"Chan = {self.channel} Cfg = {cfgBits}")
         return cfgBits
 
     def configBytes(self):
