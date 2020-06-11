@@ -25,7 +25,7 @@ ehthumbs.db
 Thumps.db
 build.info
 
-# Build directories 
+# Build directories
 build*
 bin*
 .Xil*
@@ -40,3 +40,7 @@ firmware/common/python/
 *.hdf
 *.vho
 *.zip
+
+*.dat
+*.pdf
+*.cfg
