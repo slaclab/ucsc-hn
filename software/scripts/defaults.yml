@@ -3,6 +3,7 @@ MultiRenaRoot:
     FanInRegs:
       ChanEnable: 0x7000000
     RenaArray:
+      DoHistogram: False
       RenaBoard[:]:
         Rena[:]:
           Channel[:]:

@@ -11,6 +11,10 @@ class RenaAsic(pr.Device):
         for i in range(36):
             self.add(ucsc_hn.RenaChannel(channel=i,name=f'Channel[{i}]'))
 
+        @self.command()
+        def ResetHistogram():
+            for k,v in self.getNodes(ucsc_hn.RenaChannel).items():
+                v.ResetHistogram()
 
     @property
     def rena(self):

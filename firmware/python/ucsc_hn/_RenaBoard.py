@@ -84,6 +84,11 @@ class RenaBoard(pr.Device):
             for data in self.buildReadoutModeMessage():
                 self.parent.sendData(data)
 
+        @self.command()
+        def ResetHistogram():
+            for k,v in self.getNodes(ucsc_hn.RenaAsic).items():
+                v.ResetHistogram()
+
     @property
     def board(self):
         return self._board

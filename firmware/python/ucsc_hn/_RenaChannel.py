@@ -139,6 +139,15 @@ class RenaChannel(pr.Device):
                                   enum={0:'Disable',1:'Enable'},
                                   description='Channel Slow Trigger Enable'))
 
+        self.add(pr.LocalVariable(name='PhaHistogram',
+                                  value=[0],
+                                  mode='RW',
+                                  hidden=True,
+                                  description='Channel data histogram'))
+
+        @self.command()
+        def ResetHistogram():
+            self.PhaHistogram.set([],write=True)
 
     @property
     def channel(self):
@@ -184,14 +193,15 @@ class RenaChannel(pr.Device):
             setValueToBits(cfgBits, 1, 1, self.SlowTrigEnable.value())
 
         # Polarity controls two bits, 11 & 25
-        if self.Polarity.value():
-            setValueToBits(cfgBits, 25, 1, 1) # Bit 25 = VREFHI for negative
-        else:
+        if self.Polarity.value() == 1:
             setValueToBits(cfgBits, 11, 1, 1) # Bit 11 = Positive
+        else:
+            setValueToBits(cfgBits, 25, 1, 1) # Bit 25 = VREFHI for negative
 
         # Append rena bit to array in position 41
         cfgBits.append(self.parent.rena)
 
+        #print(f"Chan = {self.channel} Cfg = {cfgBits}")
         return cfgBits
 
     def configBytes(self):
@@ -235,4 +245,6 @@ class RenaChannel(pr.Device):
                 raise(Exception(err))
                 #print(err)
 
+    def _storeData(self,hitData):
+        self.PhaHistogram.value().append(hitData['PHA'])
 
