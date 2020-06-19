@@ -41,29 +41,29 @@ for chan in ChanList:
                 client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[chan].SlowTrigEnable.setDisp('Enable')
                 client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[chan].SlowTrigEnable.setDisp('Enable')
 
-    # Configure boards
-    client.MultiRenaRoot.Node[0].RenaArray.ConfigBoards()
-    time.sleep(2)
-    client.MultiRenaRoot.Initialize()
-    time.sleep(1)
+        # Configure boards
+        client.MultiRenaRoot.Node[0].RenaArray.ConfigBoards()
+        time.sleep(2)
+        client.MultiRenaRoot.Initialize()
+        time.sleep(1)
 
-    # Open data file
-    client.MultiRenaRoot.DataWriter.DataFile.set(f"/home/ryan/work/ucsc-hn/software/scripts/{DataDir}/{chan:#02}_{thold:#03}.dat")
-    client.MultiRenaRoot.DataWriter.Open()
-    time.sleep(1)
+        # Open data file
+        client.MultiRenaRoot.DataWriter.DataFile.set(f"/home/ryan/work/ucsc-hn/software/scripts/{DataDir}/{chan:#02}_{thold:#03}.dat")
+        client.MultiRenaRoot.DataWriter.Open()
+        time.sleep(1)
 
-    # Set run enable
-    client.MultiRenaRoot.RunControl.runState.setDisp("Running")
+        # Set run enable
+        client.MultiRenaRoot.RunControl.runState.setDisp("Running")
 
-    print(f"Running for {Duration} seconds Chan {chan} Thold {thold}")
-    time.sleep(Duration)
+        print(f"Running for {Duration} seconds Chan {chan} Thold {thold}")
+        time.sleep(Duration)
 
-    # Set run stopped
-    client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
-    time.sleep(1)
+        # Set run stopped
+        client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
+        time.sleep(1)
 
-    # Close data file
-    client.MultiRenaRoot.DataWriter.Close()
+        # Close data file
+        client.MultiRenaRoot.DataWriter.Close()
 
 print("Done")
 
