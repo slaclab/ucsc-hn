@@ -25,56 +25,56 @@ MultiRenaRoot:
 
         Rena[0]:
           Channel[0]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 90
+            SlowDac: 90
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
           Channel[1]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 90
+            SlowDac: 90
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
           Channel[2]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 90
+            SlowDac: 90
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
           Channel[3]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 90
+            SlowDac: 90
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
           Channel[4]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 20
+            SlowDac: 20
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[5]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 67
+            SlowDac: 67
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[6]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 65
+            SlowDac: 65
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[7]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 67
+            SlowDac: 67
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[8]:
-            FastDac: 0
-            SlowDac: 0
+            FastDac: 65
+            SlowDac: 65
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
@@ -242,14 +242,14 @@ MultiRenaRoot:
             Polarity: Positive
         Rena[1]:
           Channel[0]:
-            FastDac: 255
-            SlowDac: 255
+            FastDac: 90
+            SlowDac: 90
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
           Channel[1]:
-            FastDac: 255
-            SlowDac: 255
+            FastDac: 90
+            SlowDac: 90
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
