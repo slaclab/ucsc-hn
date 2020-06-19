@@ -23,6 +23,9 @@ MultiRenaRoot:
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
 
+          Channel[25:29]:
+            Polarity: Negative
+
         ReadoutEnable: Disable
         ForceTrig: Disable
         SerialNumber: 0

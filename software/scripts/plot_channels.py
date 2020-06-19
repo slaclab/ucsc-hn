@@ -8,6 +8,9 @@ from scipy.stats import norm
 import pylab
 import re
 
+Boards = [7,8]
+Nodes  = [0]
+
 def extractFileData(fname):
     grps = re.match(r'(\d+)_(\d+)\.dat',fname)
 
@@ -28,11 +31,11 @@ for fname in inFiles:
     if thold not in tholds:
         tholds.append(thold)
 
-    for node in range(1):
+    for node in Nodes:
         if node not in summary:
             summary[node] = {}
 
-        for board in range(7,10):
+        for board in Boards:
             if board not in summary[node]:
                 summary[node][board] = {}
 
@@ -58,11 +61,11 @@ for inFile in inFiles:
     plots = {}
 
     # Init Data
-    for node in range(1):
+    for node in Nodes:
         if node not in plots:
             plots[node] = {}
 
-        for board in range(7,10):
+        for board in Boards:
             if board not in plots[node]:
                 plots[node][board] = {}
 
@@ -112,8 +115,8 @@ for inFile in inFiles:
     fig = None
     idx = 0
 
-    for node in range(1):
-        for board in range(7,10):
+    for node in Nodes:
+        for board in Boards:
             for rena in range(2):
                 for channel in range(36):
 
@@ -168,7 +171,7 @@ with open("summary.csv","w") as f:
     f.write("\n");
 
     # Init summary Data
-    for node in range(1):
+    for node in Nodes:
         for board in range(7,10):
             for rena in range(2):
                 for channel in range(36):
