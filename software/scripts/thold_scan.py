@@ -23,9 +23,9 @@ DataDir = "thold_single1"
 #TholdValues = [180, 178, 176, 174, 172]
 #ChanList = [i for i in range(25,29)]
 
-TholdValues = [50, 44, 46, 48, 50,52,54,56,58,60,62,64]
+TholdValues = [70,68,66,64,62,60,58,56,54,52,50,48,56,44]
 #ChanList = [i for i in range(4,25)]
-ChanList = [i for i in range(4,7)]
+ChanList = [i for i in range(4,25)]
 
 for chan in ChanList:
 
