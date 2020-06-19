@@ -34,11 +34,11 @@ for chan in ChanList:
 
                 # Turn off other channels
                 for other in range(0,36):
-                    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[other].SlowTrigEnable.setDisp('Enable')
-                    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[other].SlowTrigEnable.setDisp('Enable')
+                    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[other].FastTrigEnable.setDisp('Disable')
+                    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[other].SlowTrigEnable.setDisp('Disable')
 
                 # Turn on target channels
-                client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[chan].SlowTrigEnable.setDisp('Enable')
+                client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[chan].FastTrigEnable.setDisp('Enable')
                 client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[b].Rena[r].Channel[chan].SlowTrigEnable.setDisp('Enable')
 
         # Configure boards
