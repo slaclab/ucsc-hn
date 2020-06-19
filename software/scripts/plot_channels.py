@@ -6,39 +6,54 @@ import matplotlib.backends.backend_pdf
 import sys
 from scipy.stats import norm
 import pylab
+import re
+
+def extractFileData(fname):
+    grps = re.match(r'(\d+)_(\d+)\.dat',fname)
+
+    return int(grps[1]), int(grps[2])
+
 if len(sys.argv) < 2:
     print(f"Usage: {sys.argv[0]} data_file.dat")
     sys.exit()
 
-print(f"List: {sys.argv[1:]}")
+inFiles = sys.argv[1:]
+print(f"Input files: {inFiles}")
 summary = {}
+tholds  = []
 
 # Init summary Data
-for node in range(1):
-    if node not in summary:
-        summary[node] = {}
+for fname in inFiles:
+    channel, thold = extractFileData(fname)
+    if thold not in tholds:
+        tholds.append(thold)
 
-    for board in range(7,10):
-        if board not in summary[node]:
-            summary[node][board] = {}
+    for node in range(1):
+        if node not in summary:
+            summary[node] = {}
 
-        for rena in range(2):
-            if rena not in summary[node][board]:
-                summary[node][board][rena] = {}
+        for board in range(7,10):
+            if board not in summary[node]:
+                summary[node][board] = {}
 
-            for channel in range(36):
+            for rena in range(2):
+                if rena not in summary[node][board]:
+                    summary[node][board][rena] = {}
+
                 if channel not in summary[node][board][rena]:
-                    summary[node][board][rena][channel] = {'pol': 0, 'hits': [], 'mean' : [], 'sigma' : []}
+                    summary[node][board][rena][channel] = {'pol': 0, 'data': {}}
 
-                    for _ in sys.argv[1:]:
-                        summary[node][board][rena][channel]['hits'].append(0)
-                        summary[node][board][rena][channel]['mean'].append(0)
-                        summary[node][board][rena][channel]['sigma'].append(0)
+                if thold not in summary[node][board][rena][channel]['data']:
+                    summary[node][board][rena][channel]['data'][thold] = {'hits': 0, 'mean' : 0.0, 'sigma' : 0.0}
 
+tholds.sort()
 
-for sumIdx,inFile in enumerate(sys.argv[1:]):
+for inFile in inFiles:
     outFile = inFile + ".pdf"
-    print(f"Processing {inFile}")
+
+    fileChan, thold = extractFileData(inFile)
+
+    print(f"Processing {inFile} with channel {fileChan}, threshold {thold}")
 
     plots = {}
 
@@ -105,16 +120,18 @@ for sumIdx,inFile in enumerate(sys.argv[1:]):
                     # Only plot channels with data
                     if len(plots[node][board][rena][channel]['pha']) != 0:
                         pol = plots[node][board][rena][channel]['pol']
-                        summary[node][board][rena][channel]['pol'] = pol
 
                         pha_path = plots[node][board][rena][channel]['pha']
                         mean_sigma = norm.fit(pha_path)
-                        #print(f"N{node}, B{board}, R{rena}, C{channel}, P{pol} = {mean_sigma} id={id(pha_path)}")
-                        # Fit histogram here
 
-                        summary[node][board][rena][channel]['hits'][sumIdx] = len(plots[node][board][rena][channel]['pha'])
-                        summary[node][board][rena][channel]['mean'][sumIdx] = mean_sigma[0]
-                        summary[node][board][rena][channel]['sigma'][sumIdx] = mean_sigma[1]
+                        if channel in summary[node][board][rena]:
+                            summary[node][board][rena][channel]['pol'] = pol
+
+                            if thold in summary[node][board][rena][channel]['data']:
+
+                                summary[node][board][rena][channel]['data'][thold]['hits'] = len(plots[node][board][rena][channel]['pha'])
+                                summary[node][board][rena][channel]['data'][thold]['mean'] = mean_sigma[0]
+                                summary[node][board][rena][channel]['data'][thold]['sigma'] = mean_sigma[1]
 
                         # Start of a new page
                         if (idx % 4) == 0:
@@ -145,8 +162,8 @@ with open("summary.csv","w") as f:
 
     f.write("node,board,rena,channel,pol")
 
-    for inFile in sys.argv[1:]:
-        f.write(f",{inFile} Hits, {inFile} Mean, {inFile} Sigma")
+    for thold in tholds:
+        f.write(f",{thold:#03} Hits, {thold:#03} Mean, {thold:#03} Sigma")
 
     f.write("\n");
 
@@ -155,15 +172,17 @@ with open("summary.csv","w") as f:
         for board in range(7,10):
             for rena in range(2):
                 for channel in range(36):
-                    pol = summary[node][board][rena][channel]['pol']
 
-                    f.write(f"{node},{board},{rena},{channel},{pol}")
+                    if channel in summary[node][board][rena]:
+                        pol = summary[node][board][rena][channel]['pol']
 
-                    for inIdx,inFile in enumerate(sys.argv[1:]):
-                        f.write(f",{summary[node][board][rena][channel]['hits'][inIdx]}")
-                        f.write(f",{summary[node][board][rena][channel]['mean'][inIdx]:.2f}")
-                        f.write(f",{summary[node][board][rena][channel]['sigma'][inIdx]:.2f}")
+                        f.write(f"{node},{board},{rena},{channel},{pol}")
 
-                    f.write("\n");
+                        for thold in tholds:
+                            f.write(f",{summary[node][board][rena][channel]['data'][thold]['hits']}")
+                            f.write(f",{summary[node][board][rena][channel]['data'][thold]['mean']:.2f}")
+                            f.write(f",{summary[node][board][rena][channel]['data'][thold]['sigma']:.2f}")
+
+                        f.write("\n");
 
     print("Done")
