@@ -5,6 +5,10 @@ client = pyrogue.interfaces.VirtualClient('localhost',9099)
 
 print(f"Time= {client.MultiRenaRoot.LocalTime.get()}")
 
+# Cleanup
+client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
+client.MultiRenaRoot.DataWriter.Close()
+
 # Take state steps as a script
 client.MultiRenaRoot.LoadConfig("/home/ryan/work/ucsc-hn/software/scripts/defaults_scan.yml")
 print("Load Done")
