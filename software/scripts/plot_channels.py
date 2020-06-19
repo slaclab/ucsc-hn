@@ -23,33 +23,44 @@ if len(sys.argv) < 2:
 inFiles = sys.argv[1:]
 print(f"Input files: {inFiles}")
 summary = {}
-tholds  = []
 
-# Init summary Data
+# Determine which channels and thresholds are begin scanned for summary
+sumTholds   = []
+sumChannels = []
+
 for fname in inFiles:
     channel, thold = extractFileData(fname)
-    if thold not in tholds:
-        tholds.append(thold)
 
-    for node in Nodes:
-        if node not in summary:
-            summary[node] = {}
+    if channel not in sumChannels:
+        sumChannels.append(channel)
 
-        for board in Boards:
-            if board not in summary[node]:
-                summary[node][board] = {}
+    if thold not in sumTholds:
+        sumTholds.append(thold)
 
-            for rena in range(2):
-                if rena not in summary[node][board]:
-                    summary[node][board][rena] = {}
+sumTholds.sort()
+sumChannels.sort()
+
+for node in Nodes:
+    if node not in summary:
+        summary[node] = {}
+
+    for board in Boards:
+        if board not in summary[node]:
+            summary[node][board] = {}
+
+        for rena in range(2):
+            if rena not in summary[node][board]:
+                summary[node][board][rena] = {}
+
+            for channel in sumChannels:
 
                 if channel not in summary[node][board][rena]:
                     summary[node][board][rena][channel] = {'pol': 0, 'data': {}}
 
-                if thold not in summary[node][board][rena][channel]['data']:
-                    summary[node][board][rena][channel]['data'][thold] = {'hits': 0, 'mean' : 0.0, 'sigma' : 0.0}
+                for thold in sumTholds:
+                    if thold not in summary[node][board][rena][channel]['data']:
+                        summary[node][board][rena][channel]['data'][thold] = {'hits': 0, 'mean' : 0.0, 'sigma' : 0.0}
 
-tholds.sort()
 
 for inFile in inFiles:
     outFile = inFile + ".pdf"
@@ -165,23 +176,23 @@ with open("summary.csv","w") as f:
 
     f.write("node,board,rena,channel,pol")
 
-    for thold in tholds:
+    for thold in sumTholds:
         f.write(f",{thold:#03} Hits, {thold:#03} Mean, {thold:#03} Sigma")
 
     f.write("\n");
 
     # Init summary Data
     for node in Nodes:
-        for board in range(7,10):
+        for board in Boards:
             for rena in range(2):
                 for channel in range(36):
 
-                    if channel in summary[node][board][rena]:
+                    if channel in sumChannels:
                         pol = summary[node][board][rena][channel]['pol']
 
                         f.write(f"{node},{board},{rena},{channel},{pol}")
 
-                        for thold in tholds:
+                        for thold in sumTholds:
                             f.write(f",{summary[node][board][rena][channel]['data'][thold]['hits']}")
                             f.write(f",{summary[node][board][rena][channel]['data'][thold]['mean']:.2f}")
                             f.write(f",{summary[node][board][rena][channel]['data'][thold]['sigma']:.2f}")
