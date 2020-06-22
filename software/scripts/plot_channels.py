@@ -234,23 +234,23 @@ for node in Nodes:
                     else:
                         hSigma.append(summary[node][board][rena][channel]['data'][thold]['sigma'])
 
-            w = 1
-            d = 1
+            w = 0.75
+            d = 0.75
 
             # 3d summary plot
             fig = plt.figure(figsize=(8.5,11))
 
             hitFig = fig.add_subplot(3,1,1,projection='3d')
             hitFig.bar3d(x,y,z,w,d,hHits,shade=True)
-            hitFig.set_title(f"Hits: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+            hitFig.set_title(f"Hits: N{node}, B{board}, R{rena}")
 
             meanFig = fig.add_subplot(3,1,2,projection='3d')
             meanFig.bar3d(x,y,z,w,d,hMean,shade=True)
-            meanFig.set_title(f"Mean: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+            meanFig.set_title(f"Mean: N{node}, B{board}, R{rena}")
 
             sigmaFig = fig.add_subplot(3,1,3,projection='3d')
             sigmaFig.bar3d(x,y,z,w,d,hSigma,shade=True)
-            sigmaFig.set_title(f"Sigma: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+            sigmaFig.set_title(f"Sigma: N{node}, B{board}, R{rena}")
 
             pdf.savefig(fig)
             fig = None
