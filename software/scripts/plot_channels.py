@@ -222,13 +222,17 @@ for node in Nodes:
 
             for channel in sumChannels:
                 for thold in sumTholds:
-                    x.append(channel)
-                    y.append(thold)
+                    y.append(channel)
+                    x.append(thold)
                     z.append(0)
 
                     hHits.append(summary[node][board][rena][channel]['data'][thold]['hits'])
                     hMean.append(summary[node][board][rena][channel]['data'][thold]['mean'])
-                    hSigma.append(summary[node][board][rena][channel]['data'][thold]['sigma'])
+
+                    if summary[node][board][rena][channel]['data'][thold]['sigma'] > 20:
+                        hSigma.append(20)
+                    else:
+                        hSigma.append(summary[node][board][rena][channel]['data'][thold]['sigma'])
 
             w = 1
             d = 1
