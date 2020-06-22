@@ -17,13 +17,13 @@ time.sleep(5)
 client.MultiRenaRoot.Initialize()
 print("Initialize Done")
 
-Duration = 60
-DataDir = "thold_single1"
+Duration = 300
+DataDir = "thold_single2"
 
 Scans = [ { 'channels'   : [i for i in range(4,25)],
             'thresholds' : [90,85,80,75,70,65,60,55,50,45,40]},
           { 'channels'   : [i for i in range(25,29)],
-            'thresholds' : [150,155,160,165,170,175,180,185]}]
+            'thresholds' : [145,150,155,160,165,170,175,180,185]}]
 
 Boards = [7,8]
 Nodes  = [0]

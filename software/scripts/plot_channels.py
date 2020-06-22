@@ -3,6 +3,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
+from mpl_toolkits.mplot3d import Axes3D
 import sys
 from scipy.stats import norm
 import pylab
@@ -200,3 +201,92 @@ with open("summary.csv","w") as f:
                         f.write("\n");
 
     print("Done")
+
+print("Generating summary plot")
+outFile = "summary.pdf"
+
+pdf = matplotlib.backends.backend_pdf.PdfPages(outFile)
+figs = plt.figure()
+fig = None
+idx = 0
+
+for node in Nodes:
+    for board in Boards:
+        for rena in range(2):
+            x = []
+            y = []
+            z = []
+            hHits  = []
+            hMean  = []
+            hSigma = []
+
+            for channel in sumChannels:
+                for thold in sumTholds:
+                    x.append(channel)
+                    y.append(thold)
+                    z.append(0)
+
+                    hHits.append(summary[node][board][rena][channel]['data'][thold]['hits'])
+                    hMean.append(summary[node][board][rena][channel]['data'][thold]['mean'])
+                    hSigma.append(summary[node][board][rena][channel]['data'][thold]['sigma'])
+
+            w = 1
+            d = 1
+
+            # 3d summary plot
+            fig = plt.figure(figsize=(8.5,11))
+
+            hitFig = fig.add_subplot(3,1,1,projection='3d')
+            hitFig.bar3d(x,y,z,w,d,hHits,shade=True)
+            hitFig.set_title(f"Hits: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+
+            meanFig = fig.add_subplot(3,1,2,projection='3d')
+            meanFig.bar3d(x,y,z,w,d,hMean,shade=True)
+            meanFig.set_title(f"Mean: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+
+            sigmaFig = fig.add_subplot(3,1,3,projection='3d')
+            sigmaFig.bar3d(x,y,z,w,d,hSigma,shade=True)
+            sigmaFig.set_title(f"Sigma: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+
+            pdf.savefig(fig)
+            fig = None
+
+            # 3d summary plots
+            for channel in sumChannels:
+                pol = summary[node][board][rena][channel]['pol']
+
+                hits = []
+                mean = []
+                sigma = []
+
+                for thold in sumTholds:
+                    if thold in summary[node][board][rena][channel]['data']:
+                        hits.append(summary[node][board][rena][channel]['data'][thold]['hits'])
+                        mean.append(summary[node][board][rena][channel]['data'][thold]['mean'])
+                        sigma.append(summary[node][board][rena][channel]['data'][thold]['sigma'])
+
+                    else:
+                        hits.append(0)
+                        mean.append(0)
+                        sigma.append(0)
+
+                fig = plt.figure(figsize=(8.5,11))
+
+                plt.subplot(3, 1, 1)
+                _ = plt.bar(sumTholds,hits)
+                plt.title(f"Hits: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+
+                plt.subplot(3, 1, 2)
+                _ = plt.bar(sumTholds,mean)
+                plt.title(f"Mean: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+
+                plt.subplot(3, 1, 3)
+                _ = plt.bar(sumTholds,sigma)
+                plt.title(f"Sigma: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+
+                pdf.savefig(fig)
+                fig = None
+
+pdf.close()
+
+print("Done Generating plots")
