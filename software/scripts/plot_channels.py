@@ -1,11 +1,11 @@
 
 import numpy as np
 import time
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
 from mpl_toolkits.mplot3d import Axes3D
 import sys
-from scipy.stats import norm
 import pylab
 import re
 
@@ -137,7 +137,7 @@ for inFile in inFiles:
                         pol = plots[node][board][rena][channel]['pol']
 
                         pha_path = plots[node][board][rena][channel]['pha']
-                        mean_sigma = norm.fit(pha_path)
+                        mean, sigma = norm.fit(pha_path)
 
                         if channel in summary[node][board][rena]:
                             summary[node][board][rena][channel]['pol'] = pol
@@ -145,8 +145,8 @@ for inFile in inFiles:
                             if thold in summary[node][board][rena][channel]['data']:
 
                                 summary[node][board][rena][channel]['data'][thold]['hits'] = len(plots[node][board][rena][channel]['pha'])
-                                summary[node][board][rena][channel]['data'][thold]['mean'] = mean_sigma[0]
-                                summary[node][board][rena][channel]['data'][thold]['sigma'] = mean_sigma[1]
+                                summary[node][board][rena][channel]['data'][thold]['mean'] = mean
+                                summary[node][board][rena][channel]['data'][thold]['sigma'] = sigma
 
                         # Start of a new page
                         if (idx % 4) == 0:
@@ -154,8 +154,20 @@ for inFile in inFiles:
 
                         plt.subplot(2, 2, (idx%4)+1)
 
-                        _ = plt.hist(plots[node][board][rena][channel]['pha'],bins='auto')
-                        plt.title(f"N{node}, B{board}, R{rena}, C{channel}, P{pol}")
+                        # Bin and plot the histogram
+                        n, bins, patches = plt.hist(plots[node][board][rena][channel]['pha'],bins='auto')
+
+                        # get the middle points of the bins
+                        midBins = [0.5 * (bins[i] + bins[i+1]) for i in range(len(bins)-1)]
+
+                        # calcuate the area of each bar
+                        binArea = [n[i] * (bins[i+1] - bins[i]) for i in range(len(bins)-1)]
+
+                        # Create y values for the fitted histogram
+                        y = norm.pdf(midBins, mean, sigma) * sum(binArea)
+                        plt.plot(midBins, y, 'r--', linewidth=2)
+
+                        plt.title(f"N{node}, B{board}, R{rena}, C{channel}, P{pol}: M={mean:0.2f}, S={sigma:0.2f}")
 
                         # Last plot of a page
                         if (idx % 4) == 3:
