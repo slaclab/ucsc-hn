@@ -23,8 +23,18 @@ MultiRenaRoot:
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
 
+          Channel[4:25]:
+            FastDac: 65
+            SlowDac: 65
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+
           Channel[25:29]:
+            FastDac: 160
+            SlowDac: 160
             Polarity: Negative
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
 
         ReadoutEnable: Disable
         ForceTrig: Disable

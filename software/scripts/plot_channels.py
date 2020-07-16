@@ -12,6 +12,14 @@ import re
 Boards = [7,8]
 Nodes  = [0]
 
+#Boards = [7]
+#Nodes  = [0]
+
+#Boards = [16]
+#Nodes  = [1]
+
+DoSummary = False
+
 def extractFileData(fname):
     grps = re.match(r'(\d+)_(\d+)\.dat',fname)
 
@@ -23,52 +31,57 @@ if len(sys.argv) < 2:
 
 inFiles = sys.argv[1:]
 print(f"Input files: {inFiles}")
-summary = {}
 
-# Determine which channels and thresholds are begin scanned for summary
-sumTholds   = []
-sumChannels = []
+if DoSummary:
+    summary = {}
 
-for fname in inFiles:
-    channel, thold = extractFileData(fname)
+    # Determine which channels and thresholds are begin scanned for summary
+    sumTholds   = []
+    sumChannels = []
 
-    if channel not in sumChannels:
-        sumChannels.append(channel)
+    for fname in inFiles:
+        channel, thold = extractFileData(fname)
 
-    if thold not in sumTholds:
-        sumTholds.append(thold)
+        if channel not in sumChannels:
+            sumChannels.append(channel)
 
-sumTholds.sort()
-sumChannels.sort()
+        if thold not in sumTholds:
+            sumTholds.append(thold)
 
-for node in Nodes:
-    if node not in summary:
-        summary[node] = {}
+    sumTholds.sort()
+    sumChannels.sort()
 
-    for board in Boards:
-        if board not in summary[node]:
-            summary[node][board] = {}
+    for node in Nodes:
+        if node not in summary:
+            summary[node] = {}
 
-        for rena in range(2):
-            if rena not in summary[node][board]:
-                summary[node][board][rena] = {}
+        for board in Boards:
+            if board not in summary[node]:
+                summary[node][board] = {}
 
-            for channel in sumChannels:
+            for rena in range(2):
+                if rena not in summary[node][board]:
+                    summary[node][board][rena] = {}
 
-                if channel not in summary[node][board][rena]:
-                    summary[node][board][rena][channel] = {'pol': 0, 'data': {}}
+                for channel in sumChannels:
 
-                for thold in sumTholds:
-                    if thold not in summary[node][board][rena][channel]['data']:
-                        summary[node][board][rena][channel]['data'][thold] = {'hits': 0, 'mean' : 0.0, 'sigma' : 0.0}
+                    if channel not in summary[node][board][rena]:
+                        summary[node][board][rena][channel] = {'pol': 0, 'data': {}}
+
+                    for thold in sumTholds:
+                        if thold not in summary[node][board][rena][channel]['data']:
+                            summary[node][board][rena][channel]['data'][thold] = {'hits': 0, 'mean' : 0.0, 'sigma' : 0.0}
 
 
 for inFile in inFiles:
     outFile = inFile + ".pdf"
 
-    fileChan, thold = extractFileData(inFile)
+    if DoSummary:
+        fileChan, thold = extractFileData(inFile)
 
-    print(f"Processing {inFile} with channel {fileChan}, threshold {thold}")
+        print(f"Processing {inFile} with channel {fileChan}, threshold {thold}")
+    else:
+        print(f"Processing {inFile}")
 
     plots = {}
 
@@ -139,14 +152,15 @@ for inFile in inFiles:
                         pha_path = plots[node][board][rena][channel]['pha']
                         mean, sigma = norm.fit(pha_path)
 
-                        if channel in summary[node][board][rena]:
-                            summary[node][board][rena][channel]['pol'] = pol
+                        if DoSummary:
+                            if channel in summary[node][board][rena]:
+                                summary[node][board][rena][channel]['pol'] = pol
 
-                            if thold in summary[node][board][rena][channel]['data']:
+                                if thold in summary[node][board][rena][channel]['data']:
 
-                                summary[node][board][rena][channel]['data'][thold]['hits'] = len(plots[node][board][rena][channel]['pha'])
-                                summary[node][board][rena][channel]['data'][thold]['mean'] = mean
-                                summary[node][board][rena][channel]['data'][thold]['sigma'] = sigma
+                                    summary[node][board][rena][channel]['data'][thold]['hits'] = len(plots[node][board][rena][channel]['pha'])
+                                    summary[node][board][rena][channel]['data'][thold]['mean'] = mean
+                                    summary[node][board][rena][channel]['data'][thold]['sigma'] = sigma
 
                         # Start of a new page
                         if (idx % 4) == 0:
@@ -182,6 +196,9 @@ for inFile in inFiles:
     pdf.close()
 
     print("Done Generating plots")
+
+if not DoSummary:
+    exit()
 
 # Save summary data
 with open("summary.csv","w") as f:
