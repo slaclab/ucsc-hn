@@ -32,4 +32,5 @@ Releases:
       - DefaultBoot
       Types:
       - Rogue
+      LibDir: ../software/lib/
 
