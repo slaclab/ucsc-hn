@@ -76,9 +76,8 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
             self.sendData(data)
 
 
-    def countReset(self):
-        self.TriggerCount.set(0)
-        super().countReset()
+    #def countReset(self):
+    #    super().countReset()
 
     def sendData(self, data):
         #print('Sending data:' + ''.join(' {:02x}'.format(x) for x in data))

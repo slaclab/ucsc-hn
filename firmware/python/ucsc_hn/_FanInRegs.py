@@ -70,6 +70,8 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
+    def initialize(self):
+        self.SendReset()
 
     def countReset(self):
         self.CountReset()
