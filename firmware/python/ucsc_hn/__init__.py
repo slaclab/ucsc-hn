@@ -7,4 +7,5 @@ from ._RenaBoard     import *
 from ._RenaAsic      import *
 from ._RenaChannel   import *
 from ._DataWriter    import *
+from ._DataDecoder   import *
 from ._RunControl    import *

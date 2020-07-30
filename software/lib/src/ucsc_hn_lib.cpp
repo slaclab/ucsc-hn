@@ -11,5 +11,5 @@ BOOST_PYTHON_MODULE(ucsc_hn_lib) {
    } catch (...) {
       printf("Failed to load module. import rogue first\n");
    }
-   printf("Loaded my module\n");
+   printf("Loaded ucsc_hn_lib\n");
 };

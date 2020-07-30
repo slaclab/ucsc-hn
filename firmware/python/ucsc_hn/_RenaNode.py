@@ -6,7 +6,7 @@ import RceG3
 import ucsc_hn
 
 class RenaNode(pr.Device):
-    def __init__ (self, host, node=0, **kwargs):
+    def __init__ (self, host, node=0, dataWriter=None, **kwargs):
         super().__init__(description="FanInBoard Registers.", **kwargs)
 
         # Remote memory for FPGA reigsters
@@ -19,7 +19,7 @@ class RenaNode(pr.Device):
         self.add(surf.protocols.rssi.RssiCore(memBase=self._remMem,offset=0xB0020000))
         self.add(ucsc_hn.FanInRegs(memBase=self._remMem,offset=0xA0000000))
 
-        self.add(ucsc_hn.RenaArray(host=host))
+        self.add(ucsc_hn.RenaArray(host=host,nodeId=node,dataWriter=dataWriter))
 
         self._nodeId = node
 

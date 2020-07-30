@@ -17,9 +17,7 @@ ucsc_hn_lib::RenaDataDecoderPtr ucsc_hn_lib::RenaDataDecoder::create(uint8_t nod
 }
 
 void ucsc_hn_lib::RenaDataDecoder::setup_python() {
-   bp::class_<ucsc_hn_lib::RenaDataDecoder, ucsc_hn_lib::RenaDataDecoderPtr, bp::bases<ris::Master,ris::Slave>, boost::noncopyable >("RenaDataDecoder",bp::init<uint8_t>());
-
-   bp::class_<ris::Frame, ris::FramePtr, boost::noncopyable>("Frame",bp::no_init)
+   bp::class_<ucsc_hn_lib::RenaDataDecoder, ucsc_hn_lib::RenaDataDecoderPtr, bp::bases<ris::Master,ris::Slave>, boost::noncopyable >("RenaDataDecoder",bp::init<uint8_t>())
       .def("setChannelPolarity", &ucsc_hn_lib::RenaDataDecoder::setChannelPolarity)
       .def("getChannelPolarity", &ucsc_hn_lib::RenaDataDecoder::getChannelPolarity)
       .def("countReset",         &ucsc_hn_lib::RenaDataDecoder::countReset)
@@ -93,7 +91,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint32_t buffIdx;
    uint32_t fastCount;
    uint32_t slowCount;
-   uint32_t bit;
+   uint64_t bit;
 
    uint8_t renaId;
    uint8_t fpgaId;
@@ -290,6 +288,8 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
          sendFrame(nFrame);
          nFrame.reset();
       }
+
+      bit = bit << 1;
    }
 }
 
