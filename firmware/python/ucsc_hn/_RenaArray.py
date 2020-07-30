@@ -5,6 +5,7 @@ import rogue.interfaces.stream as ris
 import crc8
 import ucsc_hn_lib
 import rogue.interfaces.stream
+import rogue.protocols.batcher
 
 class RenaArray(pr.Device,ris.Master,ris.Slave):
     def __init__(self, host, nodeId, dataWriter=None, **kwargs):
@@ -16,22 +17,25 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
         self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
         self.add(self._remRssi)
 
+        batch = rogue.protocols.batcher.SplitterV1()
+        self.addProtocol(batch)
+        pr.streamConnect(self._remRssi.application(0),batch)
+
         dd = ucsc_hn.DataDecoder(nodeId=nodeId)
         self.add(dd)
+        pr.streamConnect(batch,dd)
 
         dataF = rogue.interfaces.stream.Filter(True,2)
         self.addProtocol(dataF)
+        pr.streamConnect(dd,dataF)
         pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
 
         diagF = rogue.interfaces.stream.Filter(True,1)
         self.addProtocol(diagF)
-
-        pr.streamConnect(self._remRssi.application(0),dd)
-        pr.streamConnect(dd,dataF)
         pr.streamConnect(dd,diagF)
+        pr.streamConnect(diagF,self)
 
         pr.streamConnect(self,self._remRssi.application(0))
-        pr.streamConnect(diagF,self)
 
         for i in range(30):
             self.add(ucsc_hn.RenaBoard(board=i, name=f'RenaBoard[{i}]'))
