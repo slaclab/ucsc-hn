@@ -110,6 +110,9 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    // Empty frame
    if ( frame->getPayload() < 1 ) return;
 
+   // Ensure frame is in a sing buffer
+   ensureSingleBuffer(frame,true);
+
    // Frame iterator and accessor
    src = frame->begin();
    ris::FrameAccessor<uint8_t> srcData(src,frame->getPayload());

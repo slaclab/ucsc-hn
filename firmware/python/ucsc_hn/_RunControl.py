@@ -31,6 +31,7 @@ class RunControl(pr.RunControl):
 
             for kn,n in self.root.getNodes(typ=ucsc_hn.RenaNode).items():
                 total += n.RenaArray.DataDecoder.FrameCount.value()
+                print("Total = {total}")
 
             with self.runCount.lock:
                 self.runCount.set(total)
