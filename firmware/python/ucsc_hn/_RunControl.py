@@ -1,5 +1,7 @@
 import pyrogue as pr
 import ucsc_hn
+import threading
+import time
 
 class RunControl(pr.RunControl):
     """Special base class to control runs. """
@@ -12,8 +14,12 @@ class RunControl(pr.RunControl):
 
             if value == 1:
                 state = 'Enable'
+                self._thread = threading.Thread(target=self._run)
+                self._thread.start()
             else:
                 state = 'Disable'
+                self._thread.join()
+                self._thread = None
 
             for kn,n in self.root.getNodes(typ=ucsc_hn.RenaNode).items():
                 for bn,b in n.RenaArray.getNodes(typ=ucsc_hn.RenaBoard).items():
@@ -31,7 +37,6 @@ class RunControl(pr.RunControl):
 
             for kn,n in self.root.getNodes(typ=ucsc_hn.RenaNode).items():
                 total += n.RenaArray.DataDecoder.FrameCount.value()
-                print("Total = {total}")
 
             with self.runCount.lock:
                 self.runCount.set(total)
