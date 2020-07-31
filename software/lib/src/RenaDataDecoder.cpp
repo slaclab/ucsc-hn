@@ -24,6 +24,7 @@ void ucsc_hn_lib::RenaDataDecoder::setup_python() {
       .def("getRxSampleCount",   &ucsc_hn_lib::RenaDataDecoder::getRxSampleCount)
       .def("getRxDropCount",     &ucsc_hn_lib::RenaDataDecoder::getRxDropCount)
       .def("getRxFrameCount",    &ucsc_hn_lib::RenaDataDecoder::getRxFrameCount)
+      .def("getRxByteCount",     &ucsc_hn_lib::RenaDataDecoder::getRxByteCount)
    ;
 }
 
@@ -50,6 +51,7 @@ void ucsc_hn_lib::RenaDataDecoder::countReset () {
    rxFrameCount_ = 0;
    rxSampleCount_ = 0;
    rxDropCount_ = 0;
+   rxByteCount_ = 0;
 }
 
 void ucsc_hn_lib::RenaDataDecoder::setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, bool state) {
@@ -72,6 +74,10 @@ uint32_t ucsc_hn_lib::RenaDataDecoder::getRxSampleCount() {
 
 uint32_t ucsc_hn_lib::RenaDataDecoder::getRxDropCount() {
    return rxDropCount_;
+}
+
+uint32_t ucsc_hn_lib::RenaDataDecoder::getRxByteCount() {
+   return rxByteCount_;
 }
 
 void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
@@ -109,6 +115,8 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
 
    // Empty frame
    if ( frame->getPayload() < 1 ) return;
+
+   //printf("Got frame size: %i\n",frame->getPayload());
 
    // Ensure frame is in a sing buffer
    ensureSingleBuffer(frame,true);
@@ -228,6 +236,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
       }
    }
    rxFrameCount_++;
+   rxByteCount_ += frame->getPayload();
 
    // Extract data PHA, U and V ADC values for each channel
    bit = 1;

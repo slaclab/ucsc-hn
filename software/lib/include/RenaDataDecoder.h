@@ -14,6 +14,7 @@ namespace ucsc_hn_lib {
 
          uint32_t rxFrameCount_;
          uint32_t rxSampleCount_;
+         uint32_t rxByteCount_;
          uint32_t rxDropCount_;
          uint8_t  nodeId_;
 
@@ -36,6 +37,8 @@ namespace ucsc_hn_lib {
          uint32_t getRxFrameCount();
 
          uint32_t getRxSampleCount();
+
+         uint32_t getRxByteCount();
 
          uint32_t getRxDropCount();
 

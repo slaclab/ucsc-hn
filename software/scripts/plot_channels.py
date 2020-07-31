@@ -9,7 +9,7 @@ import sys
 import pylab
 import re
 
-Boards = [7,8]
+Boards = [i for i in range(7,27)]
 Nodes  = [0]
 
 #Boards = [7]

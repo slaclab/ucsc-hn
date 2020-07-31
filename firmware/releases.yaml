@@ -10,8 +10,8 @@ RogueScripts:
    - ../software/scripts/renaGui
 
 CondaDependencies:
-   - surf=v2.0.7
-   - rce_gen3_fw_lib=v2.2.0
+   - surf
+   - rce_gen3_fw_lib
 
 RogueConfig:
 
