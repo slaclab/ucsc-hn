@@ -2,7 +2,7 @@
 sudo: true
 
 # Setup for Ubuntu Bionic (18.04)
-dist: bionic
+dist: focal
 
 language:
   - python
@@ -42,14 +42,6 @@ jobs:
         # Prepare folders
         - mkdir -p $MINICONDA_DIR
         - mkdir -p $DOWNLOAD_DIR
-        # on OSX rogue needs an older version of the MacOS SDK
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-            git clone https://github.com/phracker/MacOSX-SDKs;
-            sudo mv MacOSX-SDKs/MacOSX10.9.sdk /opt/;
-            export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk;
-            export CONDA_BUILD=1;
-            brew install p7zip;
-          fi
 
       install:
         # Install Anaconda for the right architecture (linux or osx)
@@ -62,6 +54,7 @@ jobs:
         - bash miniconda.sh -b -p $HOME/miniconda
         - export PATH="$HOME/miniconda/bin:$PATH"
         - hash -r
+        - source "$HOME"/miniconda/etc/profile.d/conda.sh
         - conda config --set always_yes yes
         - conda install conda-build anaconda-client conda-verify
         - conda update -q conda conda-build
