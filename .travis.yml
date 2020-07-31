@@ -8,7 +8,7 @@ language:
   - python
 
 python:
-  - 3.8
+  - 3.7
 
 git:
   clone: false
@@ -21,12 +21,6 @@ env:
     - MINICONDA_DIR: $PACKAGE_DIR/miniconda
     - DOWNLOAD_DIR: ${HOME}/download
     - DOWNLOAD_URL: ${GH_REPO_URL}/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
-
-# Install dependencies
-addons:
-  apt:
-    packages:
-      - python3
 
 stages:
     - name: deploy_tag
