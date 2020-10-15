@@ -32,16 +32,19 @@ set_property IOSTANDARD LVDS [get_ports clockOutP]
 set_property IOSTANDARD LVDS [get_ports clockOutN]
 
 # sync signals
-#set_property PACKAGE_PIN B17 [get_ports syncPb]
-set_property PACKAGE_PIN M4 [get_ports syncInP]
-set_property PACKAGE_PIN M3 [get_ports syncInN]
-set_property PACKAGE_PIN L6 [get_ports syncOutP]
-set_property PACKAGE_PIN M6 [get_ports syncOutN]
+set_property PACKAGE_PIN V15 [get_ports syncPb]
+set_property PACKAGE_PIN M4  [get_ports syncInP]
+set_property PACKAGE_PIN M3  [get_ports syncInN]
+set_property PACKAGE_PIN L6  [get_ports syncOutP]
+set_property PACKAGE_PIN M6  [get_ports syncOutN]
+set_property PACKAGE_PIN W15 [get_ports fpgaProg]
 
+set_property IOSTANDARD LVCMOS [get_ports syncPb]
 set_property IOSTANDARD LVDS [get_ports syncInP]
 set_property IOSTANDARD LVDS [get_ports syncInN]
 set_property IOSTANDARD LVDS [get_ports syncOutP]
 set_property IOSTANDARD LVDS [get_ports syncOutN]
+set_property IOSTANDARD LVCMOS [get_ports fpgaProg]
 
 # JTAG
 #set_property PACKAGE_PIN Y14 [get_ports renaTdo]
@@ -173,8 +176,8 @@ set_property IOSTANDARD LVDS [get_ports rxDataP[30]]
 set_property IOSTANDARD LVDS [get_ports rxDataN[30]]
 
 #TX_BUFF_X
-#set_property PACKAGE_PIN G17  [get_ports txData[1]]
-#set_property PACKAGE_PIN C18  [get_ports txData[2]]
+set_property PACKAGE_PIN AB18 [get_ports txData[1]]
+set_property PACKAGE_PIN AB19 [get_ports txData[2]]
 set_property PACKAGE_PIN AA19 [get_ports txData[3]]
 set_property PACKAGE_PIN AA20 [get_ports txData[4]]
 set_property PACKAGE_PIN AB22 [get_ports txData[5]]

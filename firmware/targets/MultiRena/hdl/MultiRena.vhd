@@ -52,10 +52,12 @@ entity MultiRena is
       clockOutN   : out   sl;
 
       -- Sync signals
+      syncPb      : in    sl;
       syncInP     : in    sl;
       syncInN     : in    sl;
       syncOutP    : out   sl;
       syncOutN    : out   sl;
+      fpgaProg    : out   sl;
 
       -- Data inputs
       rxDataP     : in    slv(30 downto 1);
@@ -191,6 +193,7 @@ architecture STRUCTURE of MultiRena is
 
 begin
 
+   fpgaProg <= '1';
 
    --------------------------------------------------
    -- RCE Core
@@ -489,8 +492,10 @@ begin
          dataIbSlave          => rssiObSlave,
          clockIn              => clockIn,
          clockOut             => clockOut,
+         syncPb               => syncPb,
          syncIn               => syncIn,
          syncOut              => syncOut,
+         fpgaProg             => fpgaProg,
          rxData               => rxData,
          txData               => txData
       );
