@@ -39,7 +39,7 @@ entity FanInRegs is
       syncPb     : in  sl;
       syncReg    : out sl;
       syncIn     : in  sl;
-      fpgaProg   : out sl;
+      fpgaProgL  : out sl;
       rxEnable   : out slv(30 downto 1);
       currRxData : in  slv(30 downto 1);
       countRst   : out sl;
@@ -140,7 +140,7 @@ begin
       countRst       <= r.countRst;
       rxEnable       <= r.rxEnable;
       syncReg        <= r.syncReg;
-      fpgaProg       <= not r.fpgaProg;
+      fpgaProgL      <= not r.fpgaProg;
 
    end process comb;
 

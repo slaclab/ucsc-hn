@@ -59,10 +59,10 @@ entity FanInBoard is
       clockOut : out sl;
 
       -- Sync signals
-      syncPb   : in  sl;
-      syncIn   : in  sl;
-      syncOut  : out sl;
-      fpgaProg : out sl;
+      syncPb    : in  sl;
+      syncIn    : in  sl;
+      syncOut   : out sl;
+      fpgaProgL : out sl;
 
       -- Data inputs
       rxData : in slv(30 downto 1);
@@ -139,7 +139,7 @@ begin
          syncPb         => syncPb,
          syncIn         => syncIn,
          syncReg        => syncReg,
-         fpgaProg       => fpgaProg,
+         fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
          countRst       => countRst,
