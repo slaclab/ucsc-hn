@@ -157,7 +157,7 @@ begin
          dataIn  => syncReg,
          dataOut => syncOut);
 
-   U_SyncIn: entity Synchronizer
+   U_SyncIn: entity surf.Synchronizer
       generic map (
          TPD_G          => TPD_G
       ) port map (
@@ -166,7 +166,7 @@ begin
          dataIn  => syncIn,
          dataOut => syncInReg);
 
-   U_SyncPb: entity Synchronizer
+   U_SyncPb: entity surf.Synchronizer
       generic map (
          TPD_G          => TPD_G
       ) port map (
