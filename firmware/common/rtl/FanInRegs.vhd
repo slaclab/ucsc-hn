@@ -140,7 +140,12 @@ begin
       countRst       <= r.countRst;
       rxEnable       <= r.rxEnable;
       syncReg        <= r.syncReg;
-      fpgaProgL      <= not r.fpgaProg;
+
+      if r.fpgaProg = '1' then:
+         fpgaProgL <= '0';
+      else
+         fpgaProgL <= 'Z';
+      end if;
 
    end process comb;
 
