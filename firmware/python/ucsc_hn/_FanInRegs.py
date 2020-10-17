@@ -46,6 +46,36 @@ class FanInRegs(pr.Device):
             function     = lambda cmd: cmd.post(1)
         ))
 
+        self.add(pr.RemoteCommand(
+            name         = 'SyncInput',
+            description  = 'SYNC Input',
+            offset       = 0x014,
+            bitSize      = 1,
+            bitOffset    = 0x00,
+            base         = pr.Bool,
+            mode         = 'RO',
+        ))
+
+        self.add(pr.RemoteCommand(
+            name         = 'SyncPb',
+            description  = 'SYNC PB',
+            offset       = 0x014,
+            bitSize      = 1,
+            bitOffset    = 0x01,
+            base         = pr.Bool,
+            mode         = 'RO',
+        ))
+
+        self.add(pr.RemoteCommand(
+            name         = 'FpgaProg',
+            description  = 'FPGA Program',
+            offset       = 0x018,
+            bitSize      = 1,
+            bitOffset    = 0x00,
+            base         = pr.Bool,
+            mode         = 'RW',
+        ))
+
         for i in range(1,31):
             self.add(pr.RemoteVariable(
                 name         = f'RxPackets[{i}]',

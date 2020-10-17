@@ -26,7 +26,7 @@ if (DEFINED ENV{ROGUE_DIR})
 else()
    set(Rogue_DIR ${CMAKE_PREFIX_PATH}/lib)
 endif()
-find_package(Rogue)
+find_package(Rogue REQUIRED)
 
 #####################################
 # Setup build
