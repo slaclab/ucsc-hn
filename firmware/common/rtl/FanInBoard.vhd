@@ -105,7 +105,9 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
-   signal syncReg : sl;
+   signal syncReg   : sl;
+   signal syncInReg : sl;
+   signal syncPbReg : sl;
 
 begin
 
@@ -136,8 +138,8 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
-         syncPb         => syncPb,
-         syncIn         => syncIn,
+         syncPb         => syncPbReg,
+         syncIn         => syncInReg,
          syncReg        => syncReg,
          fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,
@@ -155,6 +157,23 @@ begin
          dataIn  => syncReg,
          dataOut => syncOut);
 
+   U_SyncIn: entity Synchronizer
+      generic map (
+         TPD_G          => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaClkRst,
+         dataIn  => syncIn,
+         dataOut => syncInReg);
+
+   U_SyncPb: entity Synchronizer
+      generic map (
+         TPD_G          => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaClkRst,
+         dataIn  => syncPb,
+         dataOut => syncPbReg);
 
    -------------------------------
    -- Clocking
