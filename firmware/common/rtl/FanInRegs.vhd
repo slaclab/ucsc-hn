@@ -141,7 +141,7 @@ begin
       rxEnable       <= r.rxEnable;
       syncReg        <= r.syncReg;
 
-      if r.fpgaProg = '1' then:
+      if r.fpgaProg = '1' then
          fpgaProgL <= '0';
       else
          fpgaProgL <= 'Z';
