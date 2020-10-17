@@ -59,8 +59,10 @@ entity FanInBoard is
       clockOut : out sl;
 
       -- Sync signals
-      syncIn  : in  sl;
-      syncOut : out sl;
+      syncPb    : in  sl;
+      syncIn    : in  sl;
+      syncOut   : out sl;
+      fpgaProgL : out sl;
 
       -- Data inputs
       rxData : in slv(30 downto 1);
@@ -103,7 +105,9 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
-   signal syncReg : sl;
+   signal syncReg   : sl;
+   signal syncInReg : sl;
+   signal syncPbReg : sl;
 
 begin
 
@@ -134,8 +138,10 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
-         syncIn         => syncIn,
+         syncPb         => syncPbReg,
+         syncIn         => syncInReg,
          syncReg        => syncReg,
+         fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
          countRst       => countRst,
@@ -151,6 +157,23 @@ begin
          dataIn  => syncReg,
          dataOut => syncOut);
 
+   U_SyncIn: entity surf.Synchronizer
+      generic map (
+         TPD_G          => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaClkRst,
+         dataIn  => syncIn,
+         dataOut => syncInReg);
+
+   U_SyncPb: entity surf.Synchronizer
+      generic map (
+         TPD_G          => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaClkRst,
+         dataIn  => syncPb,
+         dataOut => syncPbReg);
 
    -------------------------------
    -- Clocking
