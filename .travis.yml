@@ -2,13 +2,13 @@
 sudo: true
 
 # Setup for Ubuntu Bionic (18.04)
-dist: bionic
+dist: focal
 
 language:
   - python
 
 python:
-  - 3.6
+  - 3.8
 
 git:
   clone: false
@@ -21,12 +21,6 @@ env:
     - MINICONDA_DIR: $PACKAGE_DIR/miniconda
     - DOWNLOAD_DIR: ${HOME}/download
     - DOWNLOAD_URL: ${GH_REPO_URL}/releases/download/${TRAVIS_TAG}/rogue_${TRAVIS_TAG}.zip
-
-# Install dependencies
-addons:
-  apt:
-    packages:
-      - python3
 
 stages:
     - name: deploy_tag
@@ -42,47 +36,29 @@ jobs:
         # Prepare folders
         - mkdir -p $MINICONDA_DIR
         - mkdir -p $DOWNLOAD_DIR
-        # on OSX rogue needs an older version of the MacOS SDK
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-            git clone https://github.com/phracker/MacOSX-SDKs;
-            sudo mv MacOSX-SDKs/MacOSX10.9.sdk /opt/;
-            export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk;
-            export CONDA_BUILD=1;
-            brew install p7zip;
-          fi
 
       install:
         # Install Anaconda for the right architecture (linux or osx)
         - cd $MINICONDA_DIR
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-            wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh;
-          else
-            wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh;
-          fi
+        - wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
         - bash miniconda.sh -b -p $HOME/miniconda
         - export PATH="$HOME/miniconda/bin:$PATH"
         - hash -r
+        - source "$HOME"/miniconda/etc/profile.d/conda.sh
         - conda config --set always_yes yes
         - conda install conda-build anaconda-client conda-verify
         - conda update -q conda conda-build
+        - conda --version
         # Download and unzip tag zipfile
         - cd $DOWNLOAD_DIR
         - wget -O file.zip $DOWNLOAD_URL
-        - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-            7za x file.zip;
-          else
-            unzip file.zip;
-          fi
+        - unzip file.zip
 
       script:
         # Build conda package
-        - travis_wait 60 conda build --debug conda-recipe --output-folder bld-dir -c tidair-tag -c conda-forge
+        - travis_wait 60 conda build --debug conda-recipe --output-folder bld-dir -c tidair-tag -c tidair-packages -c conda-forge
 
       after_success:
         # Upload conda package
         - anaconda -t $CONDA_UPLOAD_TOKEN_TAG upload bld-dir/`echo $TRAVIS_OS_NAME`-64/*.tar.bz2
-
-    - <<: *deploy-conda-stage   # Conda for MacOS
-      os: osx
-      language: ruby  # osx does not support language=python
 

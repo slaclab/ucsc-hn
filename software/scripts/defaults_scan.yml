@@ -1,0 +1,48 @@
+MultiRenaRoot:
+  Node[0]:
+    FanInRegs:
+      ChanEnable: 0x12000000
+    RenaArray:
+      DoHistogram: False
+      RenaBoard[:]:
+        Rena[:]:
+          Channel[:]:
+            FbResistor: 200MOhm
+            TestInputEnable: Enable
+            FastChanPowerDown: PowerOn
+            FbType: Res. Mult.
+            Gain: '5.0'
+            PowerDown: PowerOn
+            PoleZero: Disable
+            FbCapacitor: 60 fF
+            ShapeTime: 0.39 uS
+            FbFetSize: 450 um
+            FastDac: 90
+            Polarity: Positive
+            SlowDac: 90
+            FastTrigEnable: Disable
+            SlowTrigEnable: Disable
+
+          Channel[4:25]:
+            FastDac: 65
+            SlowDac: 65
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+
+          Channel[25:29]:
+            FastDac: 160
+            SlowDac: 160
+            Polarity: Negative
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+
+        ReadoutEnable: Disable
+        ForceTrig: Disable
+        SerialNumber: 0
+        OrMode: Disable
+        SelectiveRead: Disable
+        IntermediateBoard: Even
+        FollowerEn: Disable
+        FollowerAsic: 0
+        FollowerChannel: 0
+

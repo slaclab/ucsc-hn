@@ -59,8 +59,10 @@ entity FanInBoard is
       clockOut : out sl;
 
       -- Sync signals
-      syncIn  : in  sl;
-      syncOut : out sl;
+      syncPb    : in  sl;
+      syncIn    : in  sl;
+      syncOut   : out sl;
+      fpgaProgL : out sl;
 
       -- Data inputs
       rxData : in slv(30 downto 1);
@@ -81,6 +83,9 @@ architecture STRUCTURE of FanInBoard is
    signal muxObMasters : AxiStreamMasterArray(4 downto 0);
    signal muxObSlaves  : AxiStreamSlaveArray(4 downto 0);
 
+   signal batchObMaster : AxiStreamMasterType;
+   signal batchObSlave  : AxiStreamSlaveType;
+
    signal sysClk     : sl;
    signal sysClkRst  : sl;
    signal renaClk    : sl;
@@ -100,7 +105,9 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
-   signal syncReg : sl;
+   signal syncReg   : sl;
+   signal syncInReg : sl;
+   signal syncPbReg : sl;
 
 begin
 
@@ -131,8 +138,10 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
-         syncIn         => syncIn,
+         syncPb         => syncPbReg,
+         syncIn         => syncInReg,
          syncReg        => syncReg,
+         fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
          countRst       => countRst,
@@ -148,6 +157,23 @@ begin
          dataIn  => syncReg,
          dataOut => syncOut);
 
+   U_SyncIn: entity surf.Synchronizer
+      generic map (
+         TPD_G          => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaClkRst,
+         dataIn  => syncIn,
+         dataOut => syncInReg);
+
+   U_SyncPb: entity surf.Synchronizer
+      generic map (
+         TPD_G          => TPD_G
+      ) port map (
+         clk     => renaClk,
+         rst     => renaClkRst,
+         dataIn  => syncPb,
+         dataOut => syncPbReg);
 
    -------------------------------
    -- Clocking
@@ -246,11 +272,25 @@ begin
         axisRst      => dataClkRst,
         sAxisMasters => muxObMasters,
         sAxisSlaves  => muxObSlaves,
-        mAxisMaster  => dataObMaster,
-        mAxisSlave   => dataObSlave);
+        mAxisMaster  => batchObMaster,
+        mAxisSlave   => batchObSlave);
 
---   dataObMaster    <= intObMasters(25);
---   intObSlaves(25) <= dataObSlave;
+   U_ObBatch: entity surf.AxiStreamBatcher
+      generic map (
+         TPD_G                        => TPD_G,
+         MAX_NUMBER_SUB_FRAMES_G      => 128,
+         SUPER_FRAME_BYTE_THRESHOLD_G => 1400,
+         MAX_CLK_GAP_G                => 256,
+         AXIS_CONFIG_G                => AXIS_CONFIG_G,
+         INPUT_PIPE_STAGES_G          => 0,
+         OUTPUT_PIPE_STAGES_G         => 1)
+      port map (
+         axisClk     => dataClk,
+         axisRst     => dataClkRst,
+         sAxisMaster => batchObMaster,
+         sAxisSlave  => batchObSlave,
+         mAxisMaster => dataObMaster,
+         mAxisSlave  => dataObSlave);
 
    -------------------------------
    -- Outbound Path

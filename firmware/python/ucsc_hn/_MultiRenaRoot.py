@@ -14,8 +14,10 @@ class MultiRenaRoot(pyrogue.Root):
     def __init__(self,host="",pollEn=True):
         pyrogue.Root.__init__(self,name='MultiRenaRoot',description='tester', pollEn=pollEn)
 
-        self.add(ucsc_hn.RenaNode(host=host,name='Node[0]'))
-        self.add(ucsc_hn.DataWriter())
+        dw = ucsc_hn.DataWriter()
+        self.add(dw)
+
+        self.add(ucsc_hn.RenaNode(host=host,name='Node[0]',dataWriter=dw))
         self.add(ucsc_hn.RunControl())
 
         self.LoadConfig.replaceFunction(self._loadConfig)

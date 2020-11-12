@@ -5,6 +5,7 @@ import pyrogue
 pyrogue.addLibraryPath('../../firmware/submodules/rce-gen3-fw-lib/python')
 pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
 pyrogue.addLibraryPath('../../firmware/python')
+pyrogue.addLibraryPath('../python')
 
 import pyrogue.pydm
 import pyrogue.gui
