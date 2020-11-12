@@ -249,7 +249,7 @@ MultiRenaRoot:
             Polarity: Positive
           Channel[1]:
             FastDac: 255
-            SlowDac: 255
+            SlowDac: 255   
             FastTrigEnable: Disable
             SlowTrigEnable: Disable
             Polarity: Positive
