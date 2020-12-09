@@ -93,14 +93,15 @@ jobs:
           else
               echo ::set-output name=os::linux-64
           fi
-          echo ::set-output name=url::${URL_BASE}/${GITHUB_REF#refs/tags/}/rogue_${GITHUB_REF$refs/tags/}.zip
+          echo ::set-output name=url::${URL_BASE}/${GITHUB_REF#refs/tags/}/rogue_${GITHUB_REF#refs/tags/}.zip
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
 
       - name: Download And Extract
         env:
           DOWNLOAD_URL: ${{ steps.get_image_info.outputs.url }}
         run: |
-          mkdir download
+          mkdir ${HOME}/download
+          cd ${HOME}/download
           wget -O file.zip $DOWNLOAD_URL
           unzip file.zip
 
@@ -108,7 +109,7 @@ jobs:
         run: |
           export PATH="${HOME}/miniconda/bin:$PATH"
           source ${HOME}/miniconda/etc/profile.d/conda.sh
-          cd download/rogue_${{ steps.get_image_info.outputs.tag }}
+          cd ${HOME}/download/rogue_${{ steps.get_image_info.outputs.tag }}
           conda build --debug conda-recipe --output-folder bld-dir -c tidair-tag -c tidair-packages -c conda-forge
           anaconda -t ${{ steps.get_image_info.outputs.token }} upload bld-dir/${{ steps.get_image_info.outputs.os }}/*.tar.bz2
 
