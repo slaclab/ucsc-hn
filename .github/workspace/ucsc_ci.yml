@@ -11,6 +11,7 @@
 # ----------------------------------------------------------------------------
 # The following environment variables are required for this process:
 # secrets.CONDA_UPLOAD_TOKEN_TAG
+# secrets.CONDA_UPLOAD_TOKEN_DEV
 
 name: UCSC Integration
 on: [push]
@@ -18,7 +19,7 @@ on: [push]
 jobs:
   conda_build:
     name: Anaconda Build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/pre-release'
     strategy:
       matrix:
         os:
@@ -75,8 +76,16 @@ jobs:
       - name: Get Image Information
         id: get_image_info
         env:
-          OS_NAME: ${{ matrix.os }}
+          OS_NAME: ${{ matrix.os }
+          CONDA_UPLOAD_TOKEN_DEV: ${{ secrets.CONDA_UPLOAD_TOKEN_DEV }}
+          CONDA_UPLOAD_TOKEN_TAG: ${{ secrets.CONDA_UPLOAD_TOKEN_TAG }}
         run: |
+          if [ ${GITHUB_REF} == "refs/heads/pre-release" ]
+          then
+              echo ::set-output name=token::$CONDA_UPLOAD_TOKEN_DEV
+          else
+              echo ::set-output name=token::$CONDA_UPLOAD_TOKEN_TAG
+          fi
           if [ ${OS_NAME} == "macos-10.15" ]
           then
               echo ::set-output name=os::osx-64
