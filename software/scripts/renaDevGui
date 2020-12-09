@@ -12,8 +12,7 @@ import pyrogue.gui
 import rogue
 import logging
 
-#host = "192.168.2.50"
-host = "172.16.20.90"
+host = "192.168.2.91"
 
 from ucsc_hn import MultiRenaRoot
 
