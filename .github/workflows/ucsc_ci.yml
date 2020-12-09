@@ -76,7 +76,7 @@ jobs:
       - name: Get Image Information
         id: get_image_info
         env:
-          OS_NAME: ${{ matrix.os }
+          OS_NAME: ${{ matrix.os }}
           CONDA_UPLOAD_TOKEN_DEV: ${{ secrets.CONDA_UPLOAD_TOKEN_DEV }}
           CONDA_UPLOAD_TOKEN_TAG: ${{ secrets.CONDA_UPLOAD_TOKEN_TAG }}
         run: |
