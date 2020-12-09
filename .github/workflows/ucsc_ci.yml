@@ -79,6 +79,7 @@ jobs:
           OS_NAME: ${{ matrix.os }}
           CONDA_UPLOAD_TOKEN_DEV: ${{ secrets.CONDA_UPLOAD_TOKEN_DEV }}
           CONDA_UPLOAD_TOKEN_TAG: ${{ secrets.CONDA_UPLOAD_TOKEN_TAG }}
+          URL_BASE: https://github.com/${{ github.repository }}/releases/download
         run: |
           if [ ${GITHUB_REF} == "refs/heads/pre-release" ]
           then
@@ -92,7 +93,7 @@ jobs:
           else
               echo ::set-output name=os::linux-64
           fi
-          echo ::set-output name=url::${GH_REPO_URL}/releases/download/${GITHUB_REF#refs/tags/}/rogue_${GITHUB_REF$refs/tags/}.zip
+          echo ::set-output name=url::${URL_BASE}/${GITHUB_REF#refs/tags/}/rogue_${GITHUB_REF$refs/tags/}.zip
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
 
       - name: Download And Extract
