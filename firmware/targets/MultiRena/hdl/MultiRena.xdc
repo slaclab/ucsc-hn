@@ -32,8 +32,8 @@ set_property PACKAGE_PIN Y19 [get_ports clockHubN]
 #set_property IOSTANDARD LVDS [get_ports clockInN]
 set_property IOSTANDARD LVDS [get_ports clockOutP]
 set_property IOSTANDARD LVDS [get_ports clockOutN]
-set_property IOSTANDARD LVDS_25 [get_ports clockHubP]
-set_property IOSTANDARD LVDS_25 [get_ports clockHubN]
+set_property IOSTANDARD LVDS_18 [get_ports clockHubP]
+set_property IOSTANDARD LVDS_18 [get_ports clockHubN]
 
 # sync signals
 #set_property PACKAGE_PIN V15 [get_ports syncPb]
@@ -213,7 +213,7 @@ create_generated_clock -name clk156 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/M
 create_generated_clock -name clk125 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT3}]
 create_generated_clock -name clk62  [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT4}]
 
-create_generated_clock -name rena50  [get_pins {U_FanInBoard/U_MasterClockGen.U_RenaClockGen/MmcmGen.U_Mmcm/CLKOUT0}]
+create_generated_clock -name rena50  [get_pins {U_FanInBoard/U_MasterClockGen.U_RenaClkGen/MmcmGen.U_Mmcm/CLKOUT0}]
 create_generated_clock -name rena200 [get_pins {U_FanInBoard/U_SysClkGen/MmcmGen.U_Mmcm/CLKOUT0}]
 
 create_generated_clock -name dnaClk  [get_pins {U_RceG3Top/GEN_SYNTH.U_RceG3AxiCntl/U_DeviceDna/GEN_7SERIES.DeviceDna7Series_Inst/BUFR_Inst/O}]
