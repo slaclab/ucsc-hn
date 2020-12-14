@@ -200,7 +200,7 @@ begin
 
    end generate;
 
-   U_SlaveClockGen: if not MASTER_G generate
+   U_SlaveClockGen: if MASTER_G = false generate
 
       U_ClockHubBuf : IBUFGDS
          generic map ( DIFF_TERM => true )
@@ -257,7 +257,7 @@ begin
 
    end generate;
 
-   U_SlaveSyncGen: if not MASTER_G generate
+   U_SlaveSyncGen: if MASTER_G = false generate
 
       U_SyncHubInBuf : IBUFDS
          port map(
