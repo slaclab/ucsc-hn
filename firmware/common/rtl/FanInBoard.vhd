@@ -112,6 +112,7 @@ architecture STRUCTURE of FanInBoard is
 
    signal syncGen : sl;
    signal syncInt : sl;
+   signal syncReg : sl;
    signal syncOut : sl;
    signal syncHub : sl;
 
@@ -160,7 +161,7 @@ begin
    -------------------------------
    -- Hub/Local Clock Control
    -------------------------------
-   U_MasterClockGen: if MASTER_G generate
+   U_MasterClockGen: if MASTER_G = true generate
 
       U_RenaClkGen : entity surf.ClockManager7
          generic map(
@@ -227,7 +228,7 @@ begin
    -------------------------------
    -- Hub/Local Sync Select
    -------------------------------
-   U_MasterSyncGen: if MASTER_G generate
+   U_MasterSyncGen: if MASTER_G = true generate
 
       U_RstSync: entity surf.SynchronizerOneShot
          generic map (
@@ -258,25 +259,47 @@ begin
    end generate;
 
    U_SlaveSyncGen: if MASTER_G = false generate
-
-      U_SyncHubInBuf : IBUFDS
-         port map(
-            I      => syncHubP,
-            IB     => syncHubN,
-            O      => syncHub
-         );
-
-      process (renaClk) begin
-         if falling_edge(renaCLk) then
-            if renaClkRst = '1' then
-               syncInt <= '0';
-            else
-               syncInt <= syncInt;
-            end if;
-        end if;
-      end process;
-
+      syncInt <= '0';
+      syncHub <= '0';
    end generate;
+
+   U_SyncHubInBuf : IBUFDS
+      generic map ( DIFF_TERM => (not MASTER_G) )
+      port map(
+         I      => syncHubP,
+         IB     => syncHubN,
+         O      => syncHub
+      );
+
+   process (renaClk) begin
+      if falling_edge(renaCLk) then
+         if renaClkRst = '1' then
+            syncReg <= '0';
+         else
+            syncReg <= syncHub;
+         end if;
+     end if;
+   end process;
+
+   -------------------------------
+   -- Rena Sync Output
+   -------------------------------
+   process (renaClk) begin
+      if rising_edge(renaCLk) then
+         if renaClkRst = '1' then
+            syncOut <= '0';
+         else
+            syncOut <= syncReg;
+         end if;
+     end if;
+   end process;
+
+   U_SyncOutBuf : OBUFDS
+      port map(
+         O      => syncOutP,
+         OB     => syncOutN,
+         I      => syncOut
+      );
 
    -------------------------------
    -- 2X Clock Generation
@@ -298,26 +321,6 @@ begin
          rstIn     => renaClkRst,
          clkOut(0) => sysClk,
          rstOut(0) => sysClkRst);
-
-   -------------------------------
-   -- Rena Sync Output
-   -------------------------------
-   process (renaClk) begin
-      if rising_edge(renaCLk) then
-         if renaClkRst = '1' then
-            syncOut <= '0';
-         else
-            syncOut <= syncInt;
-         end if;
-     end if;
-   end process;
-
-   U_SyncOutBuf : OBUFDS
-      port map(
-         O      => syncOutP,
-         OB     => syncOutN,
-         I      => syncOut
-      );
 
    -------------------------------
    -- Rena Clock Output
