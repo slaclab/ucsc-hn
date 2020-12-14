@@ -288,7 +288,7 @@ begin
          INPUT_BUFG_G       => false,
          FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
          RST_IN_POLARITY_G  => '1',
-         NUM_CLOCKS_G       => 2,
+         NUM_CLOCKS_G       => 1,
          -- MMCM attributes
          CLKIN_PERIOD_G     => 40.0,  -- 50Mhz
          CLKFBOUT_MULT_F_G  => 20.0,  -- 1Ghz
