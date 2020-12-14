@@ -32,6 +32,7 @@ library ucsc_hn;
 entity FanInBoard is
    generic (
       TPD_G         : time                := 1 ns;
+      MASTER_G      : boolean             := true;
       AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
       );
    port (
@@ -54,18 +55,22 @@ entity FanInBoard is
       dataObMaster : out AxiStreamMasterType;
       dataObSlave  : in  AxiStreamSlaveType;
 
-      -- Rena fan in board clocks
-      clockIn  : in  sl;
-      clockOut : out sl;
+      -- Hub board clock and sync signals
+      clockHubP : inout sl;
+      clockHubN : inout sl;
+      syncHubP  : inout sl;
+      syncHubN  : inout sl;
 
-      -- Sync signals
-      syncPb    : in  sl;
-      syncIn    : in  sl;
-      syncOut   : out sl;
+      -- Rena Clock and sync
+      clockOutP : out sl;
+      clockOutN : out sl;
+      syncOutP  : out sl;
+      syncOutN  : out sl;
       fpgaProgL : out sl;
 
       -- Data inputs
-      rxData : in slv(30 downto 1);
+      rxDataP : in slv(30 downto 1);
+      rxDataN : in slv(30 downto 1);
 
       -- Control outputs
       txData : out slv(6 downto 1)
@@ -105,9 +110,20 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
-   signal syncReg   : sl;
-   signal syncInReg : sl;
-   signal syncPbReg : sl;
+   signal syncGen : sl;
+   signal syncInt : sl;
+   signal syncOut : sl;
+   signal syncHub : sl;
+
+   signal clockHub : sl;
+   signal clockOut : sl;
+
+   signal rxData : slv(30 downto 1);
+
+   signal genRenaClk : sl;
+   signal genRenaRst : sl;
+
+   signal mmcmLocked : sl;
 
 begin
 
@@ -138,42 +154,13 @@ begin
          axiReadSlave   => intReadSlave,
          axiWriteMaster => intWriteMaster,
          axiWriteSlave  => intWriteSlave,
-         syncPb         => syncPbReg,
-         syncIn         => syncInReg,
-         syncReg        => syncReg,
+         syncGen        => syncGen,
          fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
          dropBytes      => dropBytes);
-
-   U_RstSync: entity surf.SynchronizerOneShot
-      generic map (
-         TPD_G => TPD_G
-      ) port map (
-         clk     => renaClk,
-         rst     => renaClkRst,
-         dataIn  => syncReg,
-         dataOut => syncOut);
-
-   U_SyncIn: entity surf.Synchronizer
-      generic map (
-         TPD_G          => TPD_G
-      ) port map (
-         clk     => renaClk,
-         rst     => renaClkRst,
-         dataIn  => syncIn,
-         dataOut => syncInReg);
-
-   U_SyncPb: entity surf.Synchronizer
-      generic map (
-         TPD_G          => TPD_G
-      ) port map (
-         clk     => renaClk,
-         rst     => renaClkRst,
-         dataIn  => syncPb,
-         dataOut => syncPbReg);
 
    -------------------------------
    -- Clocking
@@ -194,10 +181,142 @@ begin
       port map(
          clkIn     => dataClk,
          rstIn     => dataClkRst,
+         locked    => mmcmLocked,
          clkOut(0) => sysClk,
-         clkOut(1) => renaClk,
+         clkOut(1) => genRenaClk,
          rstOut(0) => sysClkRst,
-         rstOut(1) => renaClkRst);
+         rstOut(1) => genRenaRst);
+
+   -------------------------------
+   -- Hub/Local Clock Control
+   -------------------------------
+
+   U_MasterClockGen: if MASTER_G generate
+      renaClk    <= genRenaClk;
+      renaClkRst <= genRenaRst;
+
+      -- Drive output clock using DDR buffer
+      ODDR_HUB : ODDR
+         port map (
+            C  => renaClk,
+            Q  => clockHub,
+            CE => '1',
+            D1 => '1',
+            D2 => '0',
+            R  => renaClkRst,
+            S  => '0');
+
+      U_ClockOutBuf : OBUFDS
+         port map(
+            O      => clockHubP,
+            OB     => clockHubN,
+            I      => clockHub
+         );
+
+   end generate;
+
+   U_SlaveClockGen: if not MASTER_G generate
+
+      U_ClockHubBuf : IBUFGDS
+         generic map ( DIFF_TERM => true )
+         port map(
+            I      => clockHubP,
+            IB     => clockHubN,
+            O      => renaClk
+         );
+
+      RstSync_1 : entity surf.RstSync
+         generic map (
+            TPD_G           => TPD_G,
+            IN_POLARITY_G   => '0',
+            OUT_POLARITY_G  => '1',
+            BYPASS_SYNC_G   => false,
+            RELEASE_DELAY_G => 10)
+         port map (
+            clk      => renaClk,
+            asyncRst => mmcmLocked,
+            syncRst  => renaClkRst);
+
+   end generate;
+
+   -------------------------------
+   -- Hub/Local Sync Select
+   -------------------------------
+
+   U_MasterSyncGen: if MASTER_G generate
+
+      U_RstSync: entity surf.SynchronizerOneShot
+         generic map (
+            TPD_G => TPD_G
+         ) port map (
+            clk     => renaClk,
+            rst     => renaClkRst,
+            dataIn  => syncGen,
+            dataOut => syncInt);
+
+      process (renaClk) begin
+         if rising_edge(renaCLk) then
+            if renaClkRst = '1' then
+               syncHub <= '0';
+            else
+               syncHub <= syncInt;
+            end if;
+        end if;
+      end process;
+
+      U_SyncHubOutBuf : OBUFDS
+         port map(
+            I      => syncHub,
+            O      => syncHubP,
+            OB     => syncHubN
+         );
+
+   end generate;
+
+   U_SlaveSyncGen: if not MASTER_G generate
+
+      U_SyncHubInBuf : IBUFDS
+         port map(
+            I      => syncHubP,
+            IB     => syncHubN,
+            O      => syncHub
+         );
+
+      process (renaClk) begin
+         if falling_edge(renaCLk) then
+            if renaClkRst = '1' then
+               syncInt <= '0';
+            else
+               syncInt <= syncInt;
+            end if;
+        end if;
+      end process;
+
+   end generate;
+
+   -------------------------------
+   -- Rena Sync Output
+   -------------------------------
+   process (renaClk) begin
+      if rising_edge(renaCLk) then
+         if renaClkRst = '1' then
+            syncOut <= '0';
+         else
+            syncOut <= syncInt;
+         end if;
+     end if;
+   end process;
+
+   U_SyncOutBuf : OBUFDS
+      port map(
+         O      => syncOutP,
+         OB     => syncOutN,
+         I      => syncOut
+      );
+
+   -------------------------------
+   -- Rena Clock Output
+   -------------------------------
 
    -- Drive output clock using DDR buffer
    ODDR_I : ODDR
@@ -210,9 +329,26 @@ begin
          R  => renaClkRst,
          S  => '0');
 
+   U_ClockOutBuf : OBUFDS
+      port map(
+         O      => clockOutP,
+         OB     => clockOutN,
+         I      => clockOut
+      );
+
    -------------------------------
    -- Inbound Path
    -------------------------------
+   U_RxDataGen : for i in 1 to 30 generate
+
+      U_RxDataBuf : IBUFDS
+         generic map ( DIFF_TERM => true )
+         port map(
+            I      => rxDataP(i),
+            IB     => rxDataN(i),
+            O      => rxData(i)
+         );
+   end generate;
 
    U_DeserializerGen : for i in 1 to 30 generate
       U_Deserializer : entity ucsc_hn.Deserializer

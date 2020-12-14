@@ -21,10 +21,10 @@ set_property PACKAGE_PIN AA3  [get_ports ethTxP]
 set_property PACKAGE_PIN AB3  [get_ports ethTxM]
 
 # clk signals
-#set_property PACKAGE_PIN U2  [get_ports clockInP]
-#set_property PACKAGE_PIN U1  [get_ports clockInN]
-set_property PACKAGE_PIN B7  [get_ports clockOutP]
-set_property PACKAGE_PIN B6  [get_ports clockOutN]
+#set_property PACKAGE_PIN U2 [get_ports clockInP]
+#set_property PACKAGE_PIN U1 [get_ports clockInN]
+set_property PACKAGE_PIN B7 [get_ports clockOutP]
+set_property PACKAGE_PIN B6 [get_ports clockOutN]
 set_property PACKAGE_PIN Y18 [get_ports clockHubP]
 set_property PACKAGE_PIN Y19 [get_ports clockHubN]
 

@@ -36,9 +36,7 @@ entity FanInRegs is
       axiWriteSlave  : out   AxiLiteWriteSlaveType;
 
       -- Values
-      syncPb     : in  sl;
-      syncReg    : out sl;
-      syncIn     : in  sl;
+      syncGen    : out sl;
       fpgaProgL  : out sl;
       rxEnable   : out slv(30 downto 1);
       currRxData : in  slv(30 downto 1);
@@ -52,8 +50,8 @@ architecture rtl of FanInRegs is
 
    type RegType is record
       countRst       : sl;
-      syncRegCnt     : slv(3 downto 0);
-      syncReg        : sl;
+      syncGenCnt     : slv(3 downto 0);
+      syncGen        : sl;
       syncDet        : sl;
       fpgaProg       : sl;
       rxEnable       : slv(30 downto 1);
@@ -63,8 +61,8 @@ architecture rtl of FanInRegs is
 
    constant REG_INIT_C : RegType := (
       countRst       => '0',
-      syncRegCnt     => (others=>'0'),
-      syncReg        => '0',
+      syncGenCnt     => (others=>'0'),
+      syncGen        => '0',
       syncDet        => '0',
       fpgaProg       => '0',
       rxEnable       => (others=>'0'),
@@ -76,7 +74,7 @@ architecture rtl of FanInRegs is
 
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData, syncIn, syncPb) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -88,12 +86,12 @@ begin
       v.syncDet := '0';
 
       if r.syncDet = '1' then
-         v.syncRegCnt := (others=>'1');
-         v.syncReg := '1';
-      elsif v.syncRegCnt = 0 then
-         v.syncReg := '0';
+         v.syncGenCnt := (others=>'1');
+         v.syncGen := '1';
+      elsif v.syncGenCnt = 0 then
+         v.syncGen := '0';
       else
-         v.syncRegCnt := r.syncRegCnt - 1;
+         v.syncGenCnt := r.syncGenCnt - 1;
       end if;
 
       ------------------------
@@ -106,9 +104,7 @@ begin
       axiSlaveRegister(axilEp, x"004", 1, v.rxEnable);
       axiSlaveRegisterR(axilEp, x"008", 1, currRxData);
       axiWrDetect(axilEp, x"00C", v.countRst);
-      axiWrDetect(axilEp, x"010", v.syncReg);
-      axiSlaveRegisterR(axilEp, x"014", 0, syncIn);
-      axiSlaveRegisterR(axilEp, x"014", 1, syncPb);
+      axiWrDetect(axilEp, x"010", v.syncDet);
       axiSlaveRegister(axilEp, x"018", 0, v.fpgaProg);
 
       -- Rx Packet Registers, 0x100 - 0x174
@@ -139,7 +135,7 @@ begin
       axiWriteSlave  <= r.axiWriteSlave;
       countRst       <= r.countRst;
       rxEnable       <= r.rxEnable;
-      syncReg        <= r.syncReg;
+      syncGen        <= r.syncGen;
 
       if r.fpgaProg = '1' then
          fpgaProgL <= '0';
