@@ -120,11 +120,6 @@ architecture STRUCTURE of FanInBoard is
 
    signal rxData : slv(30 downto 1);
 
-   signal genRenaClk : sl;
-   signal genRenaRst : sl;
-
-   signal mmcmLocked : sl;
-
 begin
 
    -------------------------------
@@ -163,37 +158,27 @@ begin
          dropBytes      => dropBytes);
 
    -------------------------------
-   -- Clocking
-   -------------------------------
-   U_MMCM : entity surf.ClockManager7
-      generic map(
-         TPD_G              => TPD_G,
-         TYPE_G             => "MMCM",
-         INPUT_BUFG_G       => false,
-         FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-         RST_IN_POLARITY_G  => '1',
-         NUM_CLOCKS_G       => 2,
-         -- MMCM attributes
-         CLKIN_PERIOD_G     => 8.0, -- 125Mhz
-         CLKFBOUT_MULT_F_G  => 8.0, -- 1Ghz
-         CLKOUT0_DIVIDE_F_G => 5.0, -- 200Mhz
-         CLKOUT1_DIVIDE_G   => 20)  -- 50Mhz
-      port map(
-         clkIn     => dataClk,
-         rstIn     => dataClkRst,
-         locked    => mmcmLocked,
-         clkOut(0) => sysClk,
-         clkOut(1) => genRenaClk,
-         rstOut(0) => sysClkRst,
-         rstOut(1) => genRenaRst);
-
-   -------------------------------
    -- Hub/Local Clock Control
    -------------------------------
-
    U_MasterClockGen: if MASTER_G generate
-      renaClk    <= genRenaClk;
-      renaClkRst <= genRenaRst;
+
+      U_RenaClkGen : entity surf.ClockManager7
+         generic map(
+            TPD_G              => TPD_G,
+            TYPE_G             => "MMCM",
+            INPUT_BUFG_G       => false,
+            FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
+            RST_IN_POLARITY_G  => '1',
+            NUM_CLOCKS_G       => 1,
+            -- MMCM attributes
+            CLKIN_PERIOD_G     => 8.0,  -- 125Mhz
+            CLKFBOUT_MULT_F_G  => 8.0,  -- 1Ghz
+            CLKOUT0_DIVIDE_F_G => 20.0) -- 50Mhz
+         port map(
+            clkIn     => dataClk,
+            rstIn     => dataClkRst,
+            clkOut(0) => renaClk,
+            rstOut(0) => renaRst);
 
       -- Drive output clock using DDR buffer
       ODDR_HUB : ODDR
@@ -228,13 +213,13 @@ begin
       RstSync_1 : entity surf.RstSync
          generic map (
             TPD_G           => TPD_G,
-            IN_POLARITY_G   => '0',
+            IN_POLARITY_G   => '1',
             OUT_POLARITY_G  => '1',
             BYPASS_SYNC_G   => false,
             RELEASE_DELAY_G => 10)
          port map (
             clk      => renaClk,
-            asyncRst => mmcmLocked,
+            asyncRst => dataClkRst,
             syncRst  => renaClkRst);
 
    end generate;
@@ -242,7 +227,6 @@ begin
    -------------------------------
    -- Hub/Local Sync Select
    -------------------------------
-
    U_MasterSyncGen: if MASTER_G generate
 
       U_RstSync: entity surf.SynchronizerOneShot
@@ -293,6 +277,27 @@ begin
       end process;
 
    end generate;
+
+   -------------------------------
+   -- 2X Clock Generation
+   -------------------------------
+   U_SysClkGen : entity surf.ClockManager7
+      generic map(
+         TPD_G              => TPD_G,
+         TYPE_G             => "MMCM",
+         INPUT_BUFG_G       => false,
+         FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
+         RST_IN_POLARITY_G  => '1',
+         NUM_CLOCKS_G       => 2,
+         -- MMCM attributes
+         CLKIN_PERIOD_G     => 40.0,  -- 50Mhz
+         CLKFBOUT_MULT_F_G  => 20.0,  -- 1Ghz
+         CLKOUT0_DIVIDE_F_G => 5.0)   -- 200Mhz
+      port map (
+         clkIn     => renaClk,
+         rstIn     => renaClkRst,
+         clkOut(0) => sysClk,
+         rstOut(0) => sysClkRst);
 
    -------------------------------
    -- Rena Sync Output
