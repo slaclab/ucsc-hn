@@ -178,7 +178,7 @@ begin
             clkIn     => dataClk,
             rstIn     => dataClkRst,
             clkOut(0) => renaClk,
-            rstOut(0) => renaRst);
+            rstOut(0) => renaClkRst);
 
       -- Drive output clock using DDR buffer
       ODDR_HUB : ODDR
