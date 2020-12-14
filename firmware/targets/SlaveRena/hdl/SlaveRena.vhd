@@ -467,7 +467,7 @@ begin
    U_FanInBoard: entity ucsc_hn.FanInBoard
       generic map (
          TPD_G         => TPD_C,
-         master        => false,
+         MASTER_G      => false,
          AXIS_CONFIG_G => APP_AXIS_CONFIG_C
       ) port map (
          axilClk              => axilClk,
