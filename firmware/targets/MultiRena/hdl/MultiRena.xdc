@@ -30,10 +30,10 @@ set_property PACKAGE_PIN Y19 [get_ports clockHubN]
 
 #set_property IOSTANDARD LVDS [get_ports clockInP]
 #set_property IOSTANDARD LVDS [get_ports clockInN]
-set_property IOSTANDARD LVDS [get_ports clockOutP]
-set_property IOSTANDARD LVDS [get_ports clockOutN]
-set_property IOSTANDARD LVDS [get_ports clockHubP]
-set_property IOSTANDARD LVDS [get_ports clockHubN]
+set_property IOSTANDARD LVDS   [get_ports clockOutP]
+set_property IOSTANDARD LVDS   [get_ports clockOutN]
+set_property IOSTANDARD LVDS25 [get_ports clockHubP]
+set_property IOSTANDARD LVDS25 [get_ports clockHubN]
 
 # sync signals
 #set_property PACKAGE_PIN V15 [get_ports syncPb]
@@ -44,10 +44,10 @@ set_property PACKAGE_PIN M6  [get_ports syncOutN]
 set_property PACKAGE_PIN W15 [get_ports fpgaProgL]
 
 #set_property IOSTANDARD LVCMOS [get_ports syncPb]
-set_property IOSTANDARD LVDS [get_ports syncHubP]
-set_property IOSTANDARD LVDS [get_ports syncHubN]
-set_property IOSTANDARD LVDS [get_ports syncOutP]
-set_property IOSTANDARD LVDS [get_ports syncOutN]
+set_property IOSTANDARD LVDS25 [get_ports syncHubP]
+set_property IOSTANDARD LVDS25 [get_ports syncHubN]
+set_property IOSTANDARD LVDS   [get_ports syncOutP]
+set_property IOSTANDARD LVDS   [get_ports syncOutN]
 set_property IOSTANDARD LVCMOS [get_ports fpgaProgL]
 
 # JTAG
