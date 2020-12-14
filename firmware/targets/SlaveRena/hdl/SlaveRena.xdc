@@ -32,8 +32,8 @@ set_property PACKAGE_PIN Y19 [get_ports clockHubN]
 #set_property IOSTANDARD LVDS [get_ports clockInN]
 set_property IOSTANDARD LVDS [get_ports clockOutP]
 set_property IOSTANDARD LVDS [get_ports clockOutN]
-set_property IOSTANDARD LVDS_25 [get_ports clockHubP]
-set_property IOSTANDARD LVDS_25 [get_ports clockHubN]
+set_property IOSTANDARD LVDS_18 [get_ports clockHubP]
+set_property IOSTANDARD LVDS_18 [get_ports clockHubN]
 
 # sync signals
 #set_property PACKAGE_PIN V15 [get_ports syncPb]
