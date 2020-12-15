@@ -131,30 +131,15 @@ begin
    -------------------------------
    -- AXI Bus
    -------------------------------
-   U_AxiLiteAsync : entity surf.AxiLiteAsync
-      generic map (TPD_G => TPD_G) port map (
-         sAxiClk         => axilClk,
-         sAxiClkRst      => axilRst,
-         sAxiReadMaster  => axilReadMaster,
-         sAxiReadSlave   => axilReadSlave,
-         sAxiWriteMaster => axilWriteMaster,
-         sAxiWriteSlave  => axilWriteSlave,
-         mAxiClk         => sysClk,
-         mAxiClkRst      => sysClkRst,
-         mAxiReadMaster  => intReadMaster,
-         mAxiReadSlave   => intReadSlave,
-         mAxiWriteMaster => intWriteMaster,
-         mAxiWriteSlave  => intWriteSlave);
-
    U_Regs : entity ucsc_hn.FanInRegs
       generic map (TPD_G => TPD_G)
       port map (
-         axiClk         => sysClk,
-         axiRst         => sysClkRst,
-         axiReadMaster  => intReadMaster,
-         axiReadSlave   => intReadSlave,
-         axiWriteMaster => intWriteMaster,
-         axiWriteSlave  => intWriteSlave,
+         axiClk         => axilClk,
+         axiRst         => axilRst,
+         axiReadMaster  => axilReadMaster,
+         axiReadSlave   => axilReadSlave,
+         axiWriteMaster => axilWriteMaster,
+         axiWriteSlave  => axilWriteSlave,
          syncGen        => syncGen,
          fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,

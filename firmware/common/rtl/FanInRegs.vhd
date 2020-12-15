@@ -72,9 +72,45 @@ architecture rtl of FanInRegs is
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
+   signal currRxDataSync : slv(30 downto 1);
+   signal rxPacketsSync  : Slv32Array(30 downto 1);
+   signal dropBytesSync  : Slv32Array(30 downto 1));
+
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData) is
+   U_SyncGen: for i in range(1 to 30) generate
+
+      U_SyncRxPackets: entity surf.SynchronizerVector is
+         generic map (
+            TPD_G   => TPD_G,
+            WIDTH_G => 30)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => rxPackets(i),
+            dataOut => rxPacketsSync(i));
+
+      U_SyncDropBytes: entity surf.SynchronizerVector is
+         generic map (
+            TPD_G   => TPD_G,
+            WIDTH_G => 30)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => rxBytes(i),
+            dataOut => rxBytesSync(i));
+
+      U_SyncCurRxData: entity surf.Synchronizer is
+         generic map ( TPD_G => TPD_G)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => currRxData,
+            dataOut => currRxDataSync);
+
+   end generate;
+
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -102,19 +138,19 @@ begin
       axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
 
       axiSlaveRegister(axilEp, x"004", 1, v.rxEnable);
-      axiSlaveRegisterR(axilEp, x"008", 1, currRxData);
+      axiSlaveRegisterR(axilEp, x"008", 1, currRxDataSync);
       axiWrDetect(axilEp, x"00C", v.countRst);
       axiWrDetect(axilEp, x"010", v.syncDet);
       axiSlaveRegister(axilEp, x"018", 0, v.fpgaProg);
 
       -- Rx Packet Registers, 0x100 - 0x174
       for i in 1 to 30 loop
-         axiSlaveRegisterR(axilEp, toSlv(256 + (i-1)*4,12), 0, rxPackets(i));
+         axiSlaveRegisterR(axilEp, toSlv(256 + (i-1)*4,12), 0, rxPacketsSync(i));
       end loop;
 
       -- Rx Drop Bytes Registers, 0x200 - 0x274
       for i in 1 to 30 loop
-         axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytes(i));
+         axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytesSync(i));
       end loop;
 
       -- Close the transaction

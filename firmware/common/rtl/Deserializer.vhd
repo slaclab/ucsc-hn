@@ -108,6 +108,7 @@ architecture Behavioral of Deserializer is
 
    signal rxTmp : sl;
    signal rxInt : sl;
+   signal rxEnableSync : sl;
 
    signal txAxisMaster : AxiStreamMasterType;
    signal txAxisSlave  : AxiStreamSlaveType;
@@ -115,6 +116,22 @@ architecture Behavioral of Deserializer is
 begin
 
    currRxData <= rxTmp;
+
+   U_SyncEnable: entity surf.Synchronizer
+      generic map ( TPD_G          => TPD_G )
+      port map (
+         clk     => sysClk,
+         rst     => sysClkRst,
+         dataIn  => rxEnable,
+         dataOut => rxEnableSync);
+
+   U_SyncCntRst: entity surf.Synchronizer
+      generic map ( TPD_G => TPD_G )
+      port map (
+         clk     => sysClk,
+         rst     => sysClkRst,
+         dataIn  => countRst,
+         dataOut => countRstReg);
 
    process (sysClk) is
    begin
@@ -124,7 +141,7 @@ begin
             rxInt <= '0' after TPD_G;
          else
             rxTmp <= rx after TPD_G;
-            rxInt <= rxTmp and rxEnable after TPD_G;
+            rxInt <= rxTmp and rxEnableSync after TPD_G;
          end if;
       end if;
    end process;
@@ -146,7 +163,7 @@ begin
          rx      => rxInt);
 
 
-   comb : process(r, uartData, uartDen, sysClkRst, countRst) is
+   comb : process(r, uartData, uartDen, sysClkRst, countRstReg) is
       variable v : RegType;
    begin
 
@@ -167,7 +184,7 @@ begin
          v.timeoutCnt := r.timeoutCnt - 1;
       end if;
 
-      if countRst = '1' then
+      if countRstReg = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
       end if;
@@ -256,7 +273,7 @@ begin
          mAxisRst    => mAxisRst,
          mAxisMaster => txAxisMaster,
          mAxisSlave  => txAxisSlave);
-         
+
    U_Sof : entity surf.SsiInsertSof
       generic map (
          TPD_G               => TPD_G,
