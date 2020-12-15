@@ -47,6 +47,7 @@ architecture Behavioral of Serializer is
    signal intAxisMaster : AxiStreamMasterType;
    signal intAxisSlave  : AxiStreamSlaveType;
    signal intTx : sl;
+   signal regTx : sl;
 
 begin
 
@@ -88,9 +89,11 @@ begin
    begin
       if (rising_edge(renaClk)) then
          if renaRst = '1' then
-            tx <= '0' after TPD_G;
+            regTx <= '0' after TPD_G;
+            tx    <= '0' after TPD_G;
          else
-            tx <= intTx after TPD_G;
+            regTx <= intTx after TPD_G;
+            tx    <= regTx after TPD_G;
          end if;
       end if;
    end process;
