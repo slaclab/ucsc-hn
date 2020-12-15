@@ -200,7 +200,7 @@ begin
             R  => renaClkRst,
             S  => '0');
 
-      clockHubT <= '1';
+      clockHubT <= '0';
 
    end generate;
 
@@ -237,7 +237,8 @@ begin
             rstOut(0) => renaClkRst,
             rstOut(1) => sysClkRst);
 
-      clockHubT <= '0';
+      clockHubT   <= '1';
+      clockHubOut <= '0';
 
    end generate;
 

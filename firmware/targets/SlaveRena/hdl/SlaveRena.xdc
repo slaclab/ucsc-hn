@@ -213,7 +213,7 @@ create_generated_clock -name clk156 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/M
 create_generated_clock -name clk125 [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT3}]
 create_generated_clock -name clk62  [get_pins {U_RceG3Top/U_RceG3Clocks/U_MMCM/MmcmGen.U_Mmcm/CLKOUT4}]
 
-create_clock -name clockHubIn -period 20.0 [get_pins {clockHubP}]
+create_clock -name clockHubIn -period 20.0 [get_pins {U_FanInBoard/UClockHubIoBug/O}]
 create_generated_clock -name rena50  [get_pins {U_FanInBoard/U_SlaveClockGen.U_RenaClkGen/MmcmGen.U_Mmcm/CLKOUT0}]
 create_generated_clock -name rena200 [get_pins {U_FanInBoard/U_SlaveClockGen.U_RenaClkGen/MmcmGen.U_Mmcm/CLKOUT1}]
 
