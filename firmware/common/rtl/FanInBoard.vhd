@@ -110,11 +110,13 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
-   signal syncGen : sl;
-   signal syncInt : sl;
-   signal syncReg : sl;
-   signal syncOut : sl;
-   signal syncHub : sl;
+   signal syncGen    : sl;
+   signal syncInt    : sl;
+   signal syncReg    : sl;
+   signal syncOut    : sl;
+   signal syncHubT   : sl;
+   signal syncHubIn  : sl;
+   signal syncHubOut : sl;
 
    signal clockHub : sl;
    signal clockOut : sl;
@@ -242,33 +244,30 @@ begin
       process (renaClk) begin
          if rising_edge(renaCLk) then
             if renaClkRst = '1' then
-               syncHub <= '0';
+               syncHubOut <= '0';
             else
-               syncHub <= syncInt;
+               syncHubOut <= syncInt;
             end if;
         end if;
       end process;
 
-      U_SyncHubOutBuf : OBUFDS
-         port map(
-            I      => syncHub,
-            O      => syncHubP,
-            OB     => syncHubN
-         );
+      syncHubT <= '0';
 
    end generate;
 
    U_SlaveSyncGen: if MASTER_G = false generate
-      syncInt <= '0';
-      syncHub <= '0';
+      syncInt  <= '0';
+      syncHubT <= '1';
    end generate;
 
-   U_SyncHubInBuf : IBUFDS
-      generic map ( DIFF_TERM => (not MASTER_G) )
+   U_SyncHubOutBuf : IOBUFDS
+   generic map ( DIFF_TERM => (not MASTER_G) )
       port map(
-         I      => syncHubP,
-         IB     => syncHubN,
-         O      => syncHub
+         I      => syncHubOut,
+         O      => syncHubIn,
+         T      => syncHubT,
+         IO     => syncHubP,
+         IOB    => syncHubN
       );
 
    process (renaClk) begin
@@ -276,7 +275,7 @@ begin
          if renaClkRst = '1' then
             syncReg <= '0';
          else
-            syncReg <= syncHub;
+            syncReg <= syncHubIn;
          end if;
      end if;
    end process;
