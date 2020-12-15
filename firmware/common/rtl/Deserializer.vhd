@@ -113,6 +113,9 @@ architecture Behavioral of Deserializer is
    signal txAxisMaster : AxiStreamMasterType;
    signal txAxisSlave  : AxiStreamSlaveType;
 
+   signal countRstReg : sl;
+   signal rxEnableReg : sl;
+
 begin
 
    currRxData <= rxTmp;
