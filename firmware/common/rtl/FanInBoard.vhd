@@ -118,8 +118,9 @@ architecture STRUCTURE of FanInBoard is
    signal syncHubIn  : sl;
    signal syncHubOut : sl;
 
-   signal clockHub : sl;
-   signal clockOut : sl;
+   signal clockHubIn  : sl;
+   signal clockHubOut : sl;
+   signal clockOut    : sl;
 
    signal rxData : slv(30 downto 1);
 
@@ -187,7 +188,7 @@ begin
       ODDR_HUB : ODDR
          port map (
             C  => renaClk,
-            Q  => clockHub,
+            Q  => clockHubOut,
             CE => '1',
             D1 => '1',
             D2 => '0',
@@ -196,9 +197,9 @@ begin
 
       U_ClockOutBuf : OBUFDS
          port map(
+            I      => clockHubOut,
             O      => clockHubP,
-            OB     => clockHubN,
-            I      => clockHub
+            OB     => clockHubN
          );
 
    end generate;
@@ -210,10 +211,15 @@ begin
          port map(
             I      => clockHubP,
             IB     => clockHubN,
-            O      => renaClk
+            O      => clockHubIn
          );
 
-      RstSync_1 : entity surf.RstSync
+      U_RenaClkBuf : BUFG
+         port map (
+            I => clockHubIn,
+            O => renaClk);
+
+      U_RstSync : entity surf.RstSync
          generic map (
             TPD_G           => TPD_G,
             IN_POLARITY_G   => '1',
