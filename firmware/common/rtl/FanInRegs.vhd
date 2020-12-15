@@ -74,13 +74,13 @@ architecture rtl of FanInRegs is
 
    signal currRxDataSync : slv(30 downto 1);
    signal rxPacketsSync  : Slv32Array(30 downto 1);
-   signal dropBytesSync  : Slv32Array(30 downto 1));
+   signal dropBytesSync  : Slv32Array(30 downto 1);
 
 begin
 
-   U_SyncGen: for i in range(1 to 30) generate
+   U_SyncGen: for i in 1 to 30  generate
 
-      U_SyncRxPackets: entity surf.SynchronizerVector is
+      U_SyncRxPackets: entity surf.SynchronizerVector
          generic map (
             TPD_G   => TPD_G,
             WIDTH_G => 30)
@@ -90,7 +90,7 @@ begin
             dataIn  => rxPackets(i),
             dataOut => rxPacketsSync(i));
 
-      U_SyncDropBytes: entity surf.SynchronizerVector is
+      U_SyncDropBytes: entity surf.SynchronizerVector
          generic map (
             TPD_G   => TPD_G,
             WIDTH_G => 30)
@@ -100,7 +100,7 @@ begin
             dataIn  => rxBytes(i),
             dataOut => rxBytesSync(i));
 
-      U_SyncCurRxData: entity surf.Synchronizer is
+      U_SyncCurRxData: entity surf.Synchronizer
          generic map ( TPD_G => TPD_G)
          port map (
             clk     => axiClk,
