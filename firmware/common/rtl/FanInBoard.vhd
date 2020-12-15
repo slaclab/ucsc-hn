@@ -120,6 +120,7 @@ architecture STRUCTURE of FanInBoard is
 
    signal clockHubIn  : sl;
    signal clockHubOut : sl;
+   signal clockHubT   : sl;
    signal clockOut    : sl;
 
    signal rxData : slv(30 downto 1);
@@ -164,6 +165,7 @@ begin
    -------------------------------
    -- Hub/Local Clock Control
    -------------------------------
+
    U_MasterClockGen: if MASTER_G = true generate
 
       U_RenaClkGen : entity surf.ClockManager7
@@ -198,24 +200,21 @@ begin
             R  => renaClkRst,
             S  => '0');
 
-      U_ClockOutBuf : OBUFDS
-         port map(
-            I      => clockHubOut,
-            O      => clockHubP,
-            OB     => clockHubN
-         );
+      clockHubT <= '1';
 
    end generate;
 
-   U_SlaveClockGen: if MASTER_G = false generate
+   U_SyncHubIoBuf : IOBUFGDS
+   generic map ( DIFF_TERM => (not MASTER_G) )
+      port map(
+         I      => clockHubOut,
+         O      => clockHubIn,
+         T      => clockHubT,
+         IO     => clockHubP,
+         IOB    => clockHubN
+      );
 
-      U_ClockHubBuf : IBUFGDS
-         generic map ( DIFF_TERM => true )
-         port map(
-            I      => clockHubP,
-            IB     => clockHubN,
-            O      => clockHubIn
-         );
+   U_SlaveClockGen: if MASTER_G = false generate
 
       U_RenaClkGen : entity surf.ClockManager7
          generic map(
@@ -237,6 +236,8 @@ begin
             clkOut(1) => sysClk,
             rstOut(0) => renaClkRst,
             rstOut(1) => sysClkRst);
+
+      clockHubT <= '0';
 
    end generate;
 
@@ -273,7 +274,7 @@ begin
       syncHubT <= '1';
    end generate;
 
-   U_SyncHubOutBuf : IOBUFDS
+   U_SyncHubIoBuf : IOBUFDS
    generic map ( DIFF_TERM => (not MASTER_G) )
       port map(
          I      => syncHubOut,
