@@ -204,7 +204,7 @@ begin
 
    end generate;
 
-   U_ClockHubIoBuf : IOBUFGDS
+   U_ClockHubIoBuf : IOBUFDS
    generic map ( DIFF_TERM => (not MASTER_G) )
       port map(
          I      => clockHubOut,
