@@ -97,16 +97,16 @@ begin
          port map (
             clk     => axiClk,
             rst     => axiRst,
-            dataIn  => rxBytes(i),
-            dataOut => rxBytesSync(i));
+            dataIn  => dropBytes(i),
+            dataOut => dropBytesSync(i));
 
       U_SyncCurRxData: entity surf.Synchronizer
          generic map ( TPD_G => TPD_G)
          port map (
             clk     => axiClk,
             rst     => axiRst,
-            dataIn  => currRxData,
-            dataOut => currRxDataSync);
+            dataIn  => currRxData(i),
+            dataOut => currRxDataSync(i));
 
    end generate;
 
