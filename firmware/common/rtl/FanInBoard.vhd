@@ -173,16 +173,19 @@ begin
             INPUT_BUFG_G       => false,
             FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
             RST_IN_POLARITY_G  => '1',
-            NUM_CLOCKS_G       => 1,
+            NUM_CLOCKS_G       => 2,
             -- MMCM attributes
             CLKIN_PERIOD_G     => 8.0,  -- 125Mhz
             CLKFBOUT_MULT_F_G  => 8.0,  -- 1Ghz
-            CLKOUT0_DIVIDE_F_G => 20.0) -- 50Mhz
+            CLKOUT0_DIVIDE_F_G => 20.0, -- 50Mhz
+            CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
          port map(
             clkIn     => dataClk,
             rstIn     => dataClkRst,
             clkOut(0) => renaClk,
-            rstOut(0) => renaClkRst);
+            clkOut(1) => sysClk,
+            rstOut(0) => renaClkRst,
+            rstOut(1) => sysClkRst);
 
       -- Drive output clock using DDR buffer
       ODDR_HUB : ODDR
@@ -214,22 +217,26 @@ begin
             O      => clockHubIn
          );
 
-      U_RenaClkBuf : BUFG
-         port map (
-            I => clockHubIn,
-            O => renaClk);
-
-      U_RstSync : entity surf.RstSync
-         generic map (
-            TPD_G           => TPD_G,
-            IN_POLARITY_G   => '1',
-            OUT_POLARITY_G  => '1',
-            BYPASS_SYNC_G   => false,
-            RELEASE_DELAY_G => 10)
-         port map (
-            clk      => renaClk,
-            asyncRst => dataClkRst,
-            syncRst  => renaClkRst);
+      U_RenaClkGen : entity surf.ClockManager7
+         generic map(
+            TPD_G              => TPD_G,
+            TYPE_G             => "MMCM",
+            INPUT_BUFG_G       => false,
+            FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
+            RST_IN_POLARITY_G  => '1',
+            NUM_CLOCKS_G       => 2,
+            -- MMCM attributes
+            CLKIN_PERIOD_G     => 20.0, -- 50Mhz
+            CLKFBOUT_MULT_F_G  => 20.0, -- 1Ghz
+            CLKOUT0_DIVIDE_F_G => 20.0, -- 50Mhz
+            CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
+         port map(
+            clkIn     => clockHubIn,
+            rstIn     => dataClkRst,
+            clkOut(0) => renaClk,
+            clkOut(1) => sysClk,
+            rstOut(0) => renaClkRst,
+            rstOut(1) => sysClkRst);
 
    end generate;
 
@@ -305,27 +312,6 @@ begin
          OB     => syncOutN,
          I      => syncOut
       );
-
-   -------------------------------
-   -- 2X Clock Generation
-   -------------------------------
-   U_SysClkGen : entity surf.ClockManager7
-      generic map(
-         TPD_G              => TPD_G,
-         TYPE_G             => "MMCM",
-         INPUT_BUFG_G       => false,
-         FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-         RST_IN_POLARITY_G  => '1',
-         NUM_CLOCKS_G       => 1,
-         -- MMCM attributes
-         CLKIN_PERIOD_G     => 20.0,  -- 50Mhz
-         CLKFBOUT_MULT_F_G  => 20.0,  -- 1Ghz
-         CLKOUT0_DIVIDE_F_G => 5.0)   -- 200Mhz
-      port map (
-         clkIn     => renaClk,
-         rstIn     => renaClkRst,
-         clkOut(0) => sysClk,
-         rstOut(0) => sysClkRst);
 
    -------------------------------
    -- Rena Clock Output
