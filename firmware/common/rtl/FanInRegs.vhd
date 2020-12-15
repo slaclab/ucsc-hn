@@ -83,7 +83,7 @@ begin
       U_SyncRxPackets: entity surf.SynchronizerVector
          generic map (
             TPD_G   => TPD_G,
-            WIDTH_G => 30)
+            WIDTH_G => 32)
          port map (
             clk     => axiClk,
             rst     => axiRst,
@@ -93,7 +93,7 @@ begin
       U_SyncDropBytes: entity surf.SynchronizerVector
          generic map (
             TPD_G   => TPD_G,
-            WIDTH_G => 30)
+            WIDTH_G => 32)
          port map (
             clk     => axiClk,
             rst     => axiRst,
