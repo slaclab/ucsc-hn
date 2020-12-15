@@ -46,8 +46,8 @@ entity SlaveRena is
       ethTxN      : out   sl;
 
       -- Hub clock and sync
-      clockHubP : inout sl;
-      clockHubN : inout sl;
+      clockHubP : in    sl;
+      clockHubN : in    sl;
       syncHubP  : inout sl;
       syncHubN  : inout sl;
 
@@ -482,8 +482,8 @@ begin
          dataObSlave          => rssiIbSlave,
          dataIbMaster         => rssiObMaster,
          dataIbSlave          => rssiObSlave,
-         clockHubP            => clockHubP,
-         clockHubN            => clockHubN,
+         clockHubInP          => clockHubP,
+         clockHubInN          => clockHubN,
          syncHubP             => syncHubP,
          syncHubN             => syncHubN,
          clockOutP            => clockOutP,

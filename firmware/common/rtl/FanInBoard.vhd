@@ -56,10 +56,12 @@ entity FanInBoard is
       dataObSlave  : in  AxiStreamSlaveType;
 
       -- Hub board clock and sync signals
-      clockHubP : inout sl;
-      clockHubN : inout sl;
-      syncHubP  : inout sl;
-      syncHubN  : inout sl;
+      clockHubInP  : in    sl := '0';
+      clockHubInN  : in    sl := '0';
+      clockHubOutP : out   sl;
+      clockHubOutN : out   sl;
+      syncHubP     : inout sl;
+      syncHubN     : inout sl;
 
       -- Rena Clock and sync
       clockOutP : out sl;
@@ -120,7 +122,6 @@ architecture STRUCTURE of FanInBoard is
 
    signal clockHubIn  : sl;
    signal clockHubOut : sl;
-   signal clockHubT   : sl;
    signal clockOut    : sl;
 
    signal rxData : slv(30 downto 1);
@@ -200,21 +201,26 @@ begin
             R  => renaClkRst,
             S  => '0');
 
-      clockHubT <= '0';
+      U_ClockHubBuf : OBUFDS
+         port map(
+            I     => clockHubOut,
+            O     => clockHubOutP,
+            OB    => clockHubOutN
+         );
+
+      clockHubIn <= '0';
 
    end generate;
 
-   U_ClockHubIoBuf : IOBUFDS
-   generic map ( DIFF_TERM => (not MASTER_G) )
-      port map(
-         I      => clockHubOut,
-         O      => clockHubIn,
-         T      => clockHubT,
-         IO     => clockHubP,
-         IOB    => clockHubN
-      );
-
    U_SlaveClockGen: if MASTER_G = false generate
+
+      U_ClockHubBuf : IBUFGDS
+         generic map ( DIFF_TERM => true )
+         port map(
+            O     => clockHubIn,
+            I     => clockHubInP,
+            IB    => clockHubInN
+         );
 
       U_RenaClkGen : entity surf.ClockManager7
          generic map(
@@ -237,7 +243,6 @@ begin
             rstOut(0) => renaClkRst,
             rstOut(1) => sysClkRst);
 
-      clockHubT   <= '1';
       clockHubOut <= '0';
 
    end generate;

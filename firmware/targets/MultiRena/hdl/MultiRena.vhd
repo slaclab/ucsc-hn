@@ -46,8 +46,8 @@ entity MultiRena is
       ethTxN      : out   sl;
 
       -- Hub clock and sync
-      clockHubP : inout sl;
-      clockHubN : inout sl;
+      clockHubP : out   sl;
+      clockHubN : out   sl;
       syncHubP  : inout sl;
       syncHubN  : inout sl;
 
@@ -482,8 +482,8 @@ begin
          dataObSlave          => rssiIbSlave,
          dataIbMaster         => rssiObMaster,
          dataIbSlave          => rssiObSlave,
-         clockHubP            => clockHubP,
-         clockHubN            => clockHubN,
+         clockHubOutP         => clockHubP,
+         clockHubOutN         => clockHubN,
          syncHubP             => syncHubP,
          syncHubN             => syncHubN,
          clockOutP            => clockOutP,
