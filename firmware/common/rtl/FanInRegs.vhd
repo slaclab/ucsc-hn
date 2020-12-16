@@ -78,8 +78,8 @@ architecture rtl of FanInRegs is
    signal rxPacketsSync  : Slv32Array(30 downto 1);
    signal dropBytesSync  : Slv32Array(30 downto 1);
 
-   signal sysClkCountReg  : slv(31 downto 0),
-   signal renaClkCountReg : slv(31 downto 0));
+   signal sysClkCountReg  : slv(31 downto 0);
+   signal renaClkCountReg : slv(31 downto 0);
 
 begin
 
