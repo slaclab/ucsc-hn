@@ -114,6 +114,7 @@ architecture STRUCTURE of FanInBoard is
 
    signal syncGen    : sl;
    signal syncInt    : sl;
+   signal syncTmp    : sl;
    signal syncReg    : sl;
    signal syncOut    : sl;
    signal syncHubT   : sl;
@@ -278,9 +279,11 @@ begin
    process (renaClk) begin
       if falling_edge(renaCLk) then
          if renaClkRst = '1' then
+            syncTmp <= '0';
             syncReg <= '0';
          else
-            syncReg <= syncHubIn;
+            syncTmp <= syncHubIn;
+            syncReg <= syncTmp;
          end if;
      end if;
    end process;
