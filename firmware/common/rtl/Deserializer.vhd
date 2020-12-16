@@ -108,7 +108,6 @@ architecture Behavioral of Deserializer is
 
    signal rxTmp : sl;
    signal rxInt : sl;
-   signal rxEnableSync : sl;
 
    signal txAxisMaster : AxiStreamMasterType;
    signal txAxisSlave  : AxiStreamSlaveType;
@@ -126,7 +125,7 @@ begin
          clk     => sysClk,
          rst     => sysClkRst,
          dataIn  => rxEnable,
-         dataOut => rxEnableSync);
+         dataOut => rxEnableReg);
 
    U_SyncCntRst: entity surf.Synchronizer
       generic map ( TPD_G => TPD_G )
@@ -144,7 +143,7 @@ begin
             rxInt <= '0' after TPD_G;
          else
             rxTmp <= rx after TPD_G;
-            rxInt <= rxTmp and rxEnableSync after TPD_G;
+            rxInt <= rxTmp and rxEnableReg after TPD_G;
          end if;
       end if;
    end process;

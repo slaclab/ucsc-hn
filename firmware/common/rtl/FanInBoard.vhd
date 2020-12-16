@@ -127,6 +127,9 @@ architecture STRUCTURE of FanInBoard is
 
    signal rxData : slv(30 downto 1);
 
+   signal renaClkCount : slv(31 downto 0);
+   signal sysClkCount  : slv(31 downto 0);
+
 begin
 
    -------------------------------
@@ -147,7 +150,9 @@ begin
          currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
-         dropBytes      => dropBytes);
+         dropBytes      => dropBytes,
+         sysClkCount    => sysClkCount,
+         renaClkCount   => renaClkCount);
 
    -------------------------------
    -- Hub/Local Clock Control
@@ -441,6 +446,26 @@ begin
          mAxisSlave  => dataIbSlave);
 
    txData <= (others => tx);
+
+   process (renaClk) begin
+      if falling_edge(renaCLk) then
+         if renaClkRst = '1' then
+            renaClkCount <= (others=>'0') after TPD_G;
+         else
+            renaClkCount <= renaClkCount + 1 after TPD_G;
+         end if;
+     end if;
+   end process;
+
+   process (sysClk) begin
+      if falling_edge(sysCLk) then
+         if sysClkRst = '1' then
+            sysClkCount <= (others=>'0') after TPD_G;
+         else
+            sysClkCount <= sysClkCount + 1 after TPD_G;
+         end if;
+     end if;
+   end process;
 
 end architecture STRUCTURE;
 
