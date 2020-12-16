@@ -77,13 +77,13 @@ begin
          BAUD_MULT_G  => 4,
          DATA_WIDTH_G => 8)
       port map (
-         clk     => sysClk,
-         rst     => sysRst,
-         clkEn   => '1',
-         wrData  => intAxisMaster.tData(7 downto 0),
-         wrValid => intAxisMaster.tValid,
-         wrReady => intAxisSlave.tReady,
-         tx      => intTx);
+         clk       => sysClk,
+         rst       => sysRst,
+         baudClkEn => '1',
+         wrData    => intAxisMaster.tData(7 downto 0),
+         wrValid   => intAxisMaster.tValid,
+         wrReady   => intAxisSlave.tReady,
+         tx        => intTx);
 
    process (renaClk) is
    begin

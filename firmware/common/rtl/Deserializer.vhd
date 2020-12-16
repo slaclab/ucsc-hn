@@ -156,13 +156,13 @@ begin
          BAUD_MULT_G  => 4,
          DATA_WIDTH_G => 8
       ) port map (
-         clk     => sysClk,
-         rst     => sysClkRst,
-         clkEn   => '1',
-         rdData  => uartData,
-         rdValid => uartDen,
-         rdReady => uartRd,
-         rx      => rxInt);
+         clk        => sysClk,
+         rst        => sysClkRst,
+         baudClkEn  => '1',
+         rdData     => uartData,
+         rdValid    => uartDen,
+         rdReady    => uartRd,
+         rx         => rxInt);
 
 
    comb : process(r, uartData, uartDen, sysClkRst, countRstReg) is
