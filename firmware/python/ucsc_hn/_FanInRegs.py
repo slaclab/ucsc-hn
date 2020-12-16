@@ -46,26 +46,6 @@ class FanInRegs(pr.Device):
             function     = lambda cmd: cmd.post(1)
         ))
 
-        self.add(pr.RemoteVariable(
-            name         = 'SyncInput',
-            description  = 'SYNC Input',
-            offset       = 0x014,
-            bitSize      = 1,
-            bitOffset    = 0x00,
-            base         = pr.Bool,
-            mode         = 'RO',
-        ))
-
-        self.add(pr.RemoteVariable(
-            name         = 'SyncPb',
-            description  = 'SYNC PB',
-            offset       = 0x014,
-            bitSize      = 1,
-            bitOffset    = 0x01,
-            base         = pr.Bool,
-            mode         = 'RO',
-        ))
-
         self.add(pr.RemoteCommand(
             name         = 'FpgaProg',
             description  = 'FPGA Program',
@@ -74,6 +54,26 @@ class FanInRegs(pr.Device):
             bitOffset    = 0x00,
             base         = pr.UInt,
             function     = pr.Command.toggle,
+        ))
+
+        self.add(pr.RemoteVariable(
+            name         = 'SysClockCount',
+            description  = 'System clock counter',
+            offset       = 0x020,
+            bitSize      = 32,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            mode         = 'RO',
+        ))
+
+        self.add(pr.RemoteVariable(
+            name         = 'RenaClockCount',
+            description  = 'Rena clock counter',
+            offset       = 0x024,
+            bitSize      = 32,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            mode         = 'RO',
         ))
 
         for i in range(1,31):
