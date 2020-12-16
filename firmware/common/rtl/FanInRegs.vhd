@@ -42,8 +42,8 @@ entity FanInRegs is
       currRxData   : in  slv(30 downto 1);
       countRst     : out sl;
       rxPackets    : in  Slv32Array(30 downto 1);
-      dropBytes    : in  Slv32Array(30 downto 1),
-      sysClkCount  : in slv(31 downto 0),
+      dropBytes    : in  Slv32Array(30 downto 1);
+      sysClkCount  : in slv(31 downto 0);
       renaClkCount : in slv(31 downto 0));
 
 end FanInRegs;
