@@ -44,7 +44,7 @@ entity FanInRegs is
       rxPackets    : in  Slv32Array(30 downto 1);
       dropBytes    : in  Slv32Array(30 downto 1);
       sysClkCount  : in slv(15 downto 0);
-      renaClkCount : in slv(15 downto 0),
+      renaClkCount : in slv(15 downto 0);
       mmcmReset    : in sl);
       mmcmLocked   : in sl);
 
@@ -84,7 +84,7 @@ architecture rtl of FanInRegs is
 
    signal sysClkCountReg  : slv(15 downto 0);
    signal renaClkCountReg : slv(15 downto 0);
-   signal mmcmLockedReg:  : sl;
+   signal mmcmLockedReg   : sl;
 
 begin
 
