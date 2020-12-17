@@ -43,8 +43,10 @@ entity FanInRegs is
       countRst     : out sl;
       rxPackets    : in  Slv32Array(30 downto 1);
       dropBytes    : in  Slv32Array(30 downto 1);
-      sysClkCount  : in slv(31 downto 0);
-      renaClkCount : in slv(31 downto 0));
+      sysClkCount  : in slv(15 downto 0);
+      renaClkCount : in slv(15 downto 0);
+      mmcmReset    : in sl;
+      mmcmLocked   : in sl);
 
 end FanInRegs;
 
@@ -56,6 +58,7 @@ architecture rtl of FanInRegs is
       syncGen        : sl;
       syncDet        : sl;
       fpgaProg       : sl;
+      mmcmReset      : sl;
       rxEnable       : slv(30 downto 1);
       axiReadSlave   : AxiLiteReadSlaveType;
       axiWriteSlave  : AxiLiteWriteSlaveType;
@@ -67,6 +70,7 @@ architecture rtl of FanInRegs is
       syncGen        => '0',
       syncDet        => '0',
       fpgaProg       => '0',
+      mmcmReset      => '0',
       rxEnable       => (others=>'0'),
       axiReadSlave   => AXI_LITE_READ_SLAVE_INIT_C,
       axiWriteSlave  => AXI_LITE_WRITE_SLAVE_INIT_C);
@@ -78,8 +82,9 @@ architecture rtl of FanInRegs is
    signal rxPacketsSync  : Slv32Array(30 downto 1);
    signal dropBytesSync  : Slv32Array(30 downto 1);
 
-   signal sysClkCountReg  : slv(31 downto 0);
-   signal renaClkCountReg : slv(31 downto 0);
+   signal sysClkCountReg  : slv(15 downto 0);
+   signal renaClkCountReg : slv(15 downto 0);
+   signal mmcmLockedReg   : sl;
 
 begin
 
@@ -115,7 +120,27 @@ begin
 
    end generate;
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync, sysClkCountReg, renaClkCountReg) is
+   U_SysClkCount: entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 16)
+      port map (
+         clk     => axiClk,
+         rst     => axiRst,
+         dataIn  => sysClkCount,
+         dataOut => sysClkCountReg);
+
+   U_RenaClkCount: entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 16)
+      port map (
+         clk     => axiClk,
+         rst     => axiRst,
+         dataIn  => renaClkCount,
+         dataOut => renaClkCountReg);
+
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync, sysClkCountReg, renaClkCountReg, mmcmLockedReg) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -144,12 +169,16 @@ begin
 
       axiSlaveRegister(axilEp, x"004", 1, v.rxEnable);
       axiSlaveRegisterR(axilEp, x"008", 1, currRxDataSync);
+
       axiWrDetect(axilEp, x"00C", v.countRst);
       axiWrDetect(axilEp, x"010", v.syncDet);
+      axiWrDetect(axilEp, x"014", v.mmcmReset);
+
       axiSlaveRegister(axilEp, x"018", 0, v.fpgaProg);
 
       axiSlaveRegisterR(axilEp, x"020", 0, sysClkCountReg);
       axiSlaveRegisterR(axilEp, x"024", 0, renaClkCountReg);
+      axiSlaveRegisterR(axilEp, x"028", 0, mmcmLockedReg);
 
       -- Rx Packet Registers, 0x100 - 0x174
       for i in 1 to 30 loop

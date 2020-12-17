@@ -226,9 +226,9 @@ set_clock_groups -asynchronous -group [get_clocks {clk62}]  -group [get_clocks {
 set_clock_groups -asynchronous -group [get_clocks {clk125}] -group [get_clocks {clk156}] -group [get_clocks {clk200}] -group [get_clocks {clk312}]
 
 set_clock_groups -asynchronous -group [get_clocks {rena200}] -group [get_clocks {clk156}] -group [get_clocks {clk200}]
-#set_clock_groups -asynchronous -group [get_clocks {rena50}]  -group [get_clocks {clk156}] -group [get_clocks {clk200}]
+set_clock_groups -asynchronous -group [get_clocks {rena50}]  -group [get_clocks {clk156}] -group [get_clocks {clk200}]
 set_clock_groups -asynchronous -group [get_clocks {rena200}] -group [get_clocks {clk125}]
 set_clock_groups -asynchronous -group [get_clocks {rena200}] -group [get_clocks {clk62}]
-#set_clock_groups -asynchronous -group [get_clocks {rena50}]  -group [get_clocks {clk125}]
-#set_clock_groups -asynchronous -group [get_clocks {rena50}]  -group [get_clocks {clk62}]
+set_clock_groups -asynchronous -group [get_clocks {rena50}]  -group [get_clocks {clk125}]
+set_clock_groups -asynchronous -group [get_clocks {rena50}]  -group [get_clocks {clk62}]
 
