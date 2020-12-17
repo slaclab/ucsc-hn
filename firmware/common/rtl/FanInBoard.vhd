@@ -232,7 +232,7 @@ begin
             CLKFBOUT_MULT_F_G  => 20.0, -- 1Ghz
             CLKOUT0_DIVIDE_F_G => 20.0, -- 50Mhz
             CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
-         port map(
+         port map (
             clkIn     => clockHubIn,
             rstIn     => mmcmReset,
             locked    => mmcmLocked,
