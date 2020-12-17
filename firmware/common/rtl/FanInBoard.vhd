@@ -170,8 +170,6 @@ begin
             TPD_G              => TPD_G,
             TYPE_G             => "MMCM",
             INPUT_BUFG_G       => false,
-            FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-            RST_IN_POLARITY_G  => '1',
             NUM_CLOCKS_G       => 2,
             -- MMCM attributes
             CLKIN_PERIOD_G     => 8.0,  -- 125Mhz
@@ -223,9 +221,6 @@ begin
          generic map(
             TPD_G              => TPD_G,
             TYPE_G             => "MMCM",
-            INPUT_BUFG_G       => true,
-            FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-            RST_IN_POLARITY_G  => '1',
             NUM_CLOCKS_G       => 2,
             -- MMCM attributes
             CLKIN_PERIOD_G     => 20.0, -- 50Mhz
