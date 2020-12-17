@@ -47,6 +47,16 @@ class FanInRegs(pr.Device):
         ))
 
         self.add(pr.RemoteCommand(
+            name         = 'MmcmReset',
+            description  = 'Mmcm Reset Pulse',
+            offset       = 0x014,
+            bitSize      = 1,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            function     = lambda cmd: cmd.post(1)
+        ))
+
+        self.add(pr.RemoteCommand(
             name         = 'FpgaProg',
             description  = 'FPGA Program',
             offset       = 0x018,
@@ -71,6 +81,16 @@ class FanInRegs(pr.Device):
             description  = 'Rena clock counter',
             offset       = 0x024,
             bitSize      = 32,
+            bitOffset    = 0x00,
+            base         = pr.UInt,
+            mode         = 'RO',
+        ))
+
+        self.add(pr.RemoteVariable(
+            name         = 'MmcmLockd',
+            description  = 'MMCM Locked Status',
+            offset       = 0x028,
+            bitSize      = 1,
             bitOffset    = 0x00,
             base         = pr.UInt,
             mode         = 'RO',
