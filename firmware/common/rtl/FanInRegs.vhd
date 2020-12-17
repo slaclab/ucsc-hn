@@ -115,6 +115,26 @@ begin
 
    end generate;
 
+   U_SysClkCount: entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 32)
+      port map (
+         clk     => axiClk,
+         rst     => axiRst,
+         dataIn  => sysClkCount,
+         dataOut => sysClkCountReg);
+
+   U_RenaClkCount: entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 32)
+      port map (
+         clk     => axiClk,
+         rst     => axiRst,
+         dataIn  => renaClkCount,
+         dataOut => renaClkCountReg);
+
    comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync, sysClkCountReg, renaClkCountReg) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
