@@ -43,8 +43,8 @@ entity FanInRegs is
       countRst     : out sl;
       rxPackets    : in  Slv32Array(30 downto 1);
       dropBytes    : in  Slv32Array(30 downto 1);
-      sysClkCount  : in slv(31 downto 0);
-      renaClkCount : in slv(31 downto 0));
+      sysClkCount  : in slv(15 downto 0);
+      renaClkCount : in slv(15 downto 0));
 
 end FanInRegs;
 
@@ -78,8 +78,8 @@ architecture rtl of FanInRegs is
    signal rxPacketsSync  : Slv32Array(30 downto 1);
    signal dropBytesSync  : Slv32Array(30 downto 1);
 
-   signal sysClkCountReg  : slv(31 downto 0);
-   signal renaClkCountReg : slv(31 downto 0);
+   signal sysClkCountReg  : slv(15 downto 0);
+   signal renaClkCountReg : slv(15 downto 0);
 
 begin
 
@@ -118,7 +118,7 @@ begin
    U_SysClkCount: entity surf.SynchronizerVector
       generic map (
          TPD_G   => TPD_G,
-         WIDTH_G => 32)
+         WIDTH_G => 16)
       port map (
          clk     => axiClk,
          rst     => axiRst,
@@ -128,7 +128,7 @@ begin
    U_RenaClkCount: entity surf.SynchronizerVector
       generic map (
          TPD_G   => TPD_G,
-         WIDTH_G => 32)
+         WIDTH_G => 16)
       port map (
          clk     => axiClk,
          rst     => axiRst,

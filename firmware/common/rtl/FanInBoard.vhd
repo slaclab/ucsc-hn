@@ -127,8 +127,8 @@ architecture STRUCTURE of FanInBoard is
 
    signal rxData : slv(30 downto 1);
 
-   signal renaClkCount : slv(31 downto 0);
-   signal sysClkCount  : slv(31 downto 0);
+   signal renaClkCount : slv(15 downto 0);
+   signal sysClkCount  : slv(15 downto 0);
 
 begin
 
