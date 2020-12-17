@@ -130,6 +130,9 @@ architecture STRUCTURE of FanInBoard is
    signal renaClkCount : slv(15 downto 0);
    signal sysClkCount  : slv(15 downto 0);
 
+   signal mmcmReset  : sl;
+   signal mmcmLocked : sl;
+
 begin
 
    -------------------------------
@@ -152,7 +155,9 @@ begin
          rxPackets      => rxPackets,
          dropBytes      => dropBytes,
          sysClkCount    => sysClkCount,
-         renaClkCount   => renaClkCount);
+         renaClkCount   => renaClkCount,
+         mmcmReset      => mmcmReset,
+         mmcmLocked     => mmcmLocked);
 
    -------------------------------
    -- Hub/Local Clock Control
@@ -176,6 +181,7 @@ begin
          port map(
             clkIn     => dataClk,
             rstIn     => dataClkRst,
+            locked    => mmcmLocked,
             clkOut(0) => renaClk,
             clkOut(1) => sysClk,
             rstOut(0) => renaClkRst,
@@ -228,7 +234,8 @@ begin
             CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
          port map(
             clkIn     => clockHubIn,
-            rstIn     => dataClkRst,
+            rstIn     => mmcmReset,
+            locked    => mmcmLocked,
             clkOut(0) => renaClk,
             clkOut(1) => sysClk,
             rstOut(0) => renaClkRst,
