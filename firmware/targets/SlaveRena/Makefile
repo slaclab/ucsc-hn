@@ -1,5 +1,5 @@
 # Define Firmware Version Number
-export PRJ_VERSION = 0x00000008
+export PRJ_VERSION = 0x00000009
 
 # Define target output
 target: bit
