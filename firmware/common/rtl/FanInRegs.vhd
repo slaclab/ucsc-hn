@@ -45,7 +45,7 @@ entity FanInRegs is
       dropBytes    : in  Slv32Array(30 downto 1);
       sysClkCount  : in slv(15 downto 0);
       renaClkCount : in slv(15 downto 0);
-      mmcmReset    : in sl);
+      mmcmReset    : in sl;
       mmcmLocked   : in sl);
 
 end FanInRegs;
