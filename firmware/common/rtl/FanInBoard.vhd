@@ -286,11 +286,9 @@ begin
    process (renaClk) begin
       if falling_edge(renaCLk) then
          if renaClkRst = '1' then
-            syncTmp <= '0';
             syncReg <= '0';
          else
-            syncTmp <= syncHubIn;
-            syncReg <= syncTmp;
+            syncReg <= syncHubIn;
          end if;
      end if;
    end process;
@@ -301,9 +299,11 @@ begin
    process (renaClk) begin
       if rising_edge(renaCLk) then
          if renaClkRst = '1' then
+            syncTmp <= '0';
             syncOut <= '0';
          else
-            syncOut <= syncReg;
+            syncTmp <= syncReg;
+            syncOut <= syncTmp;
          end if;
      end if;
    end process;
