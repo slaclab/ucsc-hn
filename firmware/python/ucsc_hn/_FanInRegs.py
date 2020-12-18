@@ -53,7 +53,7 @@ class FanInRegs(pr.Device):
             bitSize      = 1,
             bitOffset    = 0x00,
             base         = pr.UInt,
-            function     = lambda cmd: cmd.post(1)
+            function     = pr.Command.toggle,
         ))
 
         self.add(pr.RemoteCommand(

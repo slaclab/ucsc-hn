@@ -23,6 +23,14 @@ class MultiRenaRoot(pyrogue.Root):
 
         self.LoadConfig.replaceFunction(self._loadConfig)
 
+        for node in range(0,2):
+            for rena in range(1,31):
+
+                self.add(pyrogue.LinkVariable(name=f'DiagCount_{node}_{rena}',
+                                              mode='RO',
+                                              variable=self.Node[node].RenaArray.RenaBoard[rena].DiagMessageCount,
+                                              guiGroup='DiagMessageCount'))
+
     def _loadConfig(self,arg):
         self.loadYaml(name=arg,
                       writeEach=False,

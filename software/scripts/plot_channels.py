@@ -10,15 +10,7 @@ import pylab
 import re
 
 Boards = [i for i in range(11,31)]
-#Boards = [i for i in range(7,27)]
-#Boards = [i for i in range(27,31)]
 Nodes  = [0,1]
-
-#Boards = [7]
-#Nodes  = [0]
-
-#Boards = [16]
-#Nodes  = [1]
 
 DoTholdSummary = False
 DoNoiseSummary = True
