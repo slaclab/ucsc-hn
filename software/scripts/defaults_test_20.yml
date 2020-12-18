@@ -1,7 +1,7 @@
 MultiRenaRoot:
   Node[:]:
     FanInRegs:
-      ChanEnable: 0
+      ChanEnable: 0x0
     RenaArray:
       DoHistogram: False
       RenaBoard[:]:
