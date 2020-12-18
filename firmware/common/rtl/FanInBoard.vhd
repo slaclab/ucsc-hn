@@ -258,19 +258,16 @@ begin
          if rising_edge(renaCLk) then
             if renaClkRst = '1' then
                syncHubOut <= '0';
+               syncReg    <= '0';
             else
                syncHubOut <= syncInt;
+               syncReg    <= syncHubOut;
             end if;
         end if;
       end process;
 
       syncHubT <= '0';
 
-   end generate;
-
-   U_SlaveSyncGen: if MASTER_G = false generate
-      syncInt  <= '0';
-      syncHubT <= '1';
    end generate;
 
    U_SyncHubIoBuf : IOBUFDS
@@ -283,15 +280,21 @@ begin
          IOB    => syncHubN
       );
 
-   process (renaClk) begin
-      if falling_edge(renaCLk) then
-         if renaClkRst = '1' then
-            syncReg <= '0';
-         else
-            syncReg <= syncHubIn;
-         end if;
-     end if;
-   end process;
+   U_SlaveSyncGen: if MASTER_G = false generate
+      syncHubOut <= '0';
+      syncInt    <= '0';
+      syncHubT   <= '1';
+
+      process (renaClk) begin
+         if falling_edge(renaCLk) then
+            if renaClkRst = '1' then
+               syncReg <= '0';
+            else
+               syncReg <= syncHubIn;
+            end if;
+        end if;
+      end process;
+   end generate;
 
    -------------------------------
    -- Rena Sync Output
