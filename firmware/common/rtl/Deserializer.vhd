@@ -85,6 +85,7 @@ architecture Behavioral of Deserializer is
       timeout       : sl;
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
+      regAxisMaster : AxiStreamMasterType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
@@ -97,7 +98,8 @@ architecture Behavioral of Deserializer is
       timeoutRst    => '0',
       timeout       => '0',
       count         => (others => '0'),
-      intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
+      intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C),
+      regAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -236,6 +238,8 @@ begin
             v.state := IDLE_S;
       end case;
 
+      regAxisMaster <= intAxisMaster;
+
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
       dropBytes <= r.dropBytes;
@@ -270,7 +274,7 @@ begin
       ) port map (
          sAxisClk    => sysClk,
          sAxisRst    => sysClkRst,
-         sAxisMaster => r.intAxisMaster,
+         sAxisMaster => r.regAxisMaster,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => txAxisMaster,

@@ -170,8 +170,6 @@ begin
             TPD_G              => TPD_G,
             TYPE_G             => "MMCM",
             INPUT_BUFG_G       => false,
-            FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-            RST_IN_POLARITY_G  => '1',
             NUM_CLOCKS_G       => 2,
             -- MMCM attributes
             CLKIN_PERIOD_G     => 8.0,  -- 125Mhz
@@ -223,16 +221,13 @@ begin
          generic map(
             TPD_G              => TPD_G,
             TYPE_G             => "MMCM",
-            INPUT_BUFG_G       => false,
-            FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-            RST_IN_POLARITY_G  => '1',
             NUM_CLOCKS_G       => 2,
             -- MMCM attributes
             CLKIN_PERIOD_G     => 20.0, -- 50Mhz
             CLKFBOUT_MULT_F_G  => 20.0, -- 1Ghz
             CLKOUT0_DIVIDE_F_G => 20.0, -- 50Mhz
             CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
-         port map(
+         port map (
             clkIn     => clockHubIn,
             rstIn     => mmcmReset,
             locked    => mmcmLocked,
@@ -291,11 +286,9 @@ begin
    process (renaClk) begin
       if falling_edge(renaCLk) then
          if renaClkRst = '1' then
-            syncTmp <= '0';
             syncReg <= '0';
          else
-            syncTmp <= syncHubIn;
-            syncReg <= syncTmp;
+            syncReg <= syncHubIn;
          end if;
      end if;
    end process;
@@ -306,9 +299,11 @@ begin
    process (renaClk) begin
       if rising_edge(renaCLk) then
          if renaClkRst = '1' then
+            syncTmp <= '0';
             syncOut <= '0';
          else
-            syncOut <= syncReg;
+            syncTmp <= syncReg;
+            syncOut <= syncTmp;
          end if;
      end if;
    end process;

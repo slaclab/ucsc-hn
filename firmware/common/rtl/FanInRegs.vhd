@@ -140,6 +140,14 @@ begin
          dataIn  => renaClkCount,
          dataOut => renaClkCountReg);
 
+      U_MmcmLocked: entity surf.Synchronizer
+         generic map ( TPD_G => TPD_G)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => mmcmLocked,
+            dataOut => mmcmLockedReg);
+
    comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync, sysClkCountReg, renaClkCountReg, mmcmLockedReg) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
@@ -172,7 +180,8 @@ begin
 
       axiWrDetect(axilEp, x"00C", v.countRst);
       axiWrDetect(axilEp, x"010", v.syncDet);
-      axiWrDetect(axilEp, x"014", v.mmcmReset);
+
+      axiSlaveRegister(axilEp, x"014", 0, v.mmcmReset);
 
       axiSlaveRegister(axilEp, x"018", 0, v.fpgaProg);
 
