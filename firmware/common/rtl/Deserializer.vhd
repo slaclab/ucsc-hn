@@ -238,7 +238,7 @@ begin
             v.state := IDLE_S;
       end case;
 
-      regAxisMaster <= intAxisMaster;
+      v.regAxisMaster := r.intAxisMaster;
 
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;

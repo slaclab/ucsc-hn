@@ -56,7 +56,7 @@ begin
          TPD_G               => TPD_G,
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 9,
-         PIPE_STAGES_G       => 2,
+         PIPE_STAGES_G       => 4,
          SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_G,
          MASTER_AXI_CONFIG_G => INT_AXIS_CONFIG_C
       ) port map (
