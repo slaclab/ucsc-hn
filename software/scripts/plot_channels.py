@@ -134,21 +134,26 @@ for inFile in inFiles:
             vVal   = int(data[7])
             tstamp = int(data[8])
 
-            try:
-                plots[node][board][rena][chan]['pol']  = pol
-                plots[node][board][rena][chan]['vVal'].append(vVal)
-                plots[node][board][rena][chan]['uVal'].append(uVal)
-                if pha != 0:
-                    plots[node][board][rena][chan]['pha'].append(pha)
-            except Exception:
-                print(f"Got error for node {node}, board {board}, rena {rena}, chan {chan}")
-                exit(1)
+            if board in Boards and node in Nodes:
 
-            if int(ct) != int(time.time()):
-                print(f"Read {count} entries")
-                ct = time.time()
+                try:
+                    plots[node][board][rena][chan]['pol']  = pol
+                    plots[node][board][rena][chan]['vVal'].append(vVal)
+                    plots[node][board][rena][chan]['uVal'].append(uVal)
+                    if pha != 0:
+                        plots[node][board][rena][chan]['pha'].append(pha)
+                except Exception:
+                    print(f"Got error for node {node}, board {board}, rena {rena}, chan {chan}")
+                    exit(1)
 
-            count += 1
+                if int(ct) != int(time.time()):
+                    print(f"Read {count} entries")
+                    ct = time.time()
+
+                count += 1
+
+            else:
+                print(f"Skipping node {node}, board {board}")
 
     print("Done reading data")
     print("Generating plots....")
