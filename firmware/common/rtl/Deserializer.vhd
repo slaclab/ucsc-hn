@@ -85,6 +85,7 @@ architecture Behavioral of Deserializer is
       timeout       : sl;
       count         : slv(31 downto 0);
       intAxisMaster : AxiStreamMasterType;
+      regAxisMaster : AxiStreamMasterType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
@@ -97,7 +98,8 @@ architecture Behavioral of Deserializer is
       timeoutRst    => '0',
       timeout       => '0',
       count         => (others => '0'),
-      intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
+      intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C),
+      regAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -112,9 +114,28 @@ architecture Behavioral of Deserializer is
    signal txAxisMaster : AxiStreamMasterType;
    signal txAxisSlave  : AxiStreamSlaveType;
 
+   signal countRstReg : sl;
+   signal rxEnableReg : sl;
+
 begin
 
    currRxData <= rxTmp;
+
+   U_SyncEnable: entity surf.Synchronizer
+      generic map ( TPD_G          => TPD_G )
+      port map (
+         clk     => sysClk,
+         rst     => sysClkRst,
+         dataIn  => rxEnable,
+         dataOut => rxEnableReg);
+
+   U_SyncCntRst: entity surf.Synchronizer
+      generic map ( TPD_G => TPD_G )
+      port map (
+         clk     => sysClk,
+         rst     => sysClkRst,
+         dataIn  => countRst,
+         dataOut => countRstReg);
 
    process (sysClk) is
    begin
@@ -124,7 +145,7 @@ begin
             rxInt <= '0' after TPD_G;
          else
             rxTmp <= rx after TPD_G;
-            rxInt <= rxTmp and rxEnable after TPD_G;
+            rxInt <= rxTmp and rxEnableReg after TPD_G;
          end if;
       end if;
    end process;
@@ -137,16 +158,16 @@ begin
          BAUD_MULT_G  => 4,
          DATA_WIDTH_G => 8
       ) port map (
-         clk     => sysClk,
-         rst     => sysClkRst,
-         clkEn   => '1',
-         rdData  => uartData,
-         rdValid => uartDen,
-         rdReady => uartRd,
-         rx      => rxInt);
+         clk        => sysClk,
+         rst        => sysClkRst,
+         baudClkEn  => '1',
+         rdData     => uartData,
+         rdValid    => uartDen,
+         rdReady    => uartRd,
+         rx         => rxInt);
 
 
-   comb : process(r, uartData, uartDen, sysClkRst, countRst) is
+   comb : process(r, uartData, uartDen, sysClkRst, countRstReg) is
       variable v : RegType;
    begin
 
@@ -167,7 +188,7 @@ begin
          v.timeoutCnt := r.timeoutCnt - 1;
       end if;
 
-      if countRst = '1' then
+      if countRstReg = '1' then
          v.rxPackets := (others => '0');
          v.dropBytes := (others => '0');
       end if;
@@ -217,6 +238,8 @@ begin
             v.state := IDLE_S;
       end case;
 
+      v.regAxisMaster := r.intAxisMaster;
+
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
       dropBytes <= r.dropBytes;
@@ -251,12 +274,12 @@ begin
       ) port map (
          sAxisClk    => sysClk,
          sAxisRst    => sysClkRst,
-         sAxisMaster => r.intAxisMaster,
+         sAxisMaster => r.regAxisMaster,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => txAxisMaster,
          mAxisSlave  => txAxisSlave);
-         
+
    U_Sof : entity surf.SsiInsertSof
       generic map (
          TPD_G               => TPD_G,

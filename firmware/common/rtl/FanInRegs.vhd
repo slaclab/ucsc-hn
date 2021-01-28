@@ -36,15 +36,17 @@ entity FanInRegs is
       axiWriteSlave  : out   AxiLiteWriteSlaveType;
 
       -- Values
-      syncPb     : in  sl;
-      syncReg    : out sl;
-      syncIn     : in  sl;
-      fpgaProgL  : out sl;
-      rxEnable   : out slv(30 downto 1);
-      currRxData : in  slv(30 downto 1);
-      countRst   : out sl;
-      rxPackets  : in  Slv32Array(30 downto 1);
-      dropBytes  : in  Slv32Array(30 downto 1));
+      syncGen      : out sl;
+      fpgaProgL    : out sl;
+      rxEnable     : out slv(30 downto 1);
+      currRxData   : in  slv(30 downto 1);
+      countRst     : out sl;
+      rxPackets    : in  Slv32Array(30 downto 1);
+      dropBytes    : in  Slv32Array(30 downto 1);
+      sysClkCount  : in slv(15 downto 0);
+      renaClkCount : in slv(15 downto 0);
+      mmcmReset    : in sl;
+      mmcmLocked   : in sl);
 
 end FanInRegs;
 
@@ -52,10 +54,11 @@ architecture rtl of FanInRegs is
 
    type RegType is record
       countRst       : sl;
-      syncRegCnt     : slv(3 downto 0);
-      syncReg        : sl;
+      syncGenCnt     : slv(3 downto 0);
+      syncGen        : sl;
       syncDet        : sl;
       fpgaProg       : sl;
+      mmcmReset      : sl;
       rxEnable       : slv(30 downto 1);
       axiReadSlave   : AxiLiteReadSlaveType;
       axiWriteSlave  : AxiLiteWriteSlaveType;
@@ -63,10 +66,11 @@ architecture rtl of FanInRegs is
 
    constant REG_INIT_C : RegType := (
       countRst       => '0',
-      syncRegCnt     => (others=>'0'),
-      syncReg        => '0',
+      syncGenCnt     => (others=>'0'),
+      syncGen        => '0',
       syncDet        => '0',
       fpgaProg       => '0',
+      mmcmReset      => '0',
       rxEnable       => (others=>'0'),
       axiReadSlave   => AXI_LITE_READ_SLAVE_INIT_C,
       axiWriteSlave  => AXI_LITE_WRITE_SLAVE_INIT_C);
@@ -74,9 +78,77 @@ architecture rtl of FanInRegs is
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
 
+   signal currRxDataSync : slv(30 downto 1);
+   signal rxPacketsSync  : Slv32Array(30 downto 1);
+   signal dropBytesSync  : Slv32Array(30 downto 1);
+
+   signal sysClkCountReg  : slv(15 downto 0);
+   signal renaClkCountReg : slv(15 downto 0);
+   signal mmcmLockedReg   : sl;
+
 begin
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPackets, dropBytes, currRxData, syncIn, syncPb) is
+   U_SyncGen: for i in 1 to 30  generate
+
+      U_SyncRxPackets: entity surf.SynchronizerVector
+         generic map (
+            TPD_G   => TPD_G,
+            WIDTH_G => 32)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => rxPackets(i),
+            dataOut => rxPacketsSync(i));
+
+      U_SyncDropBytes: entity surf.SynchronizerVector
+         generic map (
+            TPD_G   => TPD_G,
+            WIDTH_G => 32)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => dropBytes(i),
+            dataOut => dropBytesSync(i));
+
+      U_SyncCurRxData: entity surf.Synchronizer
+         generic map ( TPD_G => TPD_G)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => currRxData(i),
+            dataOut => currRxDataSync(i));
+
+   end generate;
+
+   U_SysClkCount: entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 16)
+      port map (
+         clk     => axiClk,
+         rst     => axiRst,
+         dataIn  => sysClkCount,
+         dataOut => sysClkCountReg);
+
+   U_RenaClkCount: entity surf.SynchronizerVector
+      generic map (
+         TPD_G   => TPD_G,
+         WIDTH_G => 16)
+      port map (
+         clk     => axiClk,
+         rst     => axiRst,
+         dataIn  => renaClkCount,
+         dataOut => renaClkCountReg);
+
+      U_MmcmLocked: entity surf.Synchronizer
+         generic map ( TPD_G => TPD_G)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => mmcmLocked,
+            dataOut => mmcmLockedReg);
+
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync, sysClkCountReg, renaClkCountReg, mmcmLockedReg) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -88,12 +160,12 @@ begin
       v.syncDet := '0';
 
       if r.syncDet = '1' then
-         v.syncRegCnt := (others=>'1');
-         v.syncReg := '1';
-      elsif v.syncRegCnt = 0 then
-         v.syncReg := '0';
+         v.syncGenCnt := (others=>'1');
+         v.syncGen := '1';
+      elsif v.syncGenCnt = 0 then
+         v.syncGen := '0';
       else
-         v.syncRegCnt := r.syncRegCnt - 1;
+         v.syncGenCnt := r.syncGenCnt - 1;
       end if;
 
       ------------------------
@@ -104,21 +176,27 @@ begin
       axiSlaveWaitTxn(axilEp, axiWriteMaster, axiReadMaster, v.axiWriteSlave, v.axiReadSlave);
 
       axiSlaveRegister(axilEp, x"004", 1, v.rxEnable);
-      axiSlaveRegisterR(axilEp, x"008", 1, currRxData);
+      axiSlaveRegisterR(axilEp, x"008", 1, currRxDataSync);
+
       axiWrDetect(axilEp, x"00C", v.countRst);
-      axiWrDetect(axilEp, x"010", v.syncReg);
-      axiSlaveRegisterR(axilEp, x"014", 0, syncIn);
-      axiSlaveRegisterR(axilEp, x"014", 1, syncPb);
+      axiWrDetect(axilEp, x"010", v.syncDet);
+
+      axiSlaveRegister(axilEp, x"014", 0, v.mmcmReset);
+
       axiSlaveRegister(axilEp, x"018", 0, v.fpgaProg);
+
+      axiSlaveRegisterR(axilEp, x"020", 0, sysClkCountReg);
+      axiSlaveRegisterR(axilEp, x"024", 0, renaClkCountReg);
+      axiSlaveRegisterR(axilEp, x"028", 0, mmcmLockedReg);
 
       -- Rx Packet Registers, 0x100 - 0x174
       for i in 1 to 30 loop
-         axiSlaveRegisterR(axilEp, toSlv(256 + (i-1)*4,12), 0, rxPackets(i));
+         axiSlaveRegisterR(axilEp, toSlv(256 + (i-1)*4,12), 0, rxPacketsSync(i));
       end loop;
 
       -- Rx Drop Bytes Registers, 0x200 - 0x274
       for i in 1 to 30 loop
-         axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytes(i));
+         axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytesSync(i));
       end loop;
 
       -- Close the transaction
@@ -139,7 +217,7 @@ begin
       axiWriteSlave  <= r.axiWriteSlave;
       countRst       <= r.countRst;
       rxEnable       <= r.rxEnable;
-      syncReg        <= r.syncReg;
+      syncGen        <= r.syncGen;
 
       if r.fpgaProg = '1' then
          fpgaProgL <= '0';

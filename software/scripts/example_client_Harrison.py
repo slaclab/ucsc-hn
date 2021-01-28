@@ -42,12 +42,12 @@ print("Done")
 
 #newdacvalue = 90
 #def changedacvalues():
-#    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[7].Rena[0].Channel[0].Fastdac.set(newdacvalue)
-#    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[7].Rena[0].Channel[0].Fastdac.set(newdacvalue)
+#    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[7].Rena[0].Channel[0].Fastdac.set({newdacvalue})
+#    client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[7].Rena[0].Channel[0].Fastdac.set({newdacvalue})
 #def changealldacvalues():
 #    for i in range [channels that will be changed]:
 #        changedacvalues():
-            #Need to figure out how arguments work in functions so I can change things for a set of channels
+           #Need to figure out how arguments work in functions so I can change things for a set of channels
 # Changing dac values
 #client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[7].Rena[0].Channel[0].FastDac.set(100)
 #client.MultiRenaRoot.Node[0].RenaArray.RenaBoard[7].Rena[0].Channel[0].SlowDac.set(100)

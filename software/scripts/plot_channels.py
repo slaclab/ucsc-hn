@@ -9,16 +9,11 @@ import sys
 import pylab
 import re
 
-Boards = [i for i in range(7,27)]
-Nodes  = [0]
+Boards = [i for i in range(11,31)]
+Nodes  = [0,1]
 
-#Boards = [7]
-#Nodes  = [0]
-
-#Boards = [16]
-#Nodes  = [1]
-
-DoSummary = False
+DoTholdSummary = False
+DoNoiseSummary = True
 
 def extractFileData(fname):
     grps = re.match(r'(\d+)_(\d+)\.dat',fname)
@@ -32,7 +27,7 @@ if len(sys.argv) < 2:
 inFiles = sys.argv[1:]
 print(f"Input files: {inFiles}")
 
-if DoSummary:
+if DoTholdSummary:
     summary = {}
 
     # Determine which channels and thresholds are begin scanned for summary
@@ -72,13 +67,32 @@ if DoSummary:
                         if thold not in summary[node][board][rena][channel]['data']:
                             summary[node][board][rena][channel]['data'][thold] = {'hits': 0, 'mean' : 0.0, 'sigma' : 0.0}
 
+if DoNoiseSummary:
+    summary = {}
+
+    for node in Nodes:
+        if node not in summary:
+            summary[node] = {}
+
+        for board in Boards:
+            if board not in summary[node]:
+                summary[node][board] = {}
+
+            for rena in range(2):
+                if rena not in summary[node][board]:
+                    summary[node][board][rena] = {}
+
+                for channel in range(0,36):
+
+                    if channel not in summary[node][board][rena]:
+                        summary[node][board][rena][channel] = {'mean' : 0.0, 'sigma' : 0.0 }
+
 
 for inFile in inFiles:
     outFile = inFile + ".pdf"
 
-    if DoSummary:
+    if DoTholdSummary:
         fileChan, thold = extractFileData(inFile)
-
         print(f"Processing {inFile} with channel {fileChan}, threshold {thold}")
     else:
         print(f"Processing {inFile}")
@@ -120,17 +134,26 @@ for inFile in inFiles:
             vVal   = int(data[7])
             tstamp = int(data[8])
 
-            plots[node][board][rena][chan]['pol']  = pol
-            plots[node][board][rena][chan]['vVal'].append(vVal)
-            plots[node][board][rena][chan]['uVal'].append(uVal)
-            if pha != 0:
-                plots[node][board][rena][chan]['pha'].append(pha)
+            if board in Boards and node in Nodes:
 
-            if int(ct) != int(time.time()):
-                print(f"Read {count} entries")
-                ct = time.time()
+                try:
+                    plots[node][board][rena][chan]['pol']  = pol
+                    plots[node][board][rena][chan]['vVal'].append(vVal)
+                    plots[node][board][rena][chan]['uVal'].append(uVal)
+                    if pha != 0:
+                        plots[node][board][rena][chan]['pha'].append(pha)
+                except Exception:
+                    print(f"Got error for node {node}, board {board}, rena {rena}, chan {chan}")
+                    exit(1)
 
-            count += 1
+                if int(ct) != int(time.time()):
+                    print(f"Read {count} entries")
+                    ct = time.time()
+
+                count += 1
+
+            else:
+                print(f"Skipping node {node}, board {board}")
 
     print("Done reading data")
     print("Generating plots....")
@@ -142,6 +165,7 @@ for inFile in inFiles:
 
     for node in Nodes:
         for board in Boards:
+            print(f"Node {node}, board {board}")
             for rena in range(2):
                 for channel in range(36):
 
@@ -152,7 +176,11 @@ for inFile in inFiles:
                         pha_path = plots[node][board][rena][channel]['pha']
                         mean, sigma = norm.fit(pha_path)
 
-                        if DoSummary:
+                        if DoNoiseSummary:
+                            summary[node][board][rena][channel]['mean'] = mean
+                            summary[node][board][rena][channel]['sigma'] = sigma
+
+                        if DoTholdSummary:
                             if channel in summary[node][board][rena]:
                                 summary[node][board][rena][channel]['pol'] = pol
 
@@ -186,18 +214,50 @@ for inFile in inFiles:
                         # Last plot of a page
                         if (idx % 4) == 3:
                             pdf.savefig(fig)
+                            plt.close()
                             fig = None
 
                         idx += 1
 
     if fig is not None:
         pdf.savefig(fig)
+        plt.close()
+
+    if DoNoiseSummary:
+        print("Creating noise summary plots")
+        for node in Nodes:
+            for board in Boards:
+
+                fig = plt.figure(figsize=(8.5,11))
+
+                for rena in range(2):
+
+                    plt.subplot(4, 1, (rena*2)+1)
+
+                    x = [i for i in range(36)]
+                    y = [summary[node][board][rena][i]['mean'] for i in range(36)]
+
+                    plt.plot(x, y, linewidth=2)
+
+                    plt.title(f"N{node}, B{board}, R{rena} Mean")
+
+                    plt.subplot(4, 1, (rena*2)+2)
+
+                    x = [i for i in range(36)]
+                    y = [summary[node][board][rena][i]['sigma'] for i in range(36)]
+
+                    plt.plot(x, y, linewidth=2)
+
+                    plt.title(f"N{node}, B{board}, R{rena} Sigma")
+
+                pdf.savefig(fig)
+                plt.close()
 
     pdf.close()
 
     print("Done Generating plots")
 
-if not DoSummary:
+if not DoTholdSummary:
     exit()
 
 # Save summary data
@@ -282,6 +342,7 @@ for node in Nodes:
             sigmaFig.set_title(f"Sigma: N{node}, B{board}, R{rena}")
 
             pdf.savefig(fig)
+            plt.close()
             fig = None
 
             # 3d summary plots
@@ -318,6 +379,7 @@ for node in Nodes:
                 plt.title(f"Sigma: N{node}, B{board}, R{rena}, C{channel}, P{pol}")
 
                 pdf.savefig(fig)
+                plt.close()
                 fig = None
 
 pdf.close()

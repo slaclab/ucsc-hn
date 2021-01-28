@@ -8,7 +8,7 @@
 -- the terms contained in the LICENSE.txt file.
 ------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
--- MultiRena.vhd
+-- SlaveRena.vhd
 -------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -30,7 +30,7 @@ use surf.EthMacPkg.all;
 
 library ucsc_hn;
 
-entity MultiRena is
+entity SlaveRena is
    generic (
       BUILD_INFO_G    : BuildInfoType);
    port (
@@ -46,8 +46,8 @@ entity MultiRena is
       ethTxN      : out   sl;
 
       -- Hub clock and sync
-      clockHubP : out   sl;
-      clockHubN : out   sl;
+      clockHubP : in    sl;
+      clockHubN : in    sl;
       syncHubP  : inout sl;
       syncHubN  : inout sl;
 
@@ -65,9 +65,9 @@ entity MultiRena is
       -- Control outputs
       txData      : out   slv(6  downto 1)
    );
-end MultiRena;
+end SlaveRena;
 
-architecture STRUCTURE of MultiRena is
+architecture STRUCTURE of SlaveRena is
 
    constant TPD_C : time := 1 ns;
 
@@ -467,7 +467,7 @@ begin
    U_FanInBoard: entity ucsc_hn.FanInBoard
       generic map (
          TPD_G         => TPD_C,
-         MASTER_G      => true,
+         MASTER_G      => false,
          AXIS_CONFIG_G => APP_AXIS_CONFIG_C
       ) port map (
          axilClk              => axilClk,
@@ -482,8 +482,8 @@ begin
          dataObSlave          => rssiIbSlave,
          dataIbMaster         => rssiObMaster,
          dataIbSlave          => rssiObSlave,
-         clockHubOutP         => clockHubP,
-         clockHubOutN         => clockHubN,
+         clockHubInP          => clockHubP,
+         clockHubInN          => clockHubN,
          syncHubP             => syncHubP,
          syncHubN             => syncHubN,
          clockOutP            => clockOutP,

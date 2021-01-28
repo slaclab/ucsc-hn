@@ -37,7 +37,7 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
 
         pr.streamConnect(self,self._remRssi.application(0))
 
-        for i in range(30):
+        for i in range(1,31):
             self.add(ucsc_hn.RenaBoard(board=i, name=f'RenaBoard[{i}]'))
 
         self.add(pr.LocalVariable(name='DiagMessageCount',
@@ -80,8 +80,9 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
             self.sendData(data)
 
 
-    #def countReset(self):
-    #    super().countReset()
+    def countReset(self):
+        self.DiagMessageCount.set(0)
+        super().countReset()
 
     def sendData(self, data):
         #print('Sending data:' + ''.join(' {:02x}'.format(x) for x in data))

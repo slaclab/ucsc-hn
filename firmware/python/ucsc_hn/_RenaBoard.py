@@ -93,6 +93,10 @@ class RenaBoard(pr.Device):
     def board(self):
         return self._board
 
+    def countReset(self):
+        self.DiagMessageCount.set(0)
+        self.DiagMessageError.set(0)
+        super().countReset()
 
     def buildBoardIdSub(self,bcast=False):
         data = bytearray(5)

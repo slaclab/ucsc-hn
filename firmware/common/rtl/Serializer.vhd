@@ -47,6 +47,7 @@ architecture Behavioral of Serializer is
    signal intAxisMaster : AxiStreamMasterType;
    signal intAxisSlave  : AxiStreamSlaveType;
    signal intTx : sl;
+   signal regTx : sl;
 
 begin
 
@@ -55,7 +56,7 @@ begin
          TPD_G               => TPD_G,
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 9,
-         PIPE_STAGES_G       => 2,
+         PIPE_STAGES_G       => 4,
          SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_G,
          MASTER_AXI_CONFIG_G => INT_AXIS_CONFIG_C
       ) port map (
@@ -76,21 +77,23 @@ begin
          BAUD_MULT_G  => 4,
          DATA_WIDTH_G => 8)
       port map (
-         clk     => sysClk,
-         rst     => sysRst,
-         clkEn   => '1',
-         wrData  => intAxisMaster.tData(7 downto 0),
-         wrValid => intAxisMaster.tValid,
-         wrReady => intAxisSlave.tReady,
-         tx      => intTx);
+         clk       => sysClk,
+         rst       => sysRst,
+         baudClkEn => '1',
+         wrData    => intAxisMaster.tData(7 downto 0),
+         wrValid   => intAxisMaster.tValid,
+         wrReady   => intAxisSlave.tReady,
+         tx        => intTx);
 
    process (renaClk) is
    begin
       if (rising_edge(renaClk)) then
          if renaRst = '1' then
-            tx <= '0' after TPD_G;
+            regTx <= '0' after TPD_G;
+            tx    <= '0' after TPD_G;
          else
-            tx <= intTx after TPD_G;
+            regTx <= intTx after TPD_G;
+            tx    <= regTx after TPD_G;
          end if;
       end if;
    end process;

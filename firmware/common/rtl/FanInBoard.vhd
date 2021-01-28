@@ -32,6 +32,7 @@ library ucsc_hn;
 entity FanInBoard is
    generic (
       TPD_G         : time                := 1 ns;
+      MASTER_G      : boolean             := true;
       AXIS_CONFIG_G : AxiStreamConfigType := AXI_STREAM_CONFIG_INIT_C
       );
    port (
@@ -54,18 +55,24 @@ entity FanInBoard is
       dataObMaster : out AxiStreamMasterType;
       dataObSlave  : in  AxiStreamSlaveType;
 
-      -- Rena fan in board clocks
-      clockIn  : in  sl;
-      clockOut : out sl;
+      -- Hub board clock and sync signals
+      clockHubInP  : in    sl := '0';
+      clockHubInN  : in    sl := '0';
+      clockHubOutP : out   sl;
+      clockHubOutN : out   sl;
+      syncHubP     : inout sl;
+      syncHubN     : inout sl;
 
-      -- Sync signals
-      syncPb    : in  sl;
-      syncIn    : in  sl;
-      syncOut   : out sl;
+      -- Rena Clock and sync
+      clockOutP : out sl;
+      clockOutN : out sl;
+      syncOutP  : out sl;
+      syncOutN  : out sl;
       fpgaProgL : out sl;
 
       -- Data inputs
-      rxData : in slv(30 downto 1);
+      rxDataP : in slv(30 downto 1);
+      rxDataN : in slv(30 downto 1);
 
       -- Control outputs
       txData : out slv(6 downto 1)
@@ -105,99 +112,215 @@ architecture STRUCTURE of FanInBoard is
 
    signal tx : sl;
 
-   signal syncReg   : sl;
-   signal syncInReg : sl;
-   signal syncPbReg : sl;
+   signal syncGen    : sl;
+   signal syncInt    : sl;
+   signal syncTmp    : sl;
+   signal syncReg    : sl;
+   signal syncOut    : sl;
+   signal syncHubT   : sl;
+   signal syncHubIn  : sl;
+   signal syncHubOut : sl;
+
+   signal clockHubIn  : sl;
+   signal clockHubOut : sl;
+   signal clockOut    : sl;
+
+   signal rxData : slv(30 downto 1);
+
+   signal renaClkCount : slv(15 downto 0);
+   signal sysClkCount  : slv(15 downto 0);
+
+   signal mmcmReset  : sl;
+   signal mmcmLocked : sl;
 
 begin
 
    -------------------------------
    -- AXI Bus
    -------------------------------
-   U_AxiLiteAsync : entity surf.AxiLiteAsync
-      generic map (TPD_G => TPD_G) port map (
-         sAxiClk         => axilClk,
-         sAxiClkRst      => axilRst,
-         sAxiReadMaster  => axilReadMaster,
-         sAxiReadSlave   => axilReadSlave,
-         sAxiWriteMaster => axilWriteMaster,
-         sAxiWriteSlave  => axilWriteSlave,
-         mAxiClk         => sysClk,
-         mAxiClkRst      => sysClkRst,
-         mAxiReadMaster  => intReadMaster,
-         mAxiReadSlave   => intReadSlave,
-         mAxiWriteMaster => intWriteMaster,
-         mAxiWriteSlave  => intWriteSlave);
-
    U_Regs : entity ucsc_hn.FanInRegs
       generic map (TPD_G => TPD_G)
       port map (
-         axiClk         => sysClk,
-         axiRst         => sysClkRst,
-         axiReadMaster  => intReadMaster,
-         axiReadSlave   => intReadSlave,
-         axiWriteMaster => intWriteMaster,
-         axiWriteSlave  => intWriteSlave,
-         syncPb         => syncPbReg,
-         syncIn         => syncInReg,
-         syncReg        => syncReg,
+         axiClk         => axilClk,
+         axiRst         => axilRst,
+         axiReadMaster  => axilReadMaster,
+         axiReadSlave   => axilReadSlave,
+         axiWriteMaster => axilWriteMaster,
+         axiWriteSlave  => axilWriteSlave,
+         syncGen        => syncGen,
          fpgaProgL      => fpgaProgL,
          rxEnable       => rxEnable,
          currRxData     => currRxData,
          countRst       => countRst,
          rxPackets      => rxPackets,
-         dropBytes      => dropBytes);
-
-   U_RstSync: entity surf.SynchronizerOneShot
-      generic map (
-         TPD_G => TPD_G
-      ) port map (
-         clk     => renaClk,
-         rst     => renaClkRst,
-         dataIn  => syncReg,
-         dataOut => syncOut);
-
-   U_SyncIn: entity surf.Synchronizer
-      generic map (
-         TPD_G          => TPD_G
-      ) port map (
-         clk     => renaClk,
-         rst     => renaClkRst,
-         dataIn  => syncIn,
-         dataOut => syncInReg);
-
-   U_SyncPb: entity surf.Synchronizer
-      generic map (
-         TPD_G          => TPD_G
-      ) port map (
-         clk     => renaClk,
-         rst     => renaClkRst,
-         dataIn  => syncPb,
-         dataOut => syncPbReg);
+         dropBytes      => dropBytes,
+         sysClkCount    => sysClkCount,
+         renaClkCount   => renaClkCount,
+         mmcmReset      => mmcmReset,
+         mmcmLocked     => mmcmLocked);
 
    -------------------------------
-   -- Clocking
+   -- Hub/Local Clock Control
    -------------------------------
-   U_MMCM : entity surf.ClockManager7
-      generic map(
-         TPD_G              => TPD_G,
-         TYPE_G             => "MMCM",
-         INPUT_BUFG_G       => false,
-         FB_BUFG_G          => false,   -- minimize BUFG for 7-series FPGAs
-         RST_IN_POLARITY_G  => '1',
-         NUM_CLOCKS_G       => 2,
-         -- MMCM attributes
-         CLKIN_PERIOD_G     => 8.0, -- 125Mhz
-         CLKFBOUT_MULT_F_G  => 8.0, -- 1Ghz
-         CLKOUT0_DIVIDE_F_G => 5.0, -- 200Mhz
-         CLKOUT1_DIVIDE_G   => 20)  -- 50Mhz
+
+   U_MasterClockGen: if MASTER_G = true generate
+
+      U_RenaClkGen : entity surf.ClockManager7
+         generic map(
+            TPD_G              => TPD_G,
+            TYPE_G             => "MMCM",
+            INPUT_BUFG_G       => false,
+            NUM_CLOCKS_G       => 2,
+            -- MMCM attributes
+            CLKIN_PERIOD_G     => 8.0,  -- 125Mhz
+            CLKFBOUT_MULT_F_G  => 8.0,  -- 1Ghz
+            CLKOUT0_DIVIDE_F_G => 20.0, -- 50Mhz
+            CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
+         port map(
+            clkIn     => dataClk,
+            rstIn     => dataClkRst,
+            locked    => mmcmLocked,
+            clkOut(0) => renaClk,
+            clkOut(1) => sysClk,
+            rstOut(0) => renaClkRst,
+            rstOut(1) => sysClkRst);
+
+      -- Drive output clock using DDR buffer
+      ODDR_HUB : ODDR
+         port map (
+            C  => renaClk,
+            Q  => clockHubOut,
+            CE => '1',
+            D1 => '1',
+            D2 => '0',
+            R  => renaClkRst,
+            S  => '0');
+
+      U_ClockHubBuf : OBUFDS
+         port map(
+            I     => clockHubOut,
+            O     => clockHubOutP,
+            OB    => clockHubOutN
+         );
+
+      clockHubIn <= '0';
+
+   end generate;
+
+   U_SlaveClockGen: if MASTER_G = false generate
+
+      U_ClockHubBuf : IBUFGDS
+         generic map ( DIFF_TERM => true )
+         port map(
+            O     => clockHubIn,
+            I     => clockHubInP,
+            IB    => clockHubInN
+         );
+
+      U_RenaClkGen : entity surf.ClockManager7
+         generic map(
+            TPD_G              => TPD_G,
+            TYPE_G             => "MMCM",
+            NUM_CLOCKS_G       => 2,
+            -- MMCM attributes
+            CLKIN_PERIOD_G     => 20.0, -- 50Mhz
+            CLKFBOUT_MULT_F_G  => 20.0, -- 1Ghz
+            CLKOUT0_DIVIDE_F_G => 20.0, -- 50Mhz
+            CLKOUT1_DIVIDE_G   => 5)    -- 200Mhz
+         port map (
+            clkIn     => clockHubIn,
+            rstIn     => mmcmReset,
+            locked    => mmcmLocked,
+            clkOut(0) => renaClk,
+            clkOut(1) => sysClk,
+            rstOut(0) => renaClkRst,
+            rstOut(1) => sysClkRst);
+
+      clockHubOut <= '0';
+
+   end generate;
+
+   -------------------------------
+   -- Hub/Local Sync Select
+   -------------------------------
+   U_MasterSyncGen: if MASTER_G = true generate
+
+      U_RstSync: entity surf.SynchronizerOneShot
+         generic map (
+            TPD_G => TPD_G
+         ) port map (
+            clk     => renaClk,
+            rst     => renaClkRst,
+            dataIn  => syncGen,
+            dataOut => syncInt);
+
+      process (renaClk) begin
+         if rising_edge(renaCLk) then
+            if renaClkRst = '1' then
+               syncHubOut <= '0';
+               syncReg    <= '0';
+            else
+               syncHubOut <= syncInt;
+               syncReg    <= syncHubOut;
+            end if;
+        end if;
+      end process;
+
+      syncHubT <= '0';
+
+   end generate;
+
+   U_SyncHubIoBuf : IOBUFDS
+   generic map ( DIFF_TERM => (not MASTER_G) )
       port map(
-         clkIn     => dataClk,
-         rstIn     => dataClkRst,
-         clkOut(0) => sysClk,
-         clkOut(1) => renaClk,
-         rstOut(0) => sysClkRst,
-         rstOut(1) => renaClkRst);
+         I      => syncHubOut,
+         O      => syncHubIn,
+         T      => syncHubT,
+         IO     => syncHubP,
+         IOB    => syncHubN
+      );
+
+   U_SlaveSyncGen: if MASTER_G = false generate
+      syncHubOut <= '0';
+      syncInt    <= '0';
+      syncHubT   <= '1';
+
+      process (renaClk) begin
+         if falling_edge(renaCLk) then
+            if renaClkRst = '1' then
+               syncReg <= '0';
+            else
+               syncReg <= syncHubIn;
+            end if;
+        end if;
+      end process;
+   end generate;
+
+   -------------------------------
+   -- Rena Sync Output
+   -------------------------------
+   process (renaClk) begin
+      if rising_edge(renaCLk) then
+         if renaClkRst = '1' then
+            syncTmp <= '0';
+            syncOut <= '0';
+         else
+            syncTmp <= syncReg;
+            syncOut <= syncTmp;
+         end if;
+     end if;
+   end process;
+
+   U_SyncOutBuf : OBUFDS
+      port map(
+         O      => syncOutP,
+         OB     => syncOutN,
+         I      => syncOut
+      );
+
+   -------------------------------
+   -- Rena Clock Output
+   -------------------------------
 
    -- Drive output clock using DDR buffer
    ODDR_I : ODDR
@@ -210,9 +333,26 @@ begin
          R  => renaClkRst,
          S  => '0');
 
+   U_ClockOutBuf : OBUFDS
+      port map(
+         O      => clockOutP,
+         OB     => clockOutN,
+         I      => clockOut
+      );
+
    -------------------------------
    -- Inbound Path
    -------------------------------
+   U_RxDataGen : for i in 1 to 30 generate
+
+      U_RxDataBuf : IBUFDS
+         generic map ( DIFF_TERM => true )
+         port map(
+            I      => rxDataP(i),
+            IB     => rxDataN(i),
+            O      => rxData(i)
+         );
+   end generate;
 
    U_DeserializerGen : for i in 1 to 30 generate
       U_Deserializer : entity ucsc_hn.Deserializer
@@ -311,6 +451,26 @@ begin
          mAxisSlave  => dataIbSlave);
 
    txData <= (others => tx);
+
+   process (renaClk) begin
+      if falling_edge(renaCLk) then
+         if renaClkRst = '1' then
+            renaClkCount <= (others=>'0') after TPD_G;
+         else
+            renaClkCount <= renaClkCount + 1 after TPD_G;
+         end if;
+     end if;
+   end process;
+
+   process (sysClk) begin
+      if falling_edge(sysCLk) then
+         if sysClkRst = '1' then
+            sysClkCount <= (others=>'0') after TPD_G;
+         else
+            sysClkCount <= sysClkCount + 1 after TPD_G;
+         end if;
+     end if;
+   end process;
 
 end architecture STRUCTURE;
 
