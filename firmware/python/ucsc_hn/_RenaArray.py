@@ -8,7 +8,7 @@ import rogue.interfaces.stream
 import rogue.protocols.batcher
 
 class RenaArray(pr.Device,ris.Master,ris.Slave):
-    def __init__(self, host, nodeId, dataWriter=None, **kwargs):
+    def __init__(self, host, nodeId, dataWriter=None, legacyWriter=None, **kwargs):
         pr.Device.__init__(self,description="FanInBoard Registers.", **kwargs)
         ris.Master.__init__(self)
         ris.Slave.__init__(self)
@@ -29,6 +29,11 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
         self.addProtocol(dataF)
         pr.streamConnect(dd,dataF)
         pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
+
+        legF = rogue.interfaces.stream.Filter(True,3)
+        self.addProtocol(legF)
+        pr.streamConnect(dd,legF)
+        pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
 
         diagF = rogue.interfaces.stream.Filter(True,1)
         self.addProtocol(diagF)
