@@ -55,146 +55,146 @@ MultiRenaRoot:
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[5]:
-            FastDac: 67
-            SlowDac: 67
+            FastDac: 63
+            SlowDac: 63
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[6]:
-            FastDac: 65
-            SlowDac: 65
+            FastDac: 63
+            SlowDac: 63
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[7]:
-            FastDac: 67
-            SlowDac: 67
+            FastDac: 63
+            SlowDac: 63
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[8]:
-            FastDac: 65
-            SlowDac: 65
+            FastDac: 61
+            SlowDac: 61
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[9]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 60
+            SlowDac: 60
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[10]:
-            FastDac: 65
-            SlowDac: 65
+            FastDac: 61
+            SlowDac: 61
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[11]:
-            FastDac: 65
-            SlowDac: 65
+            FastDac: 61
+            SlowDac: 61
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[12]:
-            FastDac: 62
-            SlowDac: 62
+            FastDac: 58
+            SlowDac: 58
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[13]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 59
+            SlowDac: 59
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[14]:
-            FastDac: 64
-            SlowDac: 64
+            FastDac: 60
+            SlowDac: 60
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[15]:
-            FastDac: 64
-            SlowDac: 64
+            FastDac: 60
+            SlowDac: 60
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[16]:
-            FastDac: 65
-            SlowDac: 65
+            FastDac: 61
+            SlowDac: 61
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[17]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 59
+            SlowDac: 59
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[18]:
-            FastDac: 66
-            SlowDac: 66
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[19]:
-            FastDac: 63
-            SlowDac: 63
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[20]:
-            FastDac: 66
-            SlowDac: 66
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[21]:
             FastDac: 62
             SlowDac: 62
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
+          Channel[19]:
+            FastDac: 59
+            SlowDac: 59
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[20]:
+            FastDac: 62
+            SlowDac: 62
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[21]:
+            FastDac: 58
+            SlowDac: 58
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
           Channel[22]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 59
+            SlowDac: 59
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[23]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 59
+            SlowDac: 59
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[24]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 59
+            SlowDac: 59
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[25]:
-            FastDac: 147
-            SlowDac: 147
+            FastDac: 151
+            SlowDac: 151
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
           Channel[26]:
-            FastDac: 147
-            SlowDac: 147
+            FastDac: 151
+            SlowDac: 151
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
           Channel[27]:
-            FastDac: 146
-            SlowDac: 146
+            FastDac: 150
+            SlowDac: 150
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
           Channel[28]:
-            FastDac: 144
-            SlowDac: 144
+            FastDac: 152
+            SlowDac: 152
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
@@ -284,134 +284,134 @@ MultiRenaRoot:
             SlowTrigEnable: Disable
             Polarity: Positive
           Channel[7]:
-            FastDac: 66
-            SlowDac: 66
+            FastDac: 62
+            SlowDac: 62
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[8]:
-            FastDac: 63
-            SlowDac: 63
+            FastDac: 59
+            SlowDac: 59
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[9]:
-            FastDac: 68
-            SlowDac: 68
+            FastDac: 64
+            SlowDac: 64
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[10]:
-            FastDac: 66
-            SlowDac: 66
+            FastDac: 62
+            SlowDac: 62
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[11]:
+            FastDac: 61
+            SlowDac: 61
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[12]:
             FastDac: 65
             SlowDac: 65
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
-          Channel[12]:
+          Channel[13]:
+            FastDac: 61
+            SlowDac: 61
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[14]:
+            FastDac: 63
+            SlowDac: 63
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[15]:
+            FastDac: 62
+            SlowDac: 62
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[16]:
+            FastDac: 61
+            SlowDac: 61
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[17]:
+            FastDac: 59
+            SlowDac: 59
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[18]:
             FastDac: 69
             SlowDac: 69
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
-          Channel[13]:
-            FastDac: 65
-            SlowDac: 65
+          Channel[19]:
+            FastDac: 62
+            SlowDac: 62
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
-          Channel[14]:
-            FastDac: 67
-            SlowDac: 67
+          Channel[20]:
+            FastDac: 60
+            SlowDac: 60
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
-          Channel[15]:
-            FastDac: 66
-            SlowDac: 66
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[16]:
-            FastDac: 65
-            SlowDac: 65
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[17]:
+          Channel[21]:
             FastDac: 63
             SlowDac: 63
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
-          Channel[18]:
-            FastDac: 73
-            SlowDac: 73
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[19]:
-            FastDac: 66
-            SlowDac: 66
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[20]:
-            FastDac: 64
-            SlowDac: 64
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
-          Channel[21]:
-            FastDac: 67
-            SlowDac: 67
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
           Channel[22]:
-            FastDac: 65
-            SlowDac: 65
+            FastDac: 61
+            SlowDac: 61
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
           Channel[23]:
+            FastDac: 60
+            SlowDac: 60
+            FastTrigEnable: Enable
+            SlowTrigEnable: Enable
+            Polarity: Positive
+          Channel[24]:
             FastDac: 64
             SlowDac: 64
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Positive
-          Channel[24]:
-            FastDac: 68
-            SlowDac: 68
-            FastTrigEnable: Enable
-            SlowTrigEnable: Enable
-            Polarity: Positive
           Channel[25]:
-            FastDac: 160
-            SlowDac: 160
+            FastDac: 164
+            SlowDac: 164
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
           Channel[26]:
-            FastDac: 146
-            SlowDac: 146
+            FastDac: 150
+            SlowDac: 150
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
           Channel[27]:
-            FastDac: 145
-            SlowDac: 145
+            FastDac: 149
+            SlowDac: 149
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
           Channel[28]:
-            FastDac: 144
-            SlowDac: 144
+            FastDac: 148
+            SlowDac: 148
             FastTrigEnable: Enable
             SlowTrigEnable: Enable
             Polarity: Negative
