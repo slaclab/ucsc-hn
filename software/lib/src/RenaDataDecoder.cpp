@@ -84,6 +84,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    ris::FramePtr nFrame;
    ris::FrameIterator src;
    ris::FrameIterator dst;
+   ris::FrameIterator tmp;
 
    bool readMode;
    bool readPHA;
@@ -109,6 +110,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
 
    uint8_t gotCrc;
    uint8_t expCrc;
+   uint8_t zero;
 
    rogue::GilRelease noGil;
    ris::FrameLockPtr lock = frame->lock();
@@ -149,6 +151,30 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
       sendFrame(frame);
       return;
    }
+
+   // Make a copy of the frame in the raw format, add source and dest node IDs
+   nFrame = reqFrame(frame->getPayload()+2,true);
+   nFrame->setPayload(frame->getPayload());
+   nFrame->setChannel(3);
+   tmp = frame->begin();
+   dst = nFrame->begin();
+
+   // Copy one bytes
+   copyFrame(tmp,1,dst);
+
+   // Set src byte
+   toFrame(dst,1,&nodeId_);
+
+   // Set dest byte
+   zero = 0;
+   toFrame(dst,1,&zero);
+
+   // Copy the rest of the frame
+   copyFrame(tmp,frame->getPayload()-1,dst);
+
+   // Send the frame copy
+   sendFrame(nFrame);
+   nFrame.reset();
 
    // Make sure length long enough for CRC check
    if ( frame->getPayload() < 3 ) {

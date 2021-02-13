@@ -248,3 +248,33 @@ class RenaChannel(pr.Device):
     def _storeData(self,hitData):
         self.PhaHistogram.value().append(hitData['PHA'])
 
+    def _writeLegacyConfig(self,f,nodeId,boardId,renaId):
+
+        vref = 0 if self.Polarity.Value() == 1 else 0
+
+        f.write("Channel {")
+        f.write(f"        Board_Number = {boardId}")
+        f.write(f"        Channel_Number = {self.channel}")
+        f.write(f"        Fast_DAC = {self.FastDac.value()}")
+        f.write(f"        Fast_Hit_Readout = {self.FastTrigEnable.value()}")
+        f.write(f"        Fast_Powerdown = {self.FastChanPowerDown.value()}")
+        f.write(f"        Fast_Trig_Enable = {self.FastTrigEnable.value()}")
+        f.write(f"        Feedback_Cap = {self.FbCapacitor.value()}")
+        f.write(f"        Feedback_Resistor = {self.FbResistor.value()}")
+        f.write(f"        Feedback_Type = {self.FbType.value()}")
+        f.write(f"        Fet_Size = {self.FbFetSize.value()}")
+        f.write(f"        Follower = {self.isFollower}")
+        f.write(f"        Gain = {self.Gain.value()}")
+        f.write(f"        Node_Number = {nodeId}")
+        f.write(f"        Polarity = {self.Polarity.value()}")
+        f.write(f"        Pole_Zero_Enable = {self.PoleZero.value()}")
+        f.write(f"        Powerdown = {self.PowerDown.value()}")
+        f.write(f"        Rena = {renaId}")
+        f.write(f"        Shaping_Time = {self.ShapeTime.value()}")
+        f.write(f"        Slow_DAC = {self.SlowDac.value()}")
+        f.write(f"        Slow_Hit_Readout = {self.SlowTrigEnable.value()}")
+        f.write(f"        Slow_Trig_Enable = {self.SlowTrigEnable.value()}")
+        f.write(f"        Test_Enable = {self.TestInputEnable.value()}")
+        f.write(f"        VRef = {vref}")
+        f.write("}")
+
