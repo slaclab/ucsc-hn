@@ -20,6 +20,10 @@ Targets:
       ImageDir: targets/MultiRena/images
       Extensions:
       - bit
+   SlaveRena:
+      ImageDir: targets/SlaveRena/images
+      Extensions:
+      - bit
    DefaultBoot:
       ImageDir: targets/DefaultBoot/images
       Extensions:
@@ -29,6 +33,7 @@ Releases:
    MultiRena:
       Targets:
       - MultiRena
+      - SlaveRena
       - DefaultBoot
       Types:
       - Rogue
