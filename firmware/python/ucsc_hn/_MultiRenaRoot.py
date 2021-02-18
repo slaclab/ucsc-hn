@@ -34,10 +34,10 @@ class MultiRenaRoot(pyrogue.Root):
                                               variable=self.Node[node].RenaArray.RenaBoard[rena].DiagMessageCount,
                                               guiGroup='DiagMessageCount'))
 
-        self.add(pr.LocalCommand(name='SaveOldConfig', value='',
-                                 function=self._storeOldConfig,
-                                 hidden=False,
-                                 description='Store old configuration to a file'))
+        self.add(pyrogue.LocalCommand(name='SaveOldConfig', value='',
+                                      function=self._storeOldConfig,
+                                      hidden=False,
+                                      description='Store old configuration to a file'))
 
     def _loadConfig(self,arg):
         self.loadYaml(name=arg,
@@ -50,14 +50,14 @@ class MultiRenaRoot(pyrogue.Root):
     def _storeOldConfig(self,arg):
 
         try:
-            with open(arg) as f:
+            with open(arg,'w') as f:
 
-                for node in self.getNodes(ucsc_hn.RenaNode):
-                    for board in node.RenaArray.getNodes(ucsc_hn.RenaBoard):
-                        for rena in board.getNodes(ucsc_hn.RenaAsic):
-                            for chan in rena.getNodes(ucsh_hn.RenaChannel):
-                                chan._writeLegacyConfig(f,node.nodeId,board.board,rena.rena)
+                for nodeK,nodeV in self.getNodes(ucsc_hn.RenaNode).items():
+                    for boardK,boardV in nodeV.RenaArray.getNodes(ucsc_hn.RenaBoard).items():
+                        for renaK,renaV in boardV.getNodes(ucsc_hn.RenaAsic).items():
+                            for chanK,chanV in renaV.getNodes(ucsc_hn.RenaChannel).items():
+                                chanV._writeLegacyConfig(f,nodeV.nodeId,boardV.board,renaV.rena)
 
         except Exception as e:
-            pr.logException(self._log,e)
+            pyrogue.logException(self._log,e)
 
