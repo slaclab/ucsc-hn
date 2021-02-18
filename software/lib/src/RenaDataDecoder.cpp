@@ -118,7 +118,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    // Empty frame
    if ( frame->getPayload() < 1 ) return;
 
-   printf("Got frame size: %i\n",frame->getPayload());
+   //printf("Got frame size: %i\n",frame->getPayload());
 
    // Ensure frame is in a sing buffer
    ensureSingleBuffer(frame,true);
