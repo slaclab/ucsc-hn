@@ -30,11 +30,10 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
         pr.streamConnect(dd,dataF)
         pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
 
-        print("got here!!!!!")
-        #legF = rogue.interfaces.stream.Filter(True,3)
-        #self.addProtocol(legF)
-        #pr.streamConnect(dd,legF)
-        #pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
+        legF = rogue.interfaces.stream.Filter(True,3)
+        self.addProtocol(legF)
+        pr.streamConnect(dd,legF)
+        pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
 
         diagF = rogue.interfaces.stream.Filter(True,1)
         self.addProtocol(diagF)

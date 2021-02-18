@@ -152,8 +152,6 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
       return;
    }
 
-#if 0
-
    // Make a copy of the frame in the raw format, add source and dest node IDs
    nFrame = reqFrame(frame->getPayload()+2,true);
    nFrame->setPayload(frame->getPayload());
@@ -177,8 +175,6 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    // Send the frame copy
    sendFrame(nFrame);
    nFrame.reset();
-
-#endif
 
    // Make sure length long enough for CRC check
    if ( frame->getPayload() < 3 ) {
