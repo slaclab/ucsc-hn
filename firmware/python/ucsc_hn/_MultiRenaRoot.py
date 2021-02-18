@@ -46,6 +46,9 @@ class MultiRenaRoot(pyrogue.Root):
                       incGroups=None,
                       excGroups='NoConfig')
 
+        for kn,n in self.getNodes(typ=ucsc_hn.RenaNode).items():
+            n.RenaArray.ConfigBoards()
+
 
     def _storeOldConfig(self,arg):
 

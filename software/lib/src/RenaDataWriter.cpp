@@ -51,6 +51,7 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
 
    if ( frame->getPayload() == 0 ) return;
 
+   rogue::GilRelease noGil;
    std::unique_lock<std::mutex> lock(mtx_);
 
    // Small frame
@@ -73,6 +74,7 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
 
       sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
 
+      checkSize(strlen(buffer));
       intWrite(buffer,strlen(buffer));
 
       frameCount_ ++;
