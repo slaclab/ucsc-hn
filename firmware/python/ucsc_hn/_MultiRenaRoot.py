@@ -20,13 +20,14 @@ class MultiRenaRoot(pyrogue.Root):
         lw = ucsc_hn.LegacyWriter()
         self.add(lw)
 
-        self.add(ucsc_hn.RenaNode(host=host[0],name='Node[0]',node=0,dataWriter=dw,legacyWriter=lw))
-        self.add(ucsc_hn.RenaNode(host=host[1],name='Node[1]',node=1,dataWriter=dw,legacyWriter=lw))
+        for i in len(host):
+            self.add(ucsc_hn.RenaNode(host=host[i],name=f'Node[{i}]',node=i,dataWriter=dw,legacyWriter=lw))
+
         self.add(ucsc_hn.RunControl())
 
         self.LoadConfig.replaceFunction(self._loadConfig)
 
-        for node in range(0,2):
+        for node in range(len(host)):
             for rena in range(1,31):
 
                 self.add(pyrogue.LinkVariable(name=f'DiagCount_{node}_{rena}',
