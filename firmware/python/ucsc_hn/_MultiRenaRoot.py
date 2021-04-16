@@ -20,7 +20,7 @@ class MultiRenaRoot(pyrogue.Root):
         lw = ucsc_hn.LegacyWriter()
         self.add(lw)
 
-        for i in len(host):
+        for i in range(len(host)):
             self.add(ucsc_hn.RenaNode(host=host[i],name=f'Node[{i}]',node=i,dataWriter=dw,legacyWriter=lw))
 
         self.add(ucsc_hn.RunControl())
