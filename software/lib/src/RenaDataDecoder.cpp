@@ -111,6 +111,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint8_t gotCrc;
    uint8_t expCrc;
    uint8_t zero;
+   uint8_t one;
 
    rogue::GilRelease noGil;
    ris::FrameLockPtr lock = frame->lock();
@@ -153,11 +154,15 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    }
 
    // Make a copy of the frame in the raw format, add source and dest node IDs
-   nFrame = reqFrame(frame->getPayload()+2,true);
-   nFrame->setPayload(frame->getPayload());
+   nFrame = reqFrame(frame->getPayload()+4,true);
+   nFrame->setPayload(frame->getPayload()+4);
    nFrame->setChannel(3);
    tmp = frame->begin();
    dst = nFrame->begin();
+
+   // Add a one to the start of the record
+   one = 1;
+   toFrame(dst,1,&one);
 
    // Copy one bytes
    copyFrame(tmp,1,dst);
@@ -171,6 +176,10 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
 
    // Copy the rest of the frame
    copyFrame(tmp,frame->getPayload()-1,dst);
+
+   // Add a zero
+   zero = 0;
+   toFrame(dst,1,&zero);
 
    // Send the frame copy
    sendFrame(nFrame);
