@@ -64,11 +64,12 @@ entity FanInBoard is
       syncHubN     : inout sl;
 
       -- Rena Clock and sync
-      clockOutP : out sl;
-      clockOutN : out sl;
-      syncOutP  : out sl;
-      syncOutN  : out sl;
-      fpgaProgL : out sl;
+      clockOutP  : out sl;
+      clockOutN  : out sl;
+      syncOutP   : out sl;
+      syncOutN   : out sl;
+      syncOutNew : out sl;
+      fpgaProgL  : out sl;
 
       -- Data inputs
       rxDataP : in slv(30 downto 1);
@@ -302,11 +303,13 @@ begin
    process (renaClk) begin
       if rising_edge(renaCLk) then
          if renaClkRst = '1' then
-            syncTmp <= '0';
-            syncOut <= '0';
+            syncTmp    <= '0';
+            syncOut    <= '0';
+            syncOutNew <= '0';
          else
-            syncTmp <= syncReg;
-            syncOut <= syncTmp;
+            syncTmp    <= syncReg;
+            syncOut    <= syncTmp;
+            syncOutNew <= syncTmp;
          end if;
      end if;
    end process;
