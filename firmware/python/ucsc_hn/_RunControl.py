@@ -9,21 +9,34 @@ class RunControl(pr.RunControl):
     def __init__(self, *, hidden=True, states=None, cmd=None, **kwargs):
         super().__init__(hidden=hidden, rates={0 : 'Self Triggered'}, **kwargs)
 
+        self.add(pr.LocalVariable(name='TestMode',
+                                  value=False,
+                                  mode='RW',
+                                  description='Test data mode. True for ReadoutEn=True, False for SelectiveRead=True'))
+
     def _setRunState(self,value,changed):
         if changed:
 
             if value == 1:
-                state = 'Enable'
+                if self.TestMode.get():
+                    readEn  = 'Enable'
+                    selRead = 'Disable'
+                else:
+                    readEn  = 'Disable'
+                    selRead = 'Enable'
+
                 self._thread = threading.Thread(target=self._run)
                 self._thread.start()
             else:
-                state = 'Disable'
+                readEn  = 'Disable'
+                selRead = 'Disable'
                 self._thread.join()
                 self._thread = None
 
             for kn,n in self.root.getNodes(typ=ucsc_hn.RenaNode).items():
                 for bn,b in n.RenaArray.getNodes(typ=ucsc_hn.RenaBoard).items():
-                    b.ReadoutEnable.setDisp(state)
+                    b.ReadoutEnable.setDisp(readEn)
+                    b.SelectiveRead.setDisp(selRead)
 
                 n.RenaArray.ConfigReadout()
 
