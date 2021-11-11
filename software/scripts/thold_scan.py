@@ -10,7 +10,7 @@ client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
 client.MultiRenaRoot.DataWriter.Close()
 
 # Take state steps as a script
-client.MultiRenaRoot.LoadConfig("/home/ryan/work/ucsc-hn/software/scripts/defaults_scan.yml")
+client.MultiRenaRoot.LoadConfig("/home/ril/slac_testing/ucsc-hn/software/scripts")
 print("Load Done")
 
 time.sleep(5)
@@ -54,7 +54,7 @@ for scan in Scans:
             time.sleep(1)
 
             # Open data file
-            client.MultiRenaRoot.DataWriter.DataFile.set(f"/home/ryan/work/ucsc-hn/software/scripts/{DataDir}/{chan:#02}_{thold:#03}.dat")
+            client.MultiRenaRoot.DataWriter.DataFile.set(f"/home/ril/slac_testing/ucsc-hn/software/scripts/{DataDir}/{chan:#02}_{thold:#03}.dat")
             client.MultiRenaRoot.DataWriter.Open()
             time.sleep(1)
 

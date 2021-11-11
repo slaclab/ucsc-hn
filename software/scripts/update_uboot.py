@@ -1,8 +1,7 @@
-
-# Get uboot from https://pypi.org/project/uboot/
+#Get uboot from https://pypi.org/project/uboot/
 import uboot
 
-fname = "/mnt/uboot.env"
+fname = "/media/ril/BOOT/uboot.env"
 #fname = "/run/media/ryan/BOOT/uboot.env"
 #fname = "/run/media/ryan/BOOT/uboot.env.working"
 

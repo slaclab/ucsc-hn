@@ -7,26 +7,28 @@ class RunControl(pr.RunControl):
     """Special base class to control runs. """
 
     def __init__(self, *, hidden=True, states=None, cmd=None, **kwargs):
-        super().__init__(hidden=hidden, rates={0 : 'Self Triggered'}, **kwargs)
-
-        self.add(pr.LocalVariable(name='TestMode',
-                                  value=False,
-                                  mode='RW',
-                                  description='Test data mode. True for ReadoutEn=True, False for SelectiveRead=True'))
+        super().__init__(hidden=hidden, rates={0 : 'Test Mode', 1 : 'Normal Mode'}, **kwargs)
 
     def _setRunState(self,value,changed):
         if changed:
 
+            # Run enabled
             if value == 1:
-                if self.TestMode.get():
+
+                # Test Mode
+                if self.runRate.get() == 0:
                     readEn  = 'Enable'
                     selRead = 'Disable'
+
+                # Normal Mode
                 else:
-                    readEn  = 'Disable'
+                    readEn  = 'Enable'
                     selRead = 'Enable'
 
                 self._thread = threading.Thread(target=self._run)
                 self._thread.start()
+
+            # Run disabled
             else:
                 readEn  = 'Disable'
                 selRead = 'Disable'
