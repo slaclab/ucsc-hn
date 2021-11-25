@@ -9,8 +9,9 @@ import sys
 import pylab
 import re
 
-Boards = [i for i in range(11,31)]
-Nodes  = [0,1]
+#Boards = [i for i in range(11,31)]
+Boards = [30]
+Nodes  = [0,1,2,3,4]
 
 DoTholdSummary = False
 DoNoiseSummary = True
