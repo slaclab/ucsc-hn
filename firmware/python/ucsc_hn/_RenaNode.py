@@ -1,4 +1,5 @@
 import pyrogue as pr
+import pyrogue.interfaces.simulation
 import rogue
 import surf.protocols.rssi
 import surf.ethernet.udp
@@ -6,11 +7,14 @@ import RceG3
 import ucsc_hn
 
 class RenaNode(pr.Device):
-    def __init__ (self, host, node=0, dataWriter=None, legacyWriter=None, **kwargs):
+    def __init__ (self, host, node=0, dataWriter=None, legacyWriter=None, emulate=False, **kwargs):
         super().__init__(description="FanInBoard Registers.", **kwargs)
 
         # Remote memory for FPGA reigsters
-        self._remMem = rogue.interfaces.memory.TcpClient(host, 9000)
+        if emulate:
+            self._remMem = pr.interfaces.simulation.MemEmulate()
+        else:
+            self._remMem = rogue.interfaces.memory.TcpClient(host, 9000)
 
         # Core FPGA Registers
         self.add(RceG3.RceVersion(memBase=self._remMem))
@@ -19,7 +23,7 @@ class RenaNode(pr.Device):
         self.add(surf.protocols.rssi.RssiCore(memBase=self._remMem,offset=0xB0020000))
         self.add(ucsc_hn.FanInRegs(memBase=self._remMem,offset=0xA0000000))
 
-        self.add(ucsc_hn.RenaArray(host=host,nodeId=node,dataWriter=dataWriter,legacyWriter=legacyWriter))
+        self.add(ucsc_hn.RenaArray(host=host,nodeId=node,dataWriter=dataWriter,legacyWriter=legacyWriter,emulate=emulate))
 
         self._nodeId = node
 

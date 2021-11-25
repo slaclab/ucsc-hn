@@ -8,39 +8,40 @@ import rogue.interfaces.stream
 import rogue.protocols.batcher
 
 class RenaArray(pr.Device,ris.Master,ris.Slave):
-    def __init__(self, host, nodeId, dataWriter=None, legacyWriter=None, **kwargs):
+    def __init__(self, host, nodeId, dataWriter=None, legacyWriter=None, emulate=False, **kwargs):
         pr.Device.__init__(self,description="FanInBoard Registers.", **kwargs)
         ris.Master.__init__(self)
         ris.Slave.__init__(self)
 
         # RSSI For interface to RENA Boards
-        self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
-        self.add(self._remRssi)
+        if emulate is False:
+            self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
+            self.add(self._remRssi)
 
-        batch = rogue.protocols.batcher.SplitterV1()
-        self.addProtocol(batch)
-        pr.streamConnect(self._remRssi.application(0),batch)
+            batch = rogue.protocols.batcher.SplitterV1()
+            self.addProtocol(batch)
+            pr.streamConnect(self._remRssi.application(0),batch)
 
-        dd = ucsc_hn.DataDecoder(nodeId=nodeId)
-        self.add(dd)
-        pr.streamConnect(batch,dd)
+            dd = ucsc_hn.DataDecoder(nodeId=nodeId)
+            self.add(dd)
+            pr.streamConnect(batch,dd)
 
-        dataF = rogue.interfaces.stream.Filter(True,2)
-        self.addProtocol(dataF)
-        pr.streamConnect(dd,dataF)
-        pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
+            dataF = rogue.interfaces.stream.Filter(True,2)
+            self.addProtocol(dataF)
+            pr.streamConnect(dd,dataF)
+            pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
 
-        legF = rogue.interfaces.stream.Filter(True,3)
-        self.addProtocol(legF)
-        pr.streamConnect(dd,legF)
-        pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
+            legF = rogue.interfaces.stream.Filter(True,3)
+            self.addProtocol(legF)
+            pr.streamConnect(dd,legF)
+            pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
 
-        diagF = rogue.interfaces.stream.Filter(True,1)
-        self.addProtocol(diagF)
-        pr.streamConnect(dd,diagF)
-        pr.streamConnect(diagF,self)
+            diagF = rogue.interfaces.stream.Filter(True,1)
+            self.addProtocol(diagF)
+            pr.streamConnect(dd,diagF)
+            pr.streamConnect(diagF,self)
 
-        pr.streamConnect(self,self._remRssi.application(0))
+            pr.streamConnect(self,self._remRssi.application(0))
 
         for i in range(1,31):
             self.add(ucsc_hn.RenaBoard(board=i, name=f'RenaBoard[{i}]'))

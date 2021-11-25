@@ -11,7 +11,7 @@ import RceG3
 import ucsc_hn
 
 class MultiRenaRoot(pyrogue.Root):
-    def __init__(self,host=[],pollEn=True):
+    def __init__(self,host=[],pollEn=True,emulate=False):
         pyrogue.Root.__init__(self,name='MultiRenaRoot',description='tester', pollEn=pollEn)
 
         dw = ucsc_hn.DataWriter()
@@ -21,7 +21,7 @@ class MultiRenaRoot(pyrogue.Root):
         self.add(lw)
 
         for i in range(len(host)):
-            self.add(ucsc_hn.RenaNode(host=host[i],name=f'Node[{i}]',node=i,dataWriter=dw,legacyWriter=lw))
+            self.add(ucsc_hn.RenaNode(host=host[i],name=f'Node[{i}]',node=i,dataWriter=dw,legacyWriter=lw,emulate=emulate))
 
         self.add(ucsc_hn.RunControl())
 
