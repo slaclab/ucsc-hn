@@ -19,7 +19,7 @@ Rena[:]:
     PowerDown: PowerOn
     PoleZero: Disable
     FbCapacitor: 60 fF
-    ShapeTime: 0.39 uS
+    ShapeTime: 1.9 uS
     FbFetSize: 450 um
     FastDac: 90
     Polarity: Positive
