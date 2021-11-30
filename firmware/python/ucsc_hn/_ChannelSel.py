@@ -101,55 +101,71 @@ class ChannelSelect(pr.Device):
         self.add(pr.LinkVariable(name='ReadoutEnable',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Readout Enable'))
 
         self.add(pr.LinkVariable(name='ForceTrig',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Force Trigger Enable'))
 
         self.add(pr.LinkVariable(name='OrMode',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Rena Board OR Mode'))
 
         self.add(pr.LinkVariable(name='SelectiveRead',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Channel Selective Read'))
 
         self.add(pr.LinkVariable(name='IntermediateBoard',
                                  mode='RW',
                                  enum={0:'Even',1:'Odd',2:'Debug'},
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Intermediate Board'))
 
         self.add(pr.LinkVariable(name='FollowerEn',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Follower Enable'))
 
         self.add(pr.LinkVariable(name='FollowerAsic',
                                  mode='RW',
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Follower ASIC'))
 
         self.add(pr.LinkVariable(name='FollowerChannel',
                                  mode='RW',
+                                 groups=['BoardConfig','DoCopy'],
                                  linkedGet=self._boardGet,
                                  linkedSet=self._boardSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect],
                                  description='Follower Channel'))
 
         ##############################
@@ -175,57 +191,73 @@ class ChannelSelect(pr.Device):
         self.add(pr.LinkVariable(name='FbResistor',
                                  mode='RW',
                                  enum={0:'200MOhm',1:'1.2 GOhm'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Feedback Resistor Value'))
 
         self.add(pr.LinkVariable(name='TestInputEnable',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Test Input Enable'))
 
         self.add(pr.LinkVariable(name='FastChanPowerDown',
                                  mode='RW',
                                  enum={0:'PowerOn',1:'PowerOff'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Fast Path Power Down'))
 
         self.add(pr.LinkVariable(name='FbType',
                                  mode='RW',
                                  enum={0:'Res. Mult.',1:'FET'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Feedback Type'))
 
         self.add(pr.LinkVariable(name='Gain',
                                  mode='RW',
                                  enum={0:'1.6',1:'1.8',2:'2.3',3:'5.0'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Gain'))
 
         self.add(pr.LinkVariable(name='PowerDown',
                                  mode='RW',
                                  enum={0:'PowerOn',1:'PowerOff'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Power Down'))
 
         self.add(pr.LinkVariable(name='PoleZero',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Pole Zero Cancellation'))
 
         self.add(pr.LinkVariable(name='FbCapacitor',
                                  mode='RW',
                                  enum={0:'15 fF',1:'60 fF'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Feedback Capacitor Value'))
 
         self.add(pr.LinkVariable(name='ShapeTime',
@@ -246,55 +278,71 @@ class ChannelSelect(pr.Device):
                                        13:'2.8 uS',
                                        14:'4.5 uS',
                                        15:'38 uS'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Shape Time'))
 
         self.add(pr.LinkVariable(name='FbFetSize',
                                  mode='RW',
                                  enum={0:'450 um',1:'1000 um'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Feedback Fet Size'))
 
         self.add(pr.LinkVariable(name='FastDac',
                                  mode='RW',
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Fast Dac'))
 
         self.add(pr.LinkVariable(name='Polarity',
                                  mode='RW',
                                  enum={0:'Negative',1:'Positive'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Polarity'))
 
         self.add(pr.LinkVariable(name='SlowDac',
                                  mode='RW',
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Slow Dac'))
 
         self.add(pr.LinkVariable(name='FastTrigEnable',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Fast Trigger Enable'))
 
         self.add(pr.LinkVariable(name='SlowTrigEnable',
                                  mode='RW',
                                  enum={0:'Disable',1:'Enable'},
+                                 groups=['ChannelConfig','DoCopy'],
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel Slow Trigger Enable'))
 
         self.add(pr.LinkVariable(name='PhaHistogram',
                                  mode='RW',
+                                 groups=['ChannelConfig','DoCopy'],
                                  hidden=True,
                                  linkedGet=self._channelGet,
                                  linkedSet=self._channelSet,
+                                 dependencies=[self.NodeSelect, self.BoardSelect, self.RenaSelect, self.ChannelSelect],
                                  description='Channel data histogram'))
 
     def _channelGet(self, *, var, read, check):
@@ -340,9 +388,10 @@ class ChannelSelect(pr.Device):
         cpy_rena    = self.RenaCopy.get(read=False,check=False)
         cpy_channel = self.ChannelCopy.get(read=False,check=False)
 
-        for var in self._copyChanList:
-            val = self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].Rena[loc_rena].Channel[loc_channel].node(var).get(read=False)
-            self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].Rena[cpy_rena].Channel[cpy_channel].node(var).setDisp(value=val)
+        for varName,var in self.getNodes(typ=pr.Node, incGroups=['ChannelConfig']).items():
+            if var.inGroup('DoCopy'):
+                val = self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].Rena[loc_rena].Channel[loc_channel].node(varName).get(read=False)
+                self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].Rena[cpy_rena].Channel[cpy_channel].node(varName).setDisp(val)
 
     def _copyChannelFrom(self):
         loc_node    = self.NodeSelect.get(read=False,check=False)
@@ -355,9 +404,10 @@ class ChannelSelect(pr.Device):
         cpy_rena    = self.RenaCopy.get(read=False,check=False)
         cpy_channel = self.ChannelCopy.get(read=False,check=False)
 
-        for var in self._copyChanList:
-            val = self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].Rena[cpy_rena].Channel[cpy_channel].node(var).get(read=False)
-            self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].Rena[loc_rena].Channel[loc_channel].node(var).setDisp(value=val)
+        for varName,var in self.getNodes(typ=pr.Node, incGroups=['ChannelConfig']).items():
+            if var.inGroup('DoCopy'):
+                val = self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].Rena[cpy_rena].Channel[cpy_channel].node(varName).get(read=False)
+                self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].Rena[loc_rena].Channel[loc_channel].node(varName).setDisp(val)
 
     def _copyBoardTo(self):
         loc_node    = self.NodeSelect.get(read=False,check=False)
@@ -366,9 +416,10 @@ class ChannelSelect(pr.Device):
         cpy_node    = self.NodeCopy.get(read=False,check=False)
         cpy_board   = self.BoardCopy.get(read=False,check=False)
 
-        for var in self._copyBoardList:
-            val = self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].node(var).get(read=False)
-            self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].node(var).setDisp(value=val)
+        for varName,var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig','DoCopy']).items():
+            if var.inGroup('DoCopy'):
+                val = self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].node(varName).get(read=False)
+                self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].node(varName).setDisp(val)
 
     def _copyBoardFrom(self):
         loc_node    = self.NodeSelect.get(read=False,check=False)
@@ -377,7 +428,27 @@ class ChannelSelect(pr.Device):
         cpy_node    = self.NodeCopy.get(read=False,check=False)
         cpy_board   = self.BoardCopy.get(read=False,check=False)
 
-        for var in self._copyBoardList:
-            val = self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].node(var).get(read=False)
-            self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].node(var).setDisp(value=val)
+        for varName,var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig','DoCopy']).items():
+            if var.inGroup('DoCopy'):
+                val = self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].node(varName).get(read=False)
+                self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].node(varName).setDisp(val)
+
+    def initialize(self):
+        super().initialize()
+
+        # Link dependencies
+        for node in range(self._nodeCount):
+            for board in range(1,31):
+                for rena in range(2):
+                    for chan in range(36):
+                        for var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig']):
+                            self.root.Node[node].RenaArray.RenaBoard[board].node(var).addListener(self.node(var))
+
+        # Link dependencies
+        for node in range(self._nodeCount):
+            for board in range(1,31):
+                for rena in range(2):
+                    for chan in range(36):
+                        for var in self.getNodes(typ=pr.Node, incGroups=['ChannelConfig']):
+                            self.root.Node[node].RenaArray.RenaBoard[board].Rena[rena].Channel[channel].node(var).addListener(self.node(var))
 

@@ -11,6 +11,7 @@ import pyrogue.pydm
 import pyrogue.gui
 import rogue
 import logging
+import os
 
 
 # Master only
@@ -43,7 +44,9 @@ from ucsc_hn import MultiRenaRoot
 
 with MultiRenaRoot(host=host,pollEn=True,emulate=True) as root:
 
-    pyrogue.pydm.runPyDM(root=root)
+    ui = os.path.dirname(os.path.abspath(__file__)) + '/../../firmware/python/ucsc_hn/GuiTop.py'
+
+    pyrogue.pydm.runPyDM(root=root,ui=ui)
     #pyrogue.gui.runGui(root=root)
     #pyrogue.waitCntrlC()
 
