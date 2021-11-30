@@ -10,3 +10,4 @@ from ._DataWriter    import *
 from ._LegacyWriter  import *
 from ._DataDecoder   import *
 from ._RunControl    import *
+from ._ChannelSel    import *

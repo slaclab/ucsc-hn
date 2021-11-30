@@ -27,6 +27,8 @@ class MultiRenaRoot(pyrogue.Root):
 
         self.LoadConfig.replaceFunction(self._loadConfig)
 
+        self.add(ucsc_hn.ChannelSelect(nodeCount=len(host)))
+
         for node in range(len(host)):
             for rena in range(1,31):
 
