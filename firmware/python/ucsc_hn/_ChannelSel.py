@@ -89,14 +89,6 @@ class ChannelSelect(pr.Device):
         ##############################
         # Boards
         ##############################
-        self._copyBoardList = [ 'ReadoutEnable',
-                                'ForceTrig',
-                                'OrMode',
-                                'SelectiveRead',
-                                'IntermediateBoard',
-                                'FollowerEn',
-                                'FollowerAsic',
-                                'FollowerChannel']
 
         self.add(pr.LinkVariable(name='ReadoutEnable',
                                  mode='RW',
@@ -171,22 +163,6 @@ class ChannelSelect(pr.Device):
         ##############################
         # Channel
         ##############################
-        self._copyChanList = [ 'FbResistor',
-                               'TestInputEnable',
-                               'FastChanPowerDown',
-                               'FbType',
-                               'Gain',
-                               'PowerDown',
-                               'PoleZero',
-                               'FbCapacitor',
-                               'ShapeTime',
-                               'FbFetSize',
-                               'FastDac',
-                               'Polarity',
-                               'SlowDac',
-                               'FastTrigEnable',
-                               'SlowTrigEnable',
-                               'PhaHistogram' ]
 
         self.add(pr.LinkVariable(name='FbResistor',
                                  mode='RW',
@@ -416,7 +392,7 @@ class ChannelSelect(pr.Device):
         cpy_node    = self.NodeCopy.get(read=False,check=False)
         cpy_board   = self.BoardCopy.get(read=False,check=False)
 
-        for varName,var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig','DoCopy']).items():
+        for varName,var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig']).items():
             if var.inGroup('DoCopy'):
                 val = self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].node(varName).get(read=False)
                 self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].node(varName).setDisp(val)
@@ -428,13 +404,13 @@ class ChannelSelect(pr.Device):
         cpy_node    = self.NodeCopy.get(read=False,check=False)
         cpy_board   = self.BoardCopy.get(read=False,check=False)
 
-        for varName,var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig','DoCopy']).items():
+        for varName,var in self.getNodes(typ=pr.Node, incGroups=['BoardConfig']).items():
             if var.inGroup('DoCopy'):
                 val = self.root.Node[cpy_node].RenaArray.RenaBoard[cpy_board].node(varName).get(read=False)
                 self.root.Node[loc_node].RenaArray.RenaBoard[loc_board].node(varName).setDisp(val)
 
-    def initialize(self):
-        super().initialize()
+    def _rootAttached(self, parent, root):
+        super()._rootAttached(parent,root)
 
         # Link dependencies
         for node in range(self._nodeCount):
@@ -450,5 +426,5 @@ class ChannelSelect(pr.Device):
                 for rena in range(2):
                     for chan in range(36):
                         for var in self.getNodes(typ=pr.Node, incGroups=['ChannelConfig']):
-                            self.root.Node[node].RenaArray.RenaBoard[board].Rena[rena].Channel[channel].node(var).addListener(self.node(var))
+                            self.root.Node[node].RenaArray.RenaBoard[board].Rena[rena].Channel[chan].node(var).addListener(self.node(var))
 
