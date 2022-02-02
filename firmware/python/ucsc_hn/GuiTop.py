@@ -65,6 +65,12 @@ class GuiTop(Display):
         var = DebugTree(parent=None, init_channel=Channel)
         self.tab.addTab(var,'Debug Tree')
 
+        dacq = ucsc_hn.DacqWindow(parent=None, init_channel=Channel+'.ChannelSelect')
+        self.tab.addTab(dacq,'DACQ')
+
+        #test = DataPlotter(parent=None, init_channel=Channel)
+        #self.tab.addTab(test,'Data Plotting')
+
         self.resize(self.sizeX, self.sizeY)
 
     def ui_filepath(self):

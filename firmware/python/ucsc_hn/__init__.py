@@ -12,3 +12,5 @@ from ._DataDecoder   import *
 from ._RunControl    import *
 from ._ChannelSel    import *
 from ._ChannelWindow import *
+from .DacqWindow    import *
+from .DacqSel    import *
