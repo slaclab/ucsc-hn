@@ -4,6 +4,7 @@ import pyrogue
 import pyrogue.pydm
 import ucsc_hn
 import argparse
+import os
 
 # Set the argument parser
 parser = argparse.ArgumentParser('UCSC H&N Pet Control')
