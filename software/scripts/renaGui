@@ -2,15 +2,30 @@
 
 import pyrogue
 import pyrogue.pydm
-import sys
 import ucsc_hn
+import argparse
 
-if len(sys.argv) == 1:
-    print("Usage: renaGui host1 [host2 [host3 ...]]")
-    exit(1)
+# Set the argument parser
+parser = argparse.ArgumentParser('UCSC H&N Pet Control')
 
-with ucsc_hn.MultiRenaRoot(host=sys.argv[1:],pollEn=True) as root:
+parser.add_argument(
+    "--emulate",
+    action   = 'store_true',
+    required = False,
+    default  = False,
+    help     = "Emulate operation without hardware.",
+)
+
+parser.add_argument(
+    "--host",
+    action   = 'append',
+    required = True,
+    help     = "Host ID, multiple allowed.",
+)
+
+# Get the arguments
+args = parser.parse_args()
+
+with ucsc_hn.MultiRenaRoot(host=args.host,pollEn=True,emulate=args.emulate) as root:
     ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
     pyrogue.pydm.runPyDM(root=root,ui=ui)
-
-
