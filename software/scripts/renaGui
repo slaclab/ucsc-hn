@@ -2,24 +2,15 @@
 
 import pyrogue
 import pyrogue.pydm
-import pyrogue.gui
-import rogue
-import logging
+import sys
+import ucsc_hn
 
-from ucsc_hn import MultiRenaRoot
+if len(sys.argv) == 1:
+    print("Usage: renaGui host1 [host2 [host3 ...]]")
+    exit(1)
 
-#rogue.Logging.setFilter('pyrogue.memory.block.InterCardRoot.PcieControl[0].Fpga.PrbsTx',rogue.Logging.Debug)
-#rogue.Logging.setFilter('pyrogue.memory.block',rogue.Logging.Debug)
-
-#rogue.Logging.setLevel(rogue.Logging.Debug)
-
-#logger = logging.getLogger('pyrogue.PollQueue')
-#logger.setLevel(logging.DEBUG)
-
-with MultiRenaRoot(host="192.168.2.50",pollEn=True) as root:
-
-    pyrogue.pydm.runPyDM(root=root)
-    #pyrogue.gui.runGui(root=root)
-    #pyrogue.waitCntrlC()
+with ucsc_hn.MultiRenaRoot(host=sys.argv[1:],pollEn=True) as root:
+    ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
+    pyrogue.pydm.runPyDM(root=root,ui=ui)
 
 

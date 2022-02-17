@@ -32,7 +32,7 @@ import os
 # All 5 md
 host = ["192.168.2.100","192.168.2.103","192.168.2.104","192.168.2.101","192.168.2.210"]
 
-from ucsc_hn import MultiRenaRoot
+import ucsc_hn
 
 #rogue.Logging.setFilter('pyrogue.memory.block.InterCardRoot.PcieControl[0].Fpga.PrbsTx',rogue.Logging.Debug)
 #rogue.Logging.setFilter('pyrogue.memory.block',rogue.Logging.Debug)
@@ -42,9 +42,9 @@ from ucsc_hn import MultiRenaRoot
 #logger = logging.getLogger('pyrogue.PollQueue')
 #logger.setLevel(logging.DEBUG)
 
-with MultiRenaRoot(host=host,pollEn=True,emulate=True) as root:
+with ucsc_hn.MultiRenaRoot(host=host,pollEn=True,emulate=True) as root:
 
-    ui = os.path.dirname(os.path.abspath(__file__)) + '/../../firmware/python/ucsc_hn/GuiTop.py'
+    ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
 
     pyrogue.pydm.runPyDM(root=root,ui=ui)
     #pyrogue.gui.runGui(root=root)
