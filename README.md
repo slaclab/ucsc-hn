@@ -28,3 +28,12 @@ To run the software:
    $ renaGui --host=ip1 --host=ip2
 
 ```
+
+To update the multirena package
+
+```
+
+   $ conda activate ucsc_hn
+   $ conda update multirena -c tidair-tag -c conda-forge
+
+```
