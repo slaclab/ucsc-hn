@@ -56,7 +56,6 @@ entity SlaveRena is
       clockOutN   : out   sl;
       syncOutP    : out   sl;
       syncOutN    : out   sl;
-      syncOutNew  : out   sl;
       fpgaProgL   : out   sl;
 
       -- Data inputs
@@ -491,7 +490,6 @@ begin
          clockOutN            => clockOutN,
          syncOutP             => syncOutP,
          syncOutN             => syncOutN,
-         syncOutNew           => syncOutNew,
          fpgaProgL            => fpgaProgL,
          rxDataP              => rxDataP,
          rxDataN              => rxDataN,

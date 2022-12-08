@@ -68,7 +68,6 @@ entity FanInBoard is
       clockOutN  : out sl;
       syncOutP   : out sl;
       syncOutN   : out sl;
-      syncOutNew : out sl;
       fpgaProgL  : out sl;
 
       -- Data inputs
@@ -305,11 +304,9 @@ begin
          if renaClkRst = '1' then
             syncTmp    <= '0';
             syncOut    <= '0';
-            syncOutNew <= '0';
          else
             syncTmp    <= syncReg;
             syncOut    <= syncTmp;
-            syncOutNew <= syncTmp;
          end if;
      end if;
    end process;
