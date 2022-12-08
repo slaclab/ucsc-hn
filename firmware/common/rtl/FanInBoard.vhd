@@ -382,9 +382,7 @@ begin
            TPD_G                => TPD_G,
            MODE_G               => "ROUTED",
            TDEST_ROUTES_G       => TDEST_ROUTES0_C,
-           ILEAVE_EN_G          => true,
-           ILEAVE_ON_NOTVALID_G => true,
-           ILEAVE_REARB_G       => 128,
+           ILEAVE_EN_G          => false,
            PIPE_STAGES_G        => 1,
            NUM_SLAVES_G         => 6
         ) port map (
@@ -402,9 +400,7 @@ begin
         TPD_G                => TPD_G,
         MODE_G               => "ROUTED",
         TDEST_ROUTES_G       => TDEST_ROUTES1_C,
-        ILEAVE_EN_G          => true,
-        ILEAVE_ON_NOTVALID_G => true,
-        ILEAVE_REARB_G       => 128,
+        ILEAVE_EN_G          => false,
         PIPE_STAGES_G        => 1,
         NUM_SLAVES_G         => 5
      ) port map (
