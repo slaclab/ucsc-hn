@@ -267,8 +267,8 @@ begin
          SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 9,
-         VALID_THOLD_G       => 128,  -- Hold until enough to burst into the interleaving MUX
-         VALID_BURST_MODE_G  => true,
+         VALID_THOLD_G       => 0,  -- Hold until a full frame is ready in the FIFO
+         VALID_BURST_MODE_G  => false,
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
       ) port map (

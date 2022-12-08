@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pyrogue
+import rogue
 
 pyrogue.addLibraryPath('../../firmware/submodules/rce-gen3-fw-lib/python')
 pyrogue.addLibraryPath('../../firmware/submodules/surf/python')
