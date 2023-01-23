@@ -138,7 +138,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    }
 
    // 0xC9 = OR  Mode
-   else if ( srcData[0] == 0xC8 ) {
+   else if ( srcData[0] == 0xC9 ) {
       readMode = true;
 
       // Check min length

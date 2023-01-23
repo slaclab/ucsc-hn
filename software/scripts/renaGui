@@ -2,24 +2,31 @@
 
 import pyrogue
 import pyrogue.pydm
-import pyrogue.gui
-import rogue
-import logging
+import ucsc_hn
+import argparse
+import os
 
-from ucsc_hn import MultiRenaRoot
+# Set the argument parser
+parser = argparse.ArgumentParser('UCSC H&N Pet Control')
 
-#rogue.Logging.setFilter('pyrogue.memory.block.InterCardRoot.PcieControl[0].Fpga.PrbsTx',rogue.Logging.Debug)
-#rogue.Logging.setFilter('pyrogue.memory.block',rogue.Logging.Debug)
+parser.add_argument(
+    "--emulate",
+    action   = 'store_true',
+    required = False,
+    default  = False,
+    help     = "Emulate operation without hardware.",
+)
 
-#rogue.Logging.setLevel(rogue.Logging.Debug)
+parser.add_argument(
+    "--host",
+    action   = 'append',
+    required = True,
+    help     = "Host ID, multiple allowed.",
+)
 
-#logger = logging.getLogger('pyrogue.PollQueue')
-#logger.setLevel(logging.DEBUG)
+# Get the arguments
+args = parser.parse_args()
 
-with MultiRenaRoot(host="192.168.2.50",pollEn=True) as root:
-
-    pyrogue.pydm.runPyDM(root=root)
-    #pyrogue.gui.runGui(root=root)
-    #pyrogue.waitCntrlC()
-
-
+with ucsc_hn.MultiRenaRoot(host=args.host,pollEn=True,emulate=args.emulate) as root:
+    ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
+    pyrogue.pydm.runPyDM(root=root,ui=ui)

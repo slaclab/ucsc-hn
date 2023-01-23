@@ -217,8 +217,6 @@ class RenaChannel(pr.Device):
         data = bytearray(13)
 
         data[0] = 0xC0 # Packet start
-        data[1] = 0x00 # Source address, unused
-        data[2] = 0x00 # Dest addres, unused
         data[3] = 0x81 # Clear buffer
 
         data[4:11] = self.configBytes()
