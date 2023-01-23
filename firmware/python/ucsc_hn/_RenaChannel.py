@@ -116,6 +116,8 @@ class RenaChannel(pr.Device):
         self.add(pr.LocalVariable(name='Polarity',
                                   value=0,
                                   mode='RW',
+                                  localSet=self._setPolarity,
+                                  localGet=self._getPolarity,
                                   enum={0:'Negative',1:'Positive'},
                                   description='Channel Polarity'))
 
@@ -277,4 +279,18 @@ class RenaChannel(pr.Device):
         f.write(f"        Test_Enable = {self.TestInputEnable.value()}\n")
         f.write(f"        VRef = {vref}\n")
         f.write("}\n")
+
+    def _getPolarity(self):
+        asic = self.parent
+        board = asic.parent
+        array = board.parent
+
+        return array.DataDecoder.getChannelPolarity(board.board, asic.rena, self.channel)
+
+    def _setPolarity(self, value):
+        asic = self.parent
+        board = asic.parent
+        array = board.parent
+
+        array.DataDecoder.setChannelPolarity(board.board, asic.rena, self.channel, value)
 
