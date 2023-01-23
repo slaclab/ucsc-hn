@@ -1,4 +1,4 @@
-
+#include <inttypes.h>
 #include <boost/python.hpp>
 #include <RenaDataDecoder.h>
 #include <RenaDataWriter.h>

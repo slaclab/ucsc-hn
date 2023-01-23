@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <RenaLegacyWriter.h>
 #include <rogue/utilities/fileio/StreamWriter.h>
 #include <rogue/interfaces/stream/Frame.h>

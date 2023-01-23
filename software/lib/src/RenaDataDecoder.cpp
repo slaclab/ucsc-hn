@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <RenaDataDecoder.h>
 #include <rogue/interfaces/stream/Master.h>
 #include <rogue/interfaces/stream/Slave.h>
