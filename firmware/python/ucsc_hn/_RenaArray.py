@@ -13,6 +13,24 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
         ris.Master.__init__(self)
         ris.Slave.__init__(self)
 
+        dd = ucsc_hn.DataDecoder(nodeId=nodeId)
+        self.add(dd)
+
+        dataF = rogue.interfaces.stream.Filter(True,2)
+        self.addProtocol(dataF)
+        pr.streamConnect(dd,dataF)
+        pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
+
+        legF = rogue.interfaces.stream.Filter(True,3)
+        self.addProtocol(legF)
+        pr.streamConnect(dd,legF)
+        pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
+
+        diagF = rogue.interfaces.stream.Filter(True,1)
+        self.addProtocol(diagF)
+        pr.streamConnect(dd,diagF)
+        pr.streamConnect(diagF,self)
+
         # RSSI For interface to RENA Boards
         if emulate is False:
             self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
@@ -22,24 +40,7 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
             self.addProtocol(batch)
             pr.streamConnect(self._remRssi.application(0),batch)
 
-            dd = ucsc_hn.DataDecoder(nodeId=nodeId)
-            self.add(dd)
             pr.streamConnect(batch,dd)
-
-            dataF = rogue.interfaces.stream.Filter(True,2)
-            self.addProtocol(dataF)
-            pr.streamConnect(dd,dataF)
-            pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
-
-            legF = rogue.interfaces.stream.Filter(True,3)
-            self.addProtocol(legF)
-            pr.streamConnect(dd,legF)
-            pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
-
-            diagF = rogue.interfaces.stream.Filter(True,1)
-            self.addProtocol(diagF)
-            pr.streamConnect(dd,diagF)
-            pr.streamConnect(diagF,self)
 
             pr.streamConnect(self,self._remRssi.application(0))
 

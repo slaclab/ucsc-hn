@@ -283,12 +283,12 @@ class RenaChannel(pr.Device):
         board = asic.parent
         array = board.parent
 
-        return array.DataDecoder.getChannelPolarity(board.board, asic.rena, self.channel)
+        return array.DataDecoder._processor.getChannelPolarity(board.board, asic.rena, self.channel)
 
     def _setPolarity(self, value):
         asic = self.parent
         board = asic.parent
         array = board.parent
 
-        array.DataDecoder.setChannelPolarity(board.board, asic.rena, self.channel, value)
+        array.DataDecoder._processor.setChannelPolarity(board.board, asic.rena, self.channel, value)
 
