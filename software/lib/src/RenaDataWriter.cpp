@@ -1,3 +1,4 @@
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <RenaDataWriter.h>
 #include <rogue/utilities/fileio/StreamWriter.h>
