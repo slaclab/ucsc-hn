@@ -56,13 +56,13 @@ void ucsc_hn_lib::RenaDataDecoder::countReset () {
    rxByteCount_ = 0;
 }
 
-void ucsc_hn_lib::RenaDataDecoder::setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, bool state) {
+void ucsc_hn_lib::RenaDataDecoder::setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, uint8_t state) {
    if ( fpga > 30 || rena > 1 || chan > 35 ) return;
    polarity_[fpga][rena][chan] = state;
 }
 
-bool ucsc_hn_lib::RenaDataDecoder::getChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan) {
-   if ( fpga > 30 || rena > 1 || chan > 35 ) return false;
+uint8_t ucsc_hn_lib::RenaDataDecoder::getChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan) {
+   if ( fpga > 30 || rena > 1 || chan > 35 ) return 0;
    return polarity_[fpga][rena][chan];
 }
 
