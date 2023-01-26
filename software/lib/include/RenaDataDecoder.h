@@ -18,7 +18,7 @@ namespace ucsc_hn_lib {
          uint32_t rxDropCount_;
          uint8_t  nodeId_;
 
-         uint8_t polarity_[30][2][36];
+         uint8_t polarity_[31][2][36];
 
       public:
 
