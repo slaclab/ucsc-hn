@@ -28,9 +28,9 @@ namespace ucsc_hn_lib {
 
          RenaDataDecoder (uint8_t nodeId);
 
-         void setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, bool state);
+         void setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, uint8_t state);
 
-         bool getChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan);
+         uint8_t getChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan);
 
          void countReset();
 
