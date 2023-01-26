@@ -320,7 +320,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
          dst = nFrame->begin();
 
          // Lookup polarity
-         polarity = getChannelPolarity(fpgaId,renaId,i);
+         polarity = getChannelPolarity(fpgaId,renaId,x);
 
          // Start frame data
          toFrame(dst,1,&x); // Channel ID
