@@ -144,9 +144,9 @@ begin
             rxTmp <= (others=>'0') after TPD_G;
             rxInt <= '0' after TPD_G;
          else
-            rxTmp[0] <= rx after TPD_G;
-            rxTmp[1] <= rxTmp[0] after TPD_G;
-            rxInt <= rxTmp[1] and rxEnableReg after TPD_G;
+            rxTmp(0) <= rx after TPD_G;
+            rxTmp(1) <= rxTmp(0) after TPD_G;
+            rxInt <= rxTmp(1) and rxEnableReg after TPD_G;
          end if;
       end if;
    end process;
