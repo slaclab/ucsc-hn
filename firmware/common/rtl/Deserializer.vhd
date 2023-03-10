@@ -119,7 +119,7 @@ architecture Behavioral of Deserializer is
 
 begin
 
-   currRxData <= rxTmp[1];
+   currRxData <= rxTmp(1);
 
    U_SyncEnable: entity surf.Synchronizer
       generic map ( TPD_G          => TPD_G )
