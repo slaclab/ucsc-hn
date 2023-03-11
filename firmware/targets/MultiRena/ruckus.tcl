@@ -1,7 +1,7 @@
 # Load RUCKUS environment and library
 source -quiet $::env(RUCKUS_DIR)/vivado_proc.tcl
 
-set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs impl_1]
+#set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs impl_1]
 
 # Load common and sub-module ruckus.tcl files
 loadRuckusTcl $::env(PROJ_DIR)/../../submodules/surf
