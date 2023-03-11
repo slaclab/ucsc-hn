@@ -75,31 +75,33 @@ architecture Behavioral of Deserializer is
       DATA_S);
 
    type RegType is record
-      state         : StateType;
-      uartRd        : sl;
-      rxPackets     : slv(31 downto 0);
-      dropBytes     : slv(31 downto 0);
-      dropCntEn     : sl;
-      timeoutCnt    : slv(23 downto 0);
-      timeoutRst    : sl;
-      timeout       : sl;
-      count         : slv(31 downto 0);
-      intAxisMaster : AxiStreamMasterType;
-      regAxisMaster : AxiStreamMasterType;
+      state          : StateType;
+      uartRd         : sl;
+      rxPackets      : slv(31 downto 0);
+      dropBytes      : slv(31 downto 0);
+      dropCntEn      : sl;
+      timeoutCnt     : slv(23 downto 0);
+      timeoutRst     : sl;
+      timeout        : sl;
+      count          : slv(31 downto 0);
+      intAxisMaster  : AxiStreamMasterType;
+      regAxisMaster1 : AxiStreamMasterType;
+      regAxisMaster2 : AxiStreamMasterType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
-      state         => IDLE_S,
-      uartRd        => '0',
-      rxPackets     => (others => '0'),
-      dropBytes     => (others => '0'),
-      dropCntEn     => '0',
-      timeoutCnt    => (others => '1'),
-      timeoutRst    => '0',
-      timeout       => '0',
-      count         => (others => '0'),
-      intAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C),
-      regAxisMaster => axiStreamMasterInit(INT_AXIS_CONFIG_C));
+      state          => IDLE_S,
+      uartRd         => '0',
+      rxPackets      => (others => '0'),
+      dropBytes      => (others => '0'),
+      dropCntEn      => '0',
+      timeoutCnt     => (others => '1'),
+      timeoutRst     => '0',
+      timeout        => '0',
+      count          => (others => '0'),
+      intAxisMaster  => axiStreamMasterInit(INT_AXIS_CONFIG_C),
+      regAxisMaster1 => axiStreamMasterInit(INT_AXIS_CONFIG_C),
+      regAxisMaster2 => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -239,7 +241,8 @@ begin
             v.state := IDLE_S;
       end case;
 
-      v.regAxisMaster := r.intAxisMaster;
+      v.regAxisMaster1 := r.intAxisMaster;
+      v.regAxisMaster2 := r.regAxisMaster1;
 
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
@@ -275,7 +278,7 @@ begin
       ) port map (
          sAxisClk    => sysClk,
          sAxisRst    => sysClkRst,
-         sAxisMaster => r.regAxisMaster,
+         sAxisMaster => r.regAxisMaster2,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => txAxisMaster,
