@@ -93,6 +93,9 @@ architecture STRUCTURE of FanInBoard is
    signal batchObMaster : AxiStreamMasterType;
    signal batchObSlave  : AxiStreamSlaveType;
 
+   signal buffObMaster : AxiStreamMasterType;
+   signal buffObSlave  : AxiStreamSlaveType;
+
    signal sysClk     : sl;
    signal sysClkRst  : sl;
    signal renaClk    : sl;
@@ -433,6 +436,24 @@ begin
          axisRst     => dataClkRst,
          sAxisMaster => batchObMaster,
          sAxisSlave  => batchObSlave,
+         mAxisMaster => buffObMaster,
+         mAxisSlave  => buffObSlave);
+
+   U_BatchFifo : entity surf.AxiStreamFifoV2
+      generic map (
+         TPD_G               => TPD_G,
+         GEN_SYNC_FIFO_G     => true,
+         FIFO_ADDR_WIDTH_G   => 9,
+         VALID_THOLD_G       => 0,  -- Hold until a full frame is ready in the FIFO
+         SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_G,
+         MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
+      ) port map (
+         sAxisClk    => dataClk,
+         sAxisRst    => dataClkRst,
+         sAxisMaster => buffObMaster,
+         sAxisSlave  => buffObSlave,
+         mAxisClk    => dataClk,
+         mAxisRst    => dataClkRst,
          mAxisMaster => dataObMaster,
          mAxisSlave  => dataObSlave);
 

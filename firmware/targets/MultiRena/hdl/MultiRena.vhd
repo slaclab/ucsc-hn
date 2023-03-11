@@ -497,8 +497,8 @@ begin
       );
 
    -- DMA Interfaces are not used
-   dmaClk(2 downto 0) <= (others=>axiDmaClk);
-   dmaClkRst(2 downto 0) <= (others=>axiDmaRst);
+   dmaClk(2 downto 0) <= (others=>userEthClk);
+   dmaClkRst(2 downto 0) <= (others=>userEthClkRst);
 
    --dmaObMaster(2 downto 0)
    dmaObSlave(2 downto 0)   <= dmaIbSlave(2 downto 0);

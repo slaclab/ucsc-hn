@@ -1,5 +1,5 @@
 # Define Firmware Version Number
-export PRJ_VERSION = 0x10000023
+export PRJ_VERSION = 0x10000030
 
 # Define target output
 target: bit
@@ -7,7 +7,7 @@ target: bit
 # Define target part
 export PRJ_PART = XC7Z030SBG485-1
 
-export USE_XVC_DEBUG=1
+export USE_XVC_DEBUG=0
 
 # Use top level makefile
 include ../../submodules/ruckus/system_vivado.mk
