@@ -77,7 +77,7 @@ begin
          GEN_SYNC_FIFO_G     => false,
          FIFO_ADDR_WIDTH_G   => 4,
          PIPE_STAGES_G       => 4,
-         SLAVE_AXI_CONFIG_G  => INT_AXIS_CONIFG_C,
+         SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => INT_AXIS_CONFIG_C
       ) port map (
          sAxisClk    => mAxisClk,
