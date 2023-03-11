@@ -46,15 +46,17 @@ architecture Behavioral of Serializer is
 
    signal intAxisMaster : AxiStreamMasterType;
    signal intAxisSlave  : AxiStreamSlaveType;
+   signal tmpAxisMaster : AxiStreamMasterType;
+   signal tmpAxisSlave  : AxiStreamSlaveType;
    signal intTx : sl;
    signal regTx : sl;
 
 begin
 
-   U_AxiFifo : entity surf.AxiStreamFifoV2
+   U_ResizeFifo : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
-         GEN_SYNC_FIFO_G     => false,
+         GEN_SYNC_FIFO_G     => true,
          FIFO_ADDR_WIDTH_G   => 9,
          PIPE_STAGES_G       => 4,
          SLAVE_AXI_CONFIG_G  => AXIS_CONFIG_G,
@@ -64,6 +66,24 @@ begin
          sAxisRst    => mAxisRst,
          sAxisMaster => mAxisMaster,
          sAxisSlave  => mAxisSlave,
+         mAxisClk    => mAxisClk,
+         mAxisRst    => mAxisRst,
+         mAxisMaster => tmpAxisMaster,
+         mAxisSlave  => tmpAxisSlave);
+
+   U_ClkFifo : entity surf.AxiStreamFifoV2
+      generic map (
+         TPD_G               => TPD_G,
+         GEN_SYNC_FIFO_G     => false,
+         FIFO_ADDR_WIDTH_G   => 4,
+         PIPE_STAGES_G       => 4,
+         SLAVE_AXI_CONFIG_G  => INT_AXIS_CONIFG_C,
+         MASTER_AXI_CONFIG_G => INT_AXIS_CONFIG_C
+      ) port map (
+         sAxisClk    => mAxisClk,
+         sAxisRst    => mAxisRst,
+         sAxisMaster => tmpAxisMaster,
+         sAxisSlave  => tmpAxisSlave,
          mAxisClk    => sysClk,
          mAxisRst    => sysRst,
          mAxisMaster => intAxisMaster,
