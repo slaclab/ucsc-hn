@@ -85,8 +85,6 @@ architecture Behavioral of Deserializer is
       timeout        : sl;
       count          : slv(31 downto 0);
       intAxisMaster  : AxiStreamMasterType;
-      regAxisMaster1 : AxiStreamMasterType;
-      regAxisMaster2 : AxiStreamMasterType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
@@ -99,9 +97,7 @@ architecture Behavioral of Deserializer is
       timeoutRst     => '0',
       timeout        => '0',
       count          => (others => '0'),
-      intAxisMaster  => axiStreamMasterInit(INT_AXIS_CONFIG_C),
-      regAxisMaster1 => axiStreamMasterInit(INT_AXIS_CONFIG_C),
-      regAxisMaster2 => axiStreamMasterInit(INT_AXIS_CONFIG_C));
+      intAxisMaster  => axiStreamMasterInit(INT_AXIS_CONFIG_C));
 
    signal r   : RegType := REG_INIT_C;
    signal rin : RegType;
@@ -115,6 +111,9 @@ architecture Behavioral of Deserializer is
 
    signal txAxisMaster : AxiStreamMasterType;
    signal txAxisSlave  : AxiStreamSlaveType;
+
+   signal tmpAxisMaster : AxiStreamMasterType;
+   signal tmpAxisSlave  : AxiStreamSlaveType;
 
    signal countRstReg : sl;
    signal rxEnableReg : sl;
@@ -241,9 +240,6 @@ begin
             v.state := IDLE_S;
       end case;
 
-      v.regAxisMaster1 := r.intAxisMaster;
-      v.regAxisMaster2 := r.regAxisMaster1;
-
       uartRd    <= v.uartRd;
       rxPackets <= r.rxPackets;
       dropBytes <= r.dropBytes;
@@ -265,20 +261,38 @@ begin
       end if;
    end process seq;
 
-   U_AxiFifo : entity surf.AxiStreamFifoV2
+   U_ClkFifo : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
          SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => false,
+         FIFO_ADDR_WIDTH_G   => 4,
+         SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
+         MASTER_AXI_CONFIG_G => INT_AXIS_CONFIG_C
+      ) port map (
+         sAxisClk    => sysClk,
+         sAxisRst    => sysClkRst,
+         sAxisMaster => r.intAxisMaster,
+         mAxisClk    => mAxisClk,
+         mAxisRst    => mAxisRst,
+         mAxisMaster => tmpAxisMaster,
+         mAxisSlave  => tmpAxisSlave);
+
+   U_ResizeFifo : entity surf.AxiStreamFifoV2
+      generic map (
+         TPD_G               => TPD_G,
+         SLAVE_READY_EN_G    => false,
+         GEN_SYNC_FIFO_G     => true,
          FIFO_ADDR_WIDTH_G   => 9,
          VALID_THOLD_G       => 0,  -- Hold until a full frame is ready in the FIFO
          VALID_BURST_MODE_G  => false,
          SLAVE_AXI_CONFIG_G  => INT_AXIS_CONFIG_C,
          MASTER_AXI_CONFIG_G => AXIS_CONFIG_G
       ) port map (
-         sAxisClk    => sysClk,
-         sAxisRst    => sysClkRst,
-         sAxisMaster => r.regAxisMaster2,
+         sAxisClk    => mAxisClk,
+         sAxisRst    => mAxisRst,
+         sAxisMaster => tmpAxisMaster,
+         sAxisSlave  => tmpAxisSlave,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => txAxisMaster,
