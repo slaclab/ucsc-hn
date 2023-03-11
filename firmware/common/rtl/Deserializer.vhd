@@ -281,7 +281,6 @@ begin
    U_ResizeFifo : entity surf.AxiStreamFifoV2
       generic map (
          TPD_G               => TPD_G,
-         SLAVE_READY_EN_G    => false,
          GEN_SYNC_FIFO_G     => true,
          FIFO_ADDR_WIDTH_G   => 9,
          VALID_THOLD_G       => 0,  -- Hold until a full frame is ready in the FIFO
