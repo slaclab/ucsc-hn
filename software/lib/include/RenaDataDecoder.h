@@ -19,6 +19,7 @@ namespace ucsc_hn_lib {
          uint8_t  nodeId_;
 
          uint8_t polarity_[31][2][36];
+         uint32_t rxCount_[31][2][36];
 
       public:
 
@@ -41,6 +42,8 @@ namespace ucsc_hn_lib {
          uint32_t getRxByteCount();
 
          uint32_t getRxDropCount();
+
+         uint32_t getRxCount(uint8_t fpga, uint8_t rena, uint8_t chan);
 
          void acceptFrame ( std::shared_ptr<rogue::interfaces::stream::Frame> frame );
    };

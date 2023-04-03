@@ -27,6 +27,7 @@ void ucsc_hn_lib::RenaDataDecoder::setup_python() {
       .def("getRxDropCount",     &ucsc_hn_lib::RenaDataDecoder::getRxDropCount)
       .def("getRxFrameCount",    &ucsc_hn_lib::RenaDataDecoder::getRxFrameCount)
       .def("getRxByteCount",     &ucsc_hn_lib::RenaDataDecoder::getRxByteCount)
+      .def("getRxCount",         &ucsc_hn_lib::RenaDataDecoder::getRxCount)
    ;
 }
 
@@ -50,10 +51,19 @@ ucsc_hn_lib::RenaDataDecoder::RenaDataDecoder (uint8_t nodeId) {
 }
 
 void ucsc_hn_lib::RenaDataDecoder::countReset () {
+   uint32_t f,r,c,i,j;
+
    rxFrameCount_ = 0;
    rxSampleCount_ = 0;
    rxDropCount_ = 0;
    rxByteCount_ = 0;
+
+   for (f=0; f < 31; f++)
+      for (r=0; r < 2; r++)
+         for (c=0; c < 36; c++)
+            polarity_[f][r][c] = false;
+
+
 }
 
 void ucsc_hn_lib::RenaDataDecoder::setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, uint8_t state) {
@@ -80,6 +90,11 @@ uint32_t ucsc_hn_lib::RenaDataDecoder::getRxDropCount() {
 
 uint32_t ucsc_hn_lib::RenaDataDecoder::getRxByteCount() {
    return rxByteCount_;
+}
+
+uint32_t ucsc_hn_lib::RenaDataDecoder::getRxCount(uint8_t fpga, uint8_t rena, uint8_t chan) {
+   if ( fpga > 30 || rena > 1 || chan > 35 ) return 0;
+   return rxCount_[fpga][rena][chan];
 }
 
 void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
@@ -114,6 +129,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint8_t expCrc;
    uint8_t zero;
    uint8_t one;
+   uint32_t chanCount;
 
    rogue::GilRelease noGil;
    ris::FrameLockPtr lock = frame->lock();
@@ -275,6 +291,23 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    rxFrameCount_++;
    rxByteCount_ += frame->getPayload();
 
+   // Generate a new outbound frame
+   // Size = 15 bytes for common header
+   //      = 8 bytes per channel
+   //      = total = 15 + 8 * 36 = 303
+   nFrame = reqFrame(303,true);
+   nFrame->setPayload(303);
+   nFrame->setChannel(2);
+   dst = nFrame->begin();
+
+   // Init Frame
+   toFrame(dst,1,&fpgaId);
+   toFrame(dst,1,&renaId);
+   toFrame(dst,1,&nodeId_);
+   toFrame(dst,8,&timeStamp);
+   toFrame(dst,4,&rxFrameCount_);
+   chanCount = 0;
+
    // Extract data PHA, U and V ADC values for each channel
    bit = 1;
    for ( x=0; x < 36; x++ ) {
@@ -298,6 +331,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
       // Something is being read for this channel
       if ( readPHA or readUV ) {
          rxSampleCount_++;
+         rxCount_[fpgaId][renaId][x]++;
 
          // PHA is two bytes
          if ( readPHA ) phaData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
@@ -313,32 +347,23 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
             vData = 0;
          }
 
-         // Create outbound frame
-         nFrame = reqFrame(23,true);
-         nFrame->setPayload(23);
-         nFrame->setChannel(2);
-         dst = nFrame->begin();
-
          // Lookup polarity
          polarity = getChannelPolarity(fpgaId,renaId,x);
 
          // Start frame data
          toFrame(dst,1,&x); // Channel ID
-         toFrame(dst,1,&fpgaId);
-         toFrame(dst,1,&renaId);
-         toFrame(dst,1,&nodeId_);
          toFrame(dst,1,&polarity);
-         toFrame(dst,8,&timeStamp);
-         toFrame(dst,4,&rxFrameCount_);
          toFrame(dst,2,&phaData);
          toFrame(dst,2,&uData);
          toFrame(dst,2,&vData);
-
-         sendFrame(nFrame);
-         nFrame.reset();
+         chanCount++;
       }
 
       bit = bit << 1;
    }
+
+   nFrame->setPayload(15 + (8 * chanCount));
+   sendFrame(nFrame);
+   nFrame.reset();
 }
 

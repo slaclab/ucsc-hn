@@ -14,6 +14,7 @@
 #-----------------------------------------------------------------------------
 import pyrogue as pr
 import ucsc_hn_lib
+import numpy as np
 import time
 
 class DataDecoder(pr.Device):
@@ -50,6 +51,12 @@ class DataDecoder(pr.Device):
 
         self.add(pr.LocalVariable(name='DropRate', description='Drop Rate',
                                   mode='RO', value=0, disp='{:.1f}'))
+
+        self.add(pr.LocalVariable(name='RxCount',
+                                  description='Per Rena Channel Rx Count. Idx = (fpga*2*36) + (rena*36) + chan ',
+                                  mode='RO',
+                                  localGet=lambda: self._getRxCount(),
+                                  disp='{}'))
 
         self._lastFrameCount = 0
         self._lastFrameTime = time.time()
@@ -112,4 +119,14 @@ class DataDecoder(pr.Device):
         self._lastSampleTime  = time.time()
         self.SampleRate.set(rate)
         return curr
+
+    def _getRxCount(self):
+        ret = np.array(31 * 2 * 36)
+
+        for f in range(31):
+            for r in range(2):
+                for c in range(36):
+                    ret[f*2*36 + r*36 + c] = self._processor.getRxCount(f, r, c)
+
+        return ret
 
