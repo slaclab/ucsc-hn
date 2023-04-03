@@ -121,7 +121,7 @@ class DataDecoder(pr.Device):
         return curr
 
     def _getRxCount(self):
-        ret = np.array(31 * 2 * 36)
+        ret = np.array([0.0] * (31 * 2 * 36))
 
         for f in range(31):
             for r in range(2):
