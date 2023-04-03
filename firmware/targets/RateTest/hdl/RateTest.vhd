@@ -443,7 +443,7 @@ begin
          ILEAVE_ON_NOTVALID_G => true,
          APP_AXIS_CONFIG_G    => (0 => APP_AXIS_CONFIG_C),
          TSP_AXIS_CONFIG_G    => EMAC_AXIS_CONFIG_C,
-         MAX_SEG_SIZE_G       => 1024)
+         MAX_SEG_SIZE_G       => 1300)
       port map (
          clk_i                => userEthClk,
          rst_i                => userEthClkRst,
@@ -489,7 +489,7 @@ begin
       generic map (
          TPD_G                        => TPD_C,
          MAX_NUMBER_SUB_FRAMES_G      => 128,
-         SUPER_FRAME_BYTE_THRESHOLD_G => 1400,
+         SUPER_FRAME_BYTE_THRESHOLD_G => 1200,
          MAX_CLK_GAP_G                => 256,
          AXIS_CONFIG_G                => APP_AXIS_CONFIG_C,
          INPUT_PIPE_STAGES_G          => 0,
