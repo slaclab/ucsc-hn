@@ -18,21 +18,19 @@ class RateTestRoot(pyrogue.Root):
 
         self._remMem = rogue.interfaces.memory.TcpClient(host[0], 9000)
 
-        self.add(ucsc_hn.RenaNode(host=host[0],name=f'Node[{i}]',node=i,dataWriter=dw,legacyWriter=lw,emulate=emulate))
-
         self.add(surf.ethernet.udp.UdpEngineServer(memBase=self._remMem,offset = 0xB0010000))
         self.add(surf.protocols.rssi.RssiCore(memBase=self._remMem,offset=0xB0020000))
+        self.add(surf.protocols.ssi.SsiPrbsTx(memBase=self._remMem, offset=0xA0000000))
 
-        self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host[0], packVer=2)
+        self._remRssi = pyrogue.protocols.UdpRssiPack(port=8192, host=host[0], packVer=2)
         self.add(self._remRssi)
 
         batch = rogue.protocols.batcher.SplitterV1()
         self.addProtocol(batch)
 
-        pr.streamConnect(self._remRssi.application(0),batch)
+        pyrogue.streamConnect(self._remRssi.application(0),batch)
 
-        prbs = surf.protocols.ssi.SsiPrbsRx(memBase=self._remMem, offset=0xA0000000)
+        prbs = pyrogue.utilities.prbs.PrbsRx()
         self.add(prbs)
-
-        pr.streamConnect(batch,prbs)
+        pyrogue.streamConnect(batch,prbs)
 
