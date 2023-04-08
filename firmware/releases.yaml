@@ -9,6 +9,8 @@ RoguePackages:
 RogueScripts:
    - ../software/scripts/renaGui
 
+RogueVersion: >=v3.18
+
 CondaDependencies:
    - surf
    - rce_gen3_fw_lib
