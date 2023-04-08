@@ -9,7 +9,7 @@ RoguePackages:
 RogueScripts:
    - ../software/scripts/renaGui
 
-RogueVersion: >=v3.18
+RogueVersion: ">=v3.18"
 
 CondaDependencies:
    - surf
