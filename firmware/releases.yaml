@@ -10,6 +10,7 @@ RogueScripts:
    - ../software/scripts/renaGui
 
 RogueVersion: ">=v5.18"
+PythonVersion: ">=3.9"
 
 CondaDependencies:
    - surf
