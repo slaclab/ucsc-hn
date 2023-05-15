@@ -28,6 +28,8 @@ void ucsc_hn_lib::RenaDataDecoder::setup_python() {
       .def("getRxFrameCount",    &ucsc_hn_lib::RenaDataDecoder::getRxFrameCount)
       .def("getRxByteCount",     &ucsc_hn_lib::RenaDataDecoder::getRxByteCount)
       .def("getRxCount",         &ucsc_hn_lib::RenaDataDecoder::getRxCount)
+      .def("getDecodeEnable",    &ucsc_hn_lib::RenaDataDecoder::getDecodeEnable)
+      .def("setDecodeEnable",    &ucsc_hn_lib::RenaDataDecoder::setDecodeEnable)
    ;
 }
 
@@ -37,6 +39,7 @@ ucsc_hn_lib::RenaDataDecoder::RenaDataDecoder (uint8_t nodeId) {
 
    countReset();
    nodeId_ = nodeId;
+   decodeEn_ = 1;
 
    for (f=0; f < 31; f++)
       for (r=0; r < 2; r++)
@@ -58,11 +61,7 @@ void ucsc_hn_lib::RenaDataDecoder::countReset () {
    rxDropCount_ = 0;
    rxByteCount_ = 0;
 
-   for (f=0; f < 31; f++)
-      for (r=0; r < 2; r++)
-         for (c=0; c < 36; c++)
-            polarity_[f][r][c] = false;
-
+   for (f=0; f < 31; f++) rxCount_[f] = 0;
 
 }
 
@@ -92,9 +91,17 @@ uint32_t ucsc_hn_lib::RenaDataDecoder::getRxByteCount() {
    return rxByteCount_;
 }
 
-uint32_t ucsc_hn_lib::RenaDataDecoder::getRxCount(uint8_t fpga, uint8_t rena, uint8_t chan) {
-   if ( fpga > 30 || rena > 1 || chan > 35 ) return 0;
-   return rxCount_[fpga][rena][chan];
+uint32_t ucsc_hn_lib::RenaDataDecoder::getRxCount(uint8_t fpga) {
+   if ( fpga > 30 ) return 0;
+   return rxCount_[fpga];
+}
+
+void ucsc_hn_lib::RenaDataDecoder::setDecodeEnable(uint32_t enable) {
+   decodeEn_ = enable;
+}
+
+uint32_t ucsc_hn_lib::RenaDataDecoder::getDecodeEnable() {
+   return decodeEn_;
 }
 
 void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
@@ -203,6 +210,8 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    sendFrame(nFrame);
    nFrame.reset();
 
+   if ( decodeEn_ == 0 ) return;
+
    // Make sure length long enough for CRC check
    if ( frame->getPayload() < 3 ) {
       rxDropCount_++;
@@ -290,6 +299,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    }
    rxFrameCount_++;
    rxByteCount_ += frame->getPayload();
+   rxCount_[fpgaId]++;
 
    // Generate a new outbound frame
    // Size = 15 bytes for common header
@@ -331,7 +341,6 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
       // Something is being read for this channel
       if ( readPHA or readUV ) {
          rxSampleCount_++;
-         rxCount_[fpgaId][renaId][x]++;
 
          // PHA is two bytes
          if ( readPHA ) phaData = srcData[buffIdx++] << 6 | srcData[buffIdx++];

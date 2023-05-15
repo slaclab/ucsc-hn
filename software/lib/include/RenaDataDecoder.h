@@ -19,7 +19,8 @@ namespace ucsc_hn_lib {
          uint8_t  nodeId_;
 
          uint8_t polarity_[31][2][36];
-         uint32_t rxCount_[31][2][36];
+         uint32_t rxCount_[31];
+         uint32_t decodeEn_;
 
       public:
 
@@ -30,6 +31,10 @@ namespace ucsc_hn_lib {
          RenaDataDecoder (uint8_t nodeId);
 
          void setChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan, uint8_t state);
+
+         void setDecodeEnable(uint32_t enable);
+
+         uint32_t getDecodeEnable();
 
          uint8_t getChannelPolarity(uint8_t fpga, uint8_t rena, uint8_t chan);
 
@@ -43,7 +48,7 @@ namespace ucsc_hn_lib {
 
          uint32_t getRxDropCount();
 
-         uint32_t getRxCount(uint8_t fpga, uint8_t rena, uint8_t chan);
+         uint32_t getRxCount(uint8_t fpga);
 
          void acceptFrame ( std::shared_ptr<rogue::interfaces::stream::Frame> frame );
    };

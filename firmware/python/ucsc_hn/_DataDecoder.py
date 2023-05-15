@@ -52,11 +52,17 @@ class DataDecoder(pr.Device):
         self.add(pr.LocalVariable(name='DropRate', description='Drop Rate',
                                   mode='RO', value=0, disp='{:.1f}'))
 
-        self.add(pr.LocalVariable(name='RxCount',
-                                  description='Per Rena Channel Rx Count. Idx = (fpga*2*36) + (rena*36) + chan ',
-                                  mode='RO',
-                                  localGet=lambda: self._getRxCount(),
-                                  disp='{}'))
+        self.add(pr.LocalVariable(name='DecodeEn', description='Decoder Enable',
+                                  mode='RW', disp='{}',
+                                  localSet=lambda value: self._setDecodeEn(value),
+                                  localGet=lambda : self._getDecodeEn()))
+
+        for i in range(1,31):
+            self.add(pr.LocalVariable(name=f'RxCount[{i}]',
+                                      description='Per Rena Channel Rx Count.',
+                                      mode='RO',
+                                      localGet=lambda idx=i: self._getRxCount(idx),
+                                      disp='{}'))
 
         self._lastFrameCount = 0
         self._lastFrameTime = time.time()
@@ -120,13 +126,12 @@ class DataDecoder(pr.Device):
         self.SampleRate.set(rate)
         return curr
 
-    def _getRxCount(self):
-        ret = np.array([0.0] * (31 * 2 * 36))
+    def _getRxCount(self, idx):
+        return self._processor.getRxCount(idx)
 
-        for f in range(31):
-            for r in range(2):
-                for c in range(36):
-                    ret[f*2*36 + r*36 + c] = self._processor.getRxCount(f, r, c)
+    def _getDecodeEn(self):
+        return self._processor.getDecodeEnable()
 
-        return ret
+    def _setDecodeEn(self, value):
+        self._processor.setDecodeEnable(value)
 
