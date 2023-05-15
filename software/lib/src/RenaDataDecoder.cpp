@@ -210,6 +210,10 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    sendFrame(nFrame);
    nFrame.reset();
 
+   // Count before full decode
+   fpgaId = (srcData[1] >> 1) & 0x3F;
+   rxCount_[fpgaId]++;
+
    if ( decodeEn_ == 0 ) return;
 
    // Make sure length long enough for CRC check
