@@ -64,6 +64,13 @@ class DataDecoder(pr.Device):
                                       localGet=lambda idx=i: self._getRxCount(idx),
                                       disp='{}'))
 
+        for i in range(1,31):
+            self.add(pr.LocalVariable(name=f'RxTotal[{i}]',
+                                      description='Per Rena Channel Rx Count.',
+                                      mode='RO',
+                                      localGet=lambda idx=i: self._getRxTotal(idx),
+                                      disp='{}'))
+
         self._lastFrameCount = 0
         self._lastFrameTime = time.time()
         self._lastByteCount = 0
@@ -128,6 +135,9 @@ class DataDecoder(pr.Device):
 
     def _getRxCount(self, idx):
         return self._processor.getRxCount(idx)
+
+    def _getRxTotal(self, idx):
+        return self._processor.getRxTotal(idx)
 
     def _getDecodeEn(self):
         return self._processor.getDecodeEnable()

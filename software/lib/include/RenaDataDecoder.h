@@ -20,6 +20,7 @@ namespace ucsc_hn_lib {
 
          uint8_t polarity_[31][2][36];
          uint32_t rxCount_[31];
+         uint32_t rxTotal_[31];
          uint32_t decodeEn_;
 
       public:
@@ -49,6 +50,7 @@ namespace ucsc_hn_lib {
          uint32_t getRxDropCount();
 
          uint32_t getRxCount(uint8_t fpga);
+         uint32_t getRxTotal(uint8_t fpga);
 
          void acceptFrame ( std::shared_ptr<rogue::interfaces::stream::Frame> frame );
    };

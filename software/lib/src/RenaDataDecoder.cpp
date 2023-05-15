@@ -28,6 +28,7 @@ void ucsc_hn_lib::RenaDataDecoder::setup_python() {
       .def("getRxFrameCount",    &ucsc_hn_lib::RenaDataDecoder::getRxFrameCount)
       .def("getRxByteCount",     &ucsc_hn_lib::RenaDataDecoder::getRxByteCount)
       .def("getRxCount",         &ucsc_hn_lib::RenaDataDecoder::getRxCount)
+      .def("getRxTotal",         &ucsc_hn_lib::RenaDataDecoder::getRxTotal)
       .def("getDecodeEnable",    &ucsc_hn_lib::RenaDataDecoder::getDecodeEnable)
       .def("setDecodeEnable",    &ucsc_hn_lib::RenaDataDecoder::setDecodeEnable)
    ;
@@ -62,6 +63,7 @@ void ucsc_hn_lib::RenaDataDecoder::countReset () {
    rxByteCount_ = 0;
 
    for (f=0; f < 31; f++) rxCount_[f] = 0;
+   for (f=0; f < 31; f++) rxTotal_[f] = 0;
 
 }
 
@@ -94,6 +96,11 @@ uint32_t ucsc_hn_lib::RenaDataDecoder::getRxByteCount() {
 uint32_t ucsc_hn_lib::RenaDataDecoder::getRxCount(uint8_t fpga) {
    if ( fpga > 30 ) return 0;
    return rxCount_[fpga];
+}
+
+uint32_t ucsc_hn_lib::RenaDataDecoder::getRxTotal(uint8_t fpga) {
+   if ( fpga > 30 ) return 0;
+   return rxTotal_[fpga];
 }
 
 void ucsc_hn_lib::RenaDataDecoder::setDecodeEnable(uint32_t enable) {
@@ -213,6 +220,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    // Count before full decode
    fpgaId = (srcData[1] >> 1) & 0x3F;
    rxCount_[fpgaId]++;
+   rxTotal_[fpgaId] += frame->getPayload();
 
    if ( decodeEn_ == 0 ) return;
 
@@ -303,7 +311,6 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    }
    rxFrameCount_++;
    rxByteCount_ += frame->getPayload();
-   rxCount_[fpgaId]++;
 
    // Generate a new outbound frame
    // Size = 15 bytes for common header
