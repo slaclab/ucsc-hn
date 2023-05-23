@@ -218,9 +218,14 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    nFrame.reset();
 
    // Count before full decode
+   // First byte is rena id and board address
+   renaId = srcData[1] & 0x1;
    fpgaId = (srcData[1] >> 1) & 0x3F;
-   rxCount_[fpgaId]++;
-   rxTotal_[fpgaId] += frame->getPayload();
+
+   if ( fpgaId < 31 ) {
+      rxCount_[fpgaId]++;
+      rxTotal_[fpgaId] += frame->getPayload();
+   }
 
    if ( decodeEn_ == 0 ) return;
 
@@ -242,10 +247,6 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
       rxDropCount_++;
       return;
    }
-
-   // First byte is rena id and board address
-   renaId = srcData[1] & 0x1;
-   fpgaId = (srcData[1] >> 1) & 0x3F;
 
    // Bytes 2 - 7 are the timesamp, 42 bits total
    timeStamp = 0;
