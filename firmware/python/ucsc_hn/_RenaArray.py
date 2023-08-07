@@ -1,4 +1,4 @@
-import pyrogue as pr
+import pyrogue
 import ucsc_hn
 import time
 import rogue.interfaces.stream as ris
@@ -7,9 +7,9 @@ import ucsc_hn_lib
 import rogue.interfaces.stream
 import rogue.protocols.batcher
 
-class RenaArray(pr.Device,ris.Master,ris.Slave):
+class RenaArray(pyrogue.Device,ris.Master,ris.Slave):
     def __init__(self, host, nodeId, dataWriter=None, legacyWriter=None, emulate=False, **kwargs):
-        pr.Device.__init__(self,description="FanInBoard Registers.", **kwargs)
+        pyrogue.Device.__init__(self,description="FanInBoard Registers.", **kwargs)
         ris.Master.__init__(self)
         ris.Slave.__init__(self)
 
@@ -18,43 +18,48 @@ class RenaArray(pr.Device,ris.Master,ris.Slave):
 
         dataF = rogue.interfaces.stream.Filter(True,2)
         self.addProtocol(dataF)
-        pr.streamConnect(dd,dataF)
-        pr.streamConnect(dataF,dataWriter.getChannel(nodeId))
+        pyrogue.streamConnect(dd,dataF)
+        pyrogue.streamConnect(dataF,dataWriter.getChannel(nodeId))
 
         legF = rogue.interfaces.stream.Filter(True,3)
         self.addProtocol(legF)
-        pr.streamConnect(dd,legF)
-        pr.streamConnect(legF,legacyWriter.getChannel(nodeId))
+        pyrogue.streamConnect(dd,legF)
+        pyrogue.streamConnect(legF,legacyWriter.getChannel(nodeId))
 
         diagF = rogue.interfaces.stream.Filter(True,1)
         self.addProtocol(diagF)
-        pr.streamConnect(dd,diagF)
-        pr.streamConnect(diagF,self)
+        pyrogue.streamConnect(dd,diagF)
+        pyrogue.streamConnect(diagF,self)
+
+        fifo = ucsc_hn.Fifo(name='TestFifo',description='Test Fifo', maxDepth=10000)
+        self.add(fifo)
 
         # RSSI For interface to RENA Boards
         if emulate is False:
-            self._remRssi = pr.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
+            self._remRssi = pyrogue.protocols.UdpRssiPack(port=8192, host=host, packVer=2)
             self.add(self._remRssi)
+
+            pyrogue.streamConnect(self._remRssi.application(0),fifo)
 
             batch = rogue.protocols.batcher.SplitterV1()
             self.addProtocol(batch)
-            pr.streamConnect(self._remRssi.application(0),batch)
+            pyrogue.streamConnect(fifo,batch)
 
-            pr.streamConnect(batch,dd)
+            pyrogue.streamConnect(batch,dd)
 
-            pr.streamConnect(self,self._remRssi.application(0))
+            pyrogue.streamConnect(self,self._remRssi.application(0))
 
         for i in range(1,31):
             self.add(ucsc_hn.RenaBoard(board=i, name=f'RenaBoard[{i}]'))
 
-        self.add(pr.LocalVariable(name='DiagMessageCount',
+        self.add(pyrogue.LocalVariable(name='DiagMessageCount',
                                   value=0,
                                   mode='RO',
                                   pollInterval=1.0,
                                   description='Diagnostic message Count'))
 
         # Store histogram flags
-        self.add(pr.LocalVariable(name='DoHistogram',
+        self.add(pyrogue.LocalVariable(name='DoHistogram',
                                   value=False,
                                   mode='RW',
                                   description='Store Histograms'))

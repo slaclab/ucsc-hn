@@ -9,7 +9,6 @@ pyrogue.addLibraryPath('../../firmware/python')
 pyrogue.addLibraryPath('../python')
 
 import pyrogue.pydm
-import pyrogue.gui
 import rogue
 import logging
 import os
