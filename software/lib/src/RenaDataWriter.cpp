@@ -48,7 +48,7 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
    uint16_t phaData;
    uint16_t uData;
    uint16_t vData;
-   uint32_t chanCount;
+   uint8_t chanCount;
 
    char buffer[200];
 
@@ -57,36 +57,36 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
    rogue::GilRelease noGil;
    std::unique_lock<std::mutex> lock(mtx_);
 
-   // Bad frame size
-   if ( (frame->getPayload() - 15) % 8 != 0 ) return;
-
-   chanCount = (frame->getPayload() - 15) / 8;
-
    if ( fd_ >= 0 ) {
 
       src = frame->begin();
 
-      fromFrame(src,1,&fpgaId);
-      fromFrame(src,1,&renaId);
-      fromFrame(src,1,&nodeId);
-      fromFrame(src,8,&timeStamp);
-      fromFrame(src,4,&frameId);
+      // Read 16 bytes
+      if ( src.remBuffer() >= 16 ) {
+         fromFrame(src,1,&fpgaId);
+         fromFrame(src,1,&renaId);
+         fromFrame(src,1,&nodeId);
+         fromFrame(src,8,&timeStamp);
+         fromFrame(src,4,&frameId);
+         fromFrame(src,1,&chanCount);
 
-      while ( chanCount > 0 ) {
+         while ( chanCount > 0 ) {
 
-         fromFrame(src,1,&ch);
-         fromFrame(src,1,&polarity);
-         fromFrame(src,2,&phaData);
-         fromFrame(src,2,&uData);
-         fromFrame(src,2,&vData);
+            if ( src.remBuffer() >= 8 ) {
+                fromFrame(src,1,&ch);
+                fromFrame(src,1,&polarity);
+                fromFrame(src,2,&phaData);
+                fromFrame(src,2,&uData);
+                fromFrame(src,2,&vData);
 
-         sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
+                sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
 
-         checkSize(strlen(buffer));
-         intWrite(buffer,strlen(buffer));
-         --chanCount;
+                checkSize(strlen(buffer));
+                intWrite(buffer,strlen(buffer));
+            }
+            --chanCount;
+         }
       }
-
       frameCount_ ++;
       cond_.notify_all();
    }

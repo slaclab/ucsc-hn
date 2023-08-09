@@ -5,6 +5,7 @@
 #include <rogue/interfaces/stream/Master.h>
 #include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
+#include <rogue/protocols/batcher/Data.h>
 
 namespace ucsc_hn_lib {
 
@@ -51,6 +52,8 @@ namespace ucsc_hn_lib {
 
          uint32_t getRxCount(uint8_t fpga);
          uint32_t getRxTotal(uint8_t fpga);
+
+         void sendDiag ( std::shared_ptr<rogue::protocols::batcher::Data> data);
 
          void acceptFrame ( std::shared_ptr<rogue::interfaces::stream::Frame> frame );
    };

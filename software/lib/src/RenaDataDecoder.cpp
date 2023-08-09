@@ -8,10 +8,13 @@
 #include <rogue/interfaces/stream/FrameAccessor.h>
 #include <rogue/interfaces/stream/FrameLock.h>
 #include <rogue/GilRelease.h>
+#include <rogue/protocols/batcher/CoreV1.h>
+#include <rogue/protocols/batcher/Data.h>
 #include <boost/python.hpp>
 
 namespace ris = rogue::interfaces::stream;
 namespace bp = boost::python;
+namespace rpb = rogue::protocols::batcher;
 
 ucsc_hn_lib::RenaDataDecoderPtr ucsc_hn_lib::RenaDataDecoder::create(uint8_t nodeId) {
    ucsc_hn_lib::RenaDataDecoderPtr r = std::make_shared<ucsc_hn_lib::RenaDataDecoder>(nodeId);
@@ -111,11 +114,40 @@ uint32_t ucsc_hn_lib::RenaDataDecoder::getDecodeEnable() {
    return decodeEn_;
 }
 
-void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
-   ris::FramePtr nFrame;
+void ucsc_hn_lib::RenaDataDecoder::sendDiag ( rpb::DataPtr data ) {
    ris::FrameIterator src;
    ris::FrameIterator dst;
+   ris::FramePtr nFrame;
+
+   nFrame = reqFrame(data->size(), true);
+   nFrame->setPayload(data->size());
+
+   dst = nFrame->begin();
+   src = data->begin();
+   ris::copyFrame(src, data->size(), dst);
+
+   // Set flags
+   nFrame->setFirstUser(data->fUser());
+   nFrame->setLastUser(data->lUser());
+   nFrame->setChannel(1);
+
+   sendFrame(nFrame);
+}
+
+
+void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
+   ris::FramePtr rFrame;
+   ris::FramePtr dFrame;
+   ris::FrameIterator src;
    ris::FrameIterator tmp;
+   ris::FrameIterator rPtr;
+   ris::FrameIterator dPtr;
+   ris::FrameIterator cPtr;
+   rpb::CoreV1 core;
+   rpb::DataPtr data;
+
+   uint32_t rSize;
+   uint32_t dSize;
 
    bool readMode;
    bool readPHA;
@@ -124,6 +156,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint64_t timeStamp;
    uint64_t fastTriggerList;
    uint64_t slowTriggerList;
+   uint32_t fc;
    uint32_t x;
    uint32_t i;
    uint32_t buffIdx;
@@ -148,243 +181,258 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    rogue::GilRelease noGil;
    ris::FrameLockPtr lock = frame->lock();
 
-   // Empty frame
-   if ( frame->getPayload() < 1 ) return;
-
-   //printf("Got frame size: %i\n",frame->getPayload());
-
    // Ensure frame is in a sing buffer
    ensureSingleBuffer(frame,true);
 
-   // Frame iterator and accessor
-   src = frame->begin();
-   ris::FrameAccessor<uint8_t> srcData(src,frame->getPayload());
+   core.processFrame(frame);
 
-   // Forward non data types
-   // 0xC8 = AND Mode
-   if ( srcData[0] == 0xC8 ) {
-      readMode = false;
+   // Generate two new outgoing frames
+   rSize = frame->getPayload()+4;
+   rFrame = reqFrame(rSize,true);
+   rFrame->setPayload(rSize);
+   rFrame->setChannel(2);
+   rPtr = rFrame->begin();
+   rSize = 0;
 
-      // Check min length
-      if ( frame->getPayload() < 14 ) return;
-   }
-
-   // 0xC9 = OR  Mode
-   else if ( srcData[0] == 0xC9 ) {
-      readMode = true;
-
-      // Check min length
-      if ( frame->getPayload() < 20 ) return;
-   }
-
-   // Other data, forward on with updated dest
-   else {
-      frame->setChannel(1);
-      lock->unlock();
-      sendFrame(frame);
-      return;
-   }
-
-   // Make a copy of the frame in the raw format, add source and dest node IDs
-   nFrame = reqFrame(frame->getPayload()+4,true);
-   nFrame->setPayload(frame->getPayload()+4);
-   nFrame->setChannel(3);
-   tmp = frame->begin();
-   dst = nFrame->begin();
-
-   // Add a one to the start of the record
-   one = 1;
-   toFrame(dst,1,&one);
-
-   // Copy one bytes
-   copyFrame(tmp,1,dst);
-
-   // Set src byte
-   toFrame(dst,1,&nodeId_);
-
-   // Set dest byte
-   zero = 0;
-   toFrame(dst,1,&zero);
-
-   // Copy the rest of the frame
-   copyFrame(tmp,frame->getPayload()-1,dst);
-
-   // Add a zero
-   zero = 0;
-   toFrame(dst,1,&zero);
-
-   // Send the frame copy
-   sendFrame(nFrame);
-   nFrame.reset();
-
-   // Count before full decode
-   // First byte is rena id and board address
-   renaId = srcData[1] & 0x1;
-   fpgaId = (srcData[1] >> 1) & 0x3F;
-
-   if ( fpgaId < 31 ) {
-      rxCount_[fpgaId]++;
-      rxTotal_[fpgaId] += frame->getPayload();
-   }
-
-   if ( decodeEn_ == 0 ) return;
-
-   // Make sure length long enough for CRC check
-   if ( frame->getPayload() < 3 ) {
-      rxDropCount_++;
-      return;
-   }
-
-   // Received CRC
-   gotCrc = srcData[frame->getPayload()-3] << 4 | srcData[frame->getPayload()-2];
-
-   // Computed CRC
-   expCrc = 0;
-   for (x=0; x < frame->getPayload()-3; x++) expCrc = crc8_table_[expCrc ^ srcData[x]];
-
-   // Check CRC
-   if ( expCrc != gotCrc ) {
-      rxDropCount_++;
-      return;
-   }
-
-   // Bytes 2 - 7 are the timesamp, 42 bits total
-   timeStamp = 0;
-   for (x=2; x < 8; x++) {
-      timeStamp = timeStamp << 7;
-      timeStamp |= srcData[x];
-   }
-
-   // Bytes 8 - 13 are the fast trigger list for channels 35-0
-   fastTriggerList = 0;
-   for (x=8; x < 14; x++) {
-      fastTriggerList = fastTriggerList << 6;
-      fastTriggerList |= srcData[x];
-   }
-
-   buffIdx = 14;
-
-   // Bytes 14 - 19 are the slow trigger list for channels 35-0
-   slowTriggerList = 0;
-
-   // OR Mode
-   if (readMode) {
-      for (x=14; x < 20; x++) {
-         slowTriggerList = slowTriggerList << 6;
-         slowTriggerList |= srcData[x];
-      }
-
-      buffIdx = 20;
-   }
-
-   // Count the number of fast triggers
-   fastCount = 0;
-   i = 1;
-   for (x=0; x < 36; x++) {
-      if ((i & fastTriggerList) != 0 ) fastCount++;
-      i = i << 1;
-   }
-
-   // Count the number of slow triggers
-   slowCount = 0;
-
-   // OR Mode
-   if ( readMode ) {
-      i = 1;
-      for (x=0; x < 36; x++) {
-         if ((i & slowTriggerList) != 0 ) slowCount++;
-         i = i << 1;
-      }
-
-      // Check or mode length
-      if ( frame->getPayload() != (23 + (fastCount * 4) + (slowCount *2))) {
-         rxDropCount_++;
-         return;
-      }
-   }
-
-   // Check and mode length
-   else {
-      if ( frame->getPayload() != (17 + (fastCount * 6))) {
-         rxDropCount_++;
-         return;
-      }
-   }
-   rxFrameCount_++;
-   rxByteCount_ += frame->getPayload();
-
-   // Generate a new outbound frame
-   // Size = 15 bytes for common header
+   // Size = 16 bytes for common header
    //      = 8 bytes per channel
-   //      = total = 15 + 8 * 36 = 303
-   nFrame = reqFrame(303,true);
-   nFrame->setPayload(303);
-   nFrame->setChannel(2);
-   dst = nFrame->begin();
+   //      = total = 16 + 8 * 36 = 304
+   dSize = core.count() * 304;
+   dFrame = reqFrame(dSize, true);
+   dFrame->setPayload(dSize);
+   dFrame->setChannel(3);
+   dPtr = dFrame->begin();
+   dSize = 0;
 
-   // Init Frame
-   toFrame(dst,1,&fpgaId);
-   toFrame(dst,1,&renaId);
-   toFrame(dst,1,&nodeId_);
-   toFrame(dst,8,&timeStamp);
-   toFrame(dst,4,&rxFrameCount_);
-   chanCount = 0;
+   for (fc = 0; fc < core.count(); fc++) {
+       data = core.record(fc);
 
-   // Extract data PHA, U and V ADC values for each channel
-   bit = 1;
-   for ( x=0; x < 36; x++ ) {
-      readPHA = false;
-      readUV  = false;
+       // Frame iterator and accessor
+       src = data->begin();
+       ris::FrameAccessor<uint8_t> srcData(src,data->size());
 
-      // OR Mode
-      if ( readMode ) {
-          if ((bit & slowTriggerList) != 0) readPHA = true;
-          if ((bit & fastTriggerList) != 0) readUV  = true;
-      }
+       // Forward non data types
+       // 0xC8 = AND Mode
+       if ( srcData[0] == 0xC8 ) {
+          readMode = false;
 
-      // AND Mode
-      else {
-         if ((bit & fastTriggerList) != 0) {
-            readPHA = true;
-            readUV  = true;
-         }
-      }
+          // Check min length
+          if ( frame->getPayload() < 14 ) continue;
+       }
 
-      // Something is being read for this channel
-      if ( readPHA or readUV ) {
-         rxSampleCount_++;
+       // 0xC9 = OR  Mode
+       else if ( srcData[0] == 0xC9 ) {
+          readMode = true;
 
-         // PHA is two bytes
-         if ( readPHA ) phaData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
-         else phaData = 0;
+          // Check min length
+          if ( frame->getPayload() < 20 ) continue;
+       }
 
-         // U & V Data
-         if (readUV) {
-            uData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
-            vData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
-         }
-         else {
-            uData = 0;
-            vData = 0;
-         }
+       // Forward split message
+       else {
+          sendDiag (data);
+          continue;
+       }
 
-         // Lookup polarity
-         polarity = getChannelPolarity(fpgaId,renaId,x);
+       // Update counters
+       renaId = srcData[1] & 0x1;
+       fpgaId = (srcData[1] >> 1) & 0x3F;
 
-         // Start frame data
-         toFrame(dst,1,&x); // Channel ID
-         toFrame(dst,1,&polarity);
-         toFrame(dst,2,&phaData);
-         toFrame(dst,2,&uData);
-         toFrame(dst,2,&vData);
-         chanCount++;
-      }
+       if ( fpgaId < 31 ) {
+          rxCount_[fpgaId]++;
+          rxTotal_[fpgaId] += frame->getPayload();
+       }
 
-      bit = bit << 1;
-   }
+       ////////////////////////////////////////////////////////////////////////////
+       // Make a copy of the frame in the raw format, add source and dest node IDs
+       tmp = data->begin();
 
-   nFrame->setPayload(15 + (8 * chanCount));
-   sendFrame(nFrame);
-   nFrame.reset();
+       // Add a one to the start of the record
+       one = 1;
+       toFrame(rPtr,1,&one);
+
+       // Copy one byte
+       copyFrame(tmp,1,rPtr);
+
+       // Set src byte
+       toFrame(rPtr,1,&nodeId_);
+
+       // Set dest byte
+       zero = 0;
+       toFrame(rPtr,1,&zero);
+
+       // Copy the rest of the frame
+       copyFrame(tmp,data->size()-1,rPtr);
+
+       // Add a zero
+       zero = 0;
+       toFrame(rPtr,1,&zero);
+
+       // Update size
+       rSize += data->size() + 4;
+
+       ////////////////////////////////////////////////////////////////////////////
+       if ( decodeEn_ == 0 ) continue;
+
+       // Make sure length long enough for CRC check
+       if ( data->size() < 3 ) {
+          rxDropCount_++;
+          continue;
+       }
+
+       // Received CRC
+       gotCrc = srcData[data->size()-3] << 4 | srcData[data->size()-2];
+
+       // Computed CRC
+       expCrc = 0;
+       for (x=0; x < data->size()-3; x++) expCrc = crc8_table_[expCrc ^ srcData[x]];
+
+       // Check CRC
+       if ( expCrc != gotCrc ) {
+          rxDropCount_++;
+          continue;
+       }
+
+       // Bytes 2 - 7 are the timesamp, 42 bits total
+       timeStamp = 0;
+       for (x=2; x < 8; x++) {
+          timeStamp = timeStamp << 7;
+          timeStamp |= srcData[x];
+       }
+
+       // Bytes 8 - 13 are the fast trigger list for channels 35-0
+       fastTriggerList = 0;
+       for (x=8; x < 14; x++) {
+          fastTriggerList = fastTriggerList << 6;
+          fastTriggerList |= srcData[x];
+       }
+
+       buffIdx = 14;
+
+       // Bytes 14 - 19 are the slow trigger list for channels 35-0
+       slowTriggerList = 0;
+
+       // OR Mode
+       if (readMode) {
+          for (x=14; x < 20; x++) {
+             slowTriggerList = slowTriggerList << 6;
+             slowTriggerList |= srcData[x];
+          }
+
+          buffIdx = 20;
+       }
+
+       // Count the number of fast triggers
+       fastCount = 0;
+       i = 1;
+       for (x=0; x < 36; x++) {
+          if ((i & fastTriggerList) != 0 ) fastCount++;
+          i = i << 1;
+       }
+
+       // Count the number of slow triggers
+       slowCount = 0;
+
+       // OR Mode
+       if ( readMode ) {
+          i = 1;
+          for (x=0; x < 36; x++) {
+             if ((i & slowTriggerList) != 0 ) slowCount++;
+             i = i << 1;
+          }
+
+          // Check or mode length
+          if ( data->size() != (23 + (fastCount * 4) + (slowCount *2))) {
+             rxDropCount_++;
+             continue;
+          }
+       }
+
+       // Check and mode length
+       else {
+          if ( data->size() != (17 + (fastCount * 6))) {
+             rxDropCount_++;
+             continue;
+          }
+       }
+       rxFrameCount_++;
+       rxByteCount_ += data->size();
+
+       // Update outbound frame
+       toFrame(dPtr,1,&fpgaId);
+       toFrame(dPtr,1,&renaId);
+       toFrame(dPtr,1,&nodeId_);
+       toFrame(dPtr,8,&timeStamp);
+       toFrame(dPtr,4,&rxFrameCount_);
+
+       // Count gets updated later
+       chanCount = 0;
+       cPtr = dPtr;
+       toFrame(dPtr,1,&chanCount);
+       dSize += 16;
+
+       // Extract data PHA, U and V ADC values for each channel
+       bit = 1;
+       for ( x=0; x < 36; x++ ) {
+          readPHA = false;
+          readUV  = false;
+
+          // OR Mode
+          if ( readMode ) {
+              if ((bit & slowTriggerList) != 0) readPHA = true;
+              if ((bit & fastTriggerList) != 0) readUV  = true;
+          }
+
+          // AND Mode
+          else {
+             if ((bit & fastTriggerList) != 0) {
+                readPHA = true;
+                readUV  = true;
+             }
+          }
+
+          // Something is being read for this channel
+          if ( readPHA or readUV ) {
+             rxSampleCount_++;
+
+             // PHA is two bytes
+             if ( readPHA ) phaData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
+             else phaData = 0;
+
+             // U & V Data
+             if (readUV) {
+                uData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
+                vData = srcData[buffIdx++] << 6 | srcData[buffIdx++];
+             }
+             else {
+                uData = 0;
+                vData = 0;
+             }
+
+             // Lookup polarity
+             polarity = getChannelPolarity(fpgaId,renaId,x);
+
+             // Start frame data
+             toFrame(dPtr,1,&x); // Channel ID
+             toFrame(dPtr,1,&polarity);
+             toFrame(dPtr,2,&phaData);
+             toFrame(dPtr,2,&uData);
+             toFrame(dPtr,2,&vData);
+             dSize += 8;
+             chanCount++;
+          }
+
+          bit = bit << 1;
+       }
+
+       // Update counter
+       toFrame(cPtr,1,&chanCount);
+    }
+
+    rFrame->setPayload(rSize);
+    dFrame->setPayload(dSize);
+
+    sendFrame(rFrame);
+    sendFrame(dFrame);
 }
 
