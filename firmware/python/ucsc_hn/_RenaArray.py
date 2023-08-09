@@ -19,19 +19,31 @@ class RenaArray(pyrogue.Device,ris.Master,ris.Slave):
         dataF = rogue.interfaces.stream.Filter(True,2)
         self.addProtocol(dataF)
         pyrogue.streamConnect(dd,dataF)
-        pyrogue.streamConnect(dataF,dataWriter.getChannel(nodeId))
+
+        dataFifo = ucsc_hn.Fifo(name='DataFifo',description='Data Fifo', maxDepth=10000, noCopy=True)
+        self.add(dataFifo)
+        pyrogue.streamConnect(dataF,dataFifo)
+        pyrogue.streamConnect(dataFifo,dataWriter.getChannel(nodeId))
 
         legF = rogue.interfaces.stream.Filter(True,3)
         self.addProtocol(legF)
         pyrogue.streamConnect(dd,legF)
-        pyrogue.streamConnect(legF,legacyWriter.getChannel(nodeId))
+
+        legFifo = ucsc_hn.Fifo(name='LegFifo',description='Leg Fifo', maxDepth=10000, noCopy=True)
+        self.add(legFifo)
+        pyrogue.streamConnect(legF,legFifo)
+        pyrogue.streamConnect(legFifo,legacyWriter.getChannel(nodeId))
 
         diagF = rogue.interfaces.stream.Filter(True,1)
         self.addProtocol(diagF)
         pyrogue.streamConnect(dd,diagF)
-        pyrogue.streamConnect(diagF,self)
 
-        fifo = ucsc_hn.Fifo(name='TestFifo',description='Test Fifo', maxDepth=10000)
+        diagFifo = ucsc_hn.Fifo(name='DiagFifo',description='Diag Fifo', maxDepth=10000, noCopy=True)
+        self.add(diagFifo)
+        pyrogue.streamConnect(diagF,diagFifo)
+        pyrogue.streamConnect(diagFifo,self)
+
+        fifo = ucsc_hn.Fifo(name='TestFifo',description='Test Fifo', maxDepth=10000, noCopy=True)
         self.add(fifo)
 
         # RSSI For interface to RENA Boards
