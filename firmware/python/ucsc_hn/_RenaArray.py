@@ -53,11 +53,7 @@ class RenaArray(pyrogue.Device,ris.Master,ris.Slave):
 
             pyrogue.streamConnect(self._remRssi.application(0),fifo)
 
-            batch = rogue.protocols.batcher.SplitterV1()
-            self.addProtocol(batch)
-            pyrogue.streamConnect(fifo,batch)
-
-            pyrogue.streamConnect(batch,dd)
+            pyrogue.streamConnect(fifo,dd)
 
             pyrogue.streamConnect(self,self._remRssi.application(0))
 
