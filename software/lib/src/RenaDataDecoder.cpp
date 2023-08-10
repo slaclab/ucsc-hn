@@ -55,6 +55,10 @@ ucsc_hn_lib::RenaDataDecoder::RenaDataDecoder (uint8_t nodeId) {
       for (j=0; j<8; j++) crc = (crc << 1) ^ ((crc & 0x80) ? 0x07 : 0);
       crc8_table_[i] = crc;
    }
+
+    // Fixed size buffer pool
+    setFixedSize(4096);
+    setPoolSize(1000);
 }
 
 void ucsc_hn_lib::RenaDataDecoder::countReset () {
@@ -187,19 +191,14 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    core.processFrame(frame);
 
    // Generate two new outgoing frames
-   rSize = frame->getPayload()+4;
-   rFrame = reqFrame(rSize,true);
-   rFrame->setPayload(rSize);
+   rFrame = acceptReq(getFixedSize(),true);
+   rFrame->setPayload(getFixedSize());
    rFrame->setChannel(2);
    rPtr = rFrame->begin();
    rSize = 0;
 
-   // Size = 16 bytes for common header
-   //      = 8 bytes per channel
-   //      = total = 16 + 8 * 36 = 304
-   dSize = core.count() * 304;
-   dFrame = reqFrame(dSize, true);
-   dFrame->setPayload(dSize);
+   dFrame = acceptReq(getFixedSize(),true);
+   dFrame->setPayload(getFixedSize());
    dFrame->setChannel(3);
    dPtr = dFrame->begin();
    dSize = 0;
