@@ -16,7 +16,7 @@ class RenaArray(pyrogue.Device,ris.Master,ris.Slave):
         dd = ucsc_hn.DataDecoder(nodeId=nodeId)
         self.add(dd)
 
-        dataF = rogue.interfaces.stream.Filter(True,2)
+        dataF = rogue.interfaces.stream.Filter(True,3)
         self.addProtocol(dataF)
         pyrogue.streamConnect(dd,dataF)
 
@@ -25,7 +25,7 @@ class RenaArray(pyrogue.Device,ris.Master,ris.Slave):
         pyrogue.streamConnect(dataF,dataFifo)
         pyrogue.streamConnect(dataFifo,dataWriter.getChannel(nodeId))
 
-        legF = rogue.interfaces.stream.Filter(True,3)
+        legF = rogue.interfaces.stream.Filter(True,2)
         self.addProtocol(legF)
         pyrogue.streamConnect(dd,legF)
 
