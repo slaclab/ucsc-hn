@@ -122,13 +122,16 @@ void ucsc_hn_lib::RenaDataEmulator::stop() {
    }
 }
 
+uint32_t ucsc_hn_lib::RenaDataEmulator::getCount() {
+   return frameCount_;
+}
+
 void ucsc_hn_lib::RenaDataEmulator::runThread() {
 
    while ( runEnable_ ) {
 
       if ( enable_ ) usleep(10);
       else{
-
          sendFrame(frames_[index_++]);
          usleep(period_);
       }
