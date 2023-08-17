@@ -49,6 +49,8 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
    uint16_t uData;
    uint16_t vData;
    uint8_t chanCount;
+   uint32_t totSize;
+   uint32_t totRead;
 
    char buffer[200];
 
@@ -58,26 +60,30 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
    std::unique_lock<std::mutex> lock(mtx_);
 
    if ( fd_ >= 0 ) {
+       totSize = frame->getPayload();
+       totRead = 0;
 
       src = frame->begin();
 
       // Read 16 bytes
-      if ( src.remBuffer() >= 16 ) {
+      if ( (totSize - totRead) >= 16 ) {
          fromFrame(src,1,&fpgaId);
          fromFrame(src,1,&renaId);
          fromFrame(src,1,&nodeId);
          fromFrame(src,8,&timeStamp);
          fromFrame(src,4,&frameId);
          fromFrame(src,1,&chanCount);
+         totRead += 16;
 
          while ( chanCount > 0 ) {
 
-            if ( src.remBuffer() >= 8 ) {
+            if ( (totSize - totRead) >= 16 ) {
                 fromFrame(src,1,&ch);
                 fromFrame(src,1,&polarity);
                 fromFrame(src,2,&phaData);
                 fromFrame(src,2,&uData);
                 fromFrame(src,2,&vData);
+                totRead += 8;
 
                 sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
 

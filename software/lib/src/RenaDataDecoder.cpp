@@ -183,7 +183,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint8_t expCrc;
    uint8_t zero;
    uint8_t one;
-   uint32_t chanCount;
+   uint8_t chanCount;
 
    doDecode = decodeEn_;
 
