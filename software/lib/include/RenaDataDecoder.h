@@ -6,6 +6,7 @@
 #include <rogue/interfaces/stream/Slave.h>
 #include <rogue/interfaces/stream/Frame.h>
 #include <rogue/protocols/batcher/Data.h>
+#include <rogue/Logging.h>
 
 namespace ucsc_hn_lib {
 
@@ -23,6 +24,7 @@ namespace ucsc_hn_lib {
          uint32_t rxCount_[31];
          uint32_t rxTotal_[31];
          uint32_t decodeEn_;
+         std::shared_ptr<rogue::Logging> dlog_;
 
       public:
 

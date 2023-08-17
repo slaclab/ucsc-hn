@@ -56,9 +56,11 @@ ucsc_hn_lib::RenaDataDecoder::RenaDataDecoder (uint8_t nodeId) {
       crc8_table_[i] = crc;
    }
 
-    // Fixed size buffer pool
-    setFixedSize(4096);
-    setPoolSize(1000);
+   dlog_ = rogue::Logging::create("RenaDataDecoder");
+
+   // Fixed size buffer pool
+   setFixedSize(4096);
+   setPoolSize(2500);
 }
 
 void ucsc_hn_lib::RenaDataDecoder::countReset () {
@@ -156,6 +158,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    bool readMode;
    bool readPHA;
    bool readUV;
+   uint32_t doDecode;
 
    uint64_t timeStamp;
    uint64_t fastTriggerList;
@@ -182,26 +185,32 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint8_t one;
    uint32_t chanCount;
 
+   doDecode = decodeEn_;
+
    rogue::GilRelease noGil;
    ris::FrameLockPtr lock = frame->lock();
 
    // Ensure frame is in a sing buffer
-   ensureSingleBuffer(frame,true);
-
-   core.processFrame(frame);
+   if ( ! ensureSingleBuffer(frame,false) ) {
+      dlog_->error("Received data not in a single buffer");
+      return;
+   }
 
    // Generate two new outgoing frames
-   rFrame = acceptReq(getFixedSize(),true);
-   rFrame->setPayload(getFixedSize());
+   rFrame = acceptReq(4000,true);
+   rFrame->setPayload(4000);
    rFrame->setChannel(2);
    rPtr = rFrame->begin();
    rSize = 0;
 
-   dFrame = acceptReq(getFixedSize(),true);
-   dFrame->setPayload(getFixedSize());
-   dFrame->setChannel(3);
-   dPtr = dFrame->begin();
-   dSize = 0;
+   if ( doDecode ) {
+      dFrame = acceptReq(4000,true);
+      dFrame->setPayload(4000);
+      dFrame->setChannel(3);
+      dPtr = dFrame->begin();
+      dSize = 0;
+   }
+   core.processFrame(frame);
 
    for (fc = 0; fc < core.count(); fc++) {
        data = core.record(fc);
@@ -271,7 +280,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
        rSize += data->size() + 4;
 
        ////////////////////////////////////////////////////////////////////////////
-       if ( decodeEn_ == 0 ) continue;
+       if ( doDecode == 0 ) continue;
 
        // Make sure length long enough for CRC check
        if ( data->size() < 3 ) {
@@ -429,9 +438,11 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
     }
 
     rFrame->setPayload(rSize);
-    dFrame->setPayload(dSize);
-
     sendFrame(rFrame);
-    sendFrame(dFrame);
+
+    if ( doDecode ) {
+       dFrame->setPayload(dSize);
+       sendFrame(dFrame);
+    }
 }
 

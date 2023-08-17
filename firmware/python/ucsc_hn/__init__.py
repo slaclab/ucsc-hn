@@ -14,3 +14,4 @@ from ._ChannelSel    import *
 from ._ChannelWindow import *
 from ._RateTestRoot  import *
 from ._Fifo          import *
+from ._RenaDataEmulator import *

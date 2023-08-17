@@ -17,21 +17,23 @@ import ucsc_hn_lib
 import numpy as np
 import time
 
-class RenaEmulator(pr.Device):
+class RenaDataEmulator(pr.Device):
 
     def __init__(self, *, dataFile, **kwargs ):
         pr.Device.__init__(self, **kwargs)
 
-
-         void start();
-         void stop();
-
         self._processor = ucsc_hn_lib.RenaDataEmulator(dataFile)
 
         self.add(pr.LocalVariable(name='DataEnable', description='Data Enable',
-                                  mode='RW', disp='{}',
+                                  mode='RW', value=False,
                                   localSet=lambda value: self._processor.setDataEnable(value),
                                   localGet=lambda : self._processor.getDataEnable()))
+
+        self.add(pr.LocalVariable(name='BurstSize', description='BurstSize',
+                                  mode='RW',
+                                  localSet=lambda value: self._processor.setBurstSize(value),
+                                  localGet=lambda : self._processor.getBurstSize()))
+
 
         self.add(pr.LocalVariable(name='FrameCount', description='Frame Count',
                                   mode='RO', value=0, pollInterval=1,
@@ -49,4 +51,7 @@ class RenaEmulator(pr.Device):
     def __rshift__(self,other):
         pyrogue.streamConnect(self,other)
         return other
+
+    def countReset(self):
+        self._processor.countReset()
 

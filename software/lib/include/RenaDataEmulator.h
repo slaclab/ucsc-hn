@@ -17,6 +17,9 @@ namespace ucsc_hn_lib {
          bool     enable_;
          bool     runEnable_;
          uint32_t frameCount_;
+         uint32_t burstSize_;
+         uint32_t sourceCnt_;
+         std::string file_;
 
          std::thread* txThread_;
 
@@ -29,8 +32,14 @@ namespace ucsc_hn_lib {
          RenaDataEmulator (std::string file);
 
          void setDataEnable(bool state);
-
          bool getDataEnable();
+
+         void setBurstSize(uint32_t size);
+         uint32_t getBurstSize();
+
+         void loadData();
+
+         void countReset();
 
          void start();
 
