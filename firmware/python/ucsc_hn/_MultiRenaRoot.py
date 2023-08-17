@@ -42,6 +42,8 @@ class MultiRenaRoot(pyrogue.Root):
                                       hidden=False,
                                       description='Store old configuration to a file'))
 
+        self.add(ucsc_hn.RenaConvert())
+
     def _loadConfig(self,arg):
         self.loadYaml(name=arg,
                       writeEach=False,

@@ -16,6 +16,7 @@ from qtpy.QtWidgets import (QVBoxLayout, QTabWidget)
 
 from pyrogue.pydm.widgets import DebugTree
 from pyrogue.pydm.widgets import SystemWindow
+from pyrogue.pydm.widgets import Process
 
 import ucsc_hn
 
@@ -58,6 +59,9 @@ class GuiTop(Display):
 
         sys = SystemWindow(parent=None, init_channel=Channel)
         self.tab.addTab(sys,'System')
+
+        prc = Process(parent=None, init_channel=Channel + '.RenaConvert')
+        self.tab.addTab(prc,'Data Convert')
 
         chan = ucsc_hn.ChannelWindow(parent=None, init_channel=Channel+'.ChannelSelect')
         self.tab.addTab(chan,'Channel Configuration')

@@ -42,9 +42,6 @@ from ucsc_hn import MultiRenaRoot
 #logger.setLevel(logging.DEBUG)
 
 with MultiRenaRoot(host=host,pollEn=True) as root:
-
-    pyrogue.pydm.runPyDM(root=root)
-    #pyrogue.gui.runGui(root=root)
-    #pyrogue.waitCntrlC()
-
+    ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
+    pyrogue.pydm.runPyDM(root=root,ui=ui)
 

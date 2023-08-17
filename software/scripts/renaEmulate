@@ -45,7 +45,6 @@ import ucsc_hn
 with ucsc_hn.MultiRenaRoot(host=host,pollEn=True,emulate=True) as root:
 
     ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
-
     pyrogue.pydm.runPyDM(root=root,ui=ui)
     #pyrogue.gui.runGui(root=root)
     #pyrogue.waitCntrlC()

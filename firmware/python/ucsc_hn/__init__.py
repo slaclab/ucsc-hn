@@ -15,3 +15,4 @@ from ._ChannelWindow import *
 from ._RateTestRoot  import *
 from ._Fifo          import *
 from ._RenaDataEmulator import *
+from ._RenaConvert      import *
