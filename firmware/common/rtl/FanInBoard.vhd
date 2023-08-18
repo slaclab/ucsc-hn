@@ -48,7 +48,7 @@ entity FanInBoard is
       axilWriteSlave  : out AxiLiteWriteSlaveType;
 
       -- Data Interfaces
-      dataClk      : in  sl;
+      dataClk      : in  sl;  -- 125Mhz
       dataClkRst   : in  sl;
       dataIbMaster : in  AxiStreamMasterType;
       dataIbSlave  : out AxiStreamSlaveType;
@@ -64,6 +64,7 @@ entity FanInBoard is
       syncHubN     : inout sl;
 
       -- Rena Clock and sync
+      -- Rena clock is 50Mhz
       clockOutP  : out sl;
       clockOutN  : out sl;
       syncOutP   : out sl;
@@ -96,9 +97,9 @@ architecture STRUCTURE of FanInBoard is
    signal buffObMaster : AxiStreamMasterType;
    signal buffObSlave  : AxiStreamSlaveType;
 
-   signal sysClk     : sl;
+   signal sysClk     : sl; -- 200Mhz
    signal sysClkRst  : sl;
-   signal renaClk    : sl;
+   signal renaClk    : sl; -- 50Mhz
    signal renaClkRst : sl;
 
    signal intReadMaster  : AxiLiteReadMasterType;
@@ -426,8 +427,8 @@ begin
       generic map (
          TPD_G                        => TPD_G,
          MAX_NUMBER_SUB_FRAMES_G      => 128,
-         SUPER_FRAME_BYTE_THRESHOLD_G => 1400,
-         MAX_CLK_GAP_G                => 256,
+         SUPER_FRAME_BYTE_THRESHOLD_G => 1200,
+         MAX_CLK_GAP_G                => 8192,
          AXIS_CONFIG_G                => AXIS_CONFIG_G,
          INPUT_PIPE_STAGES_G          => 0,
          OUTPUT_PIPE_STAGES_G         => 1)
