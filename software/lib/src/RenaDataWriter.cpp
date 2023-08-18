@@ -65,39 +65,42 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
 
    src = frame->begin();
 
-   if ( (totSize - totRead) < 16 ) {
-       log_->error("Not enough room in frame for header");
-       return;
-   }
+   while ((totSize - totRead) > 0) {
 
-   // Read 16 bytes
-   fromFrame(src,1,&fpgaId);
-   fromFrame(src,1,&renaId);
-   fromFrame(src,1,&nodeId);
-   fromFrame(src,8,&timeStamp);
-   fromFrame(src,4,&frameId);
-   fromFrame(src,1,&chanCount);
-   totRead += 16;
-
-   for (x=0; x < chanCount; x++) {
-
-      if ( (totSize - totRead) < 8 ) {
-         log_->error("Not enough room in frame for data");
-         return;
+      if ( (totSize - totRead) < 16 ) {
+          log_->error("Not enough room in frame for header");
+          return;
       }
 
-      // Read 8 byte data frame
-      fromFrame(src,1,&ch);
-      fromFrame(src,1,&polarity);
-      fromFrame(src,2,&phaData);
-      fromFrame(src,2,&uData);
-      fromFrame(src,2,&vData);
-      totRead += 8;
+      // Read 16 bytes
+      fromFrame(src,1,&fpgaId);
+      fromFrame(src,1,&renaId);
+      fromFrame(src,1,&nodeId);
+      fromFrame(src,8,&timeStamp);
+      fromFrame(src,4,&frameId);
+      fromFrame(src,1,&chanCount);
+      totRead += 16;
 
-      sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
+      for (x=0; x < chanCount; x++) {
 
-      checkSize(strlen(buffer));
-      intWrite(buffer,strlen(buffer));
+         if ( (totSize - totRead) < 8 ) {
+            log_->error("Not enough room in frame for data");
+            return;
+         }
+
+         // Read 8 byte data frame
+         fromFrame(src,1,&ch);
+         fromFrame(src,1,&polarity);
+         fromFrame(src,2,&phaData);
+         fromFrame(src,2,&uData);
+         fromFrame(src,2,&vData);
+         totRead += 8;
+
+         sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
+
+         checkSize(strlen(buffer));
+         intWrite(buffer,strlen(buffer));
+      }
    }
    frameCount_ ++;
    cond_.notify_all();
