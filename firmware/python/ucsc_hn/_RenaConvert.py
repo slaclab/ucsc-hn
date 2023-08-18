@@ -79,9 +79,10 @@ class RenaConvert(pyrogue.Process):
                     dataSize = 1
 
                     # get source Id, skip dest ID
-                    nodeId = int(srcFile.read(1)[0])
-                    srcFile.read(1)
-                    readBytes += 2
+                    if readBytes < stats.st_size:
+                        nodeId = int(srcFile.read(1)[0])
+                        srcFile.read(1)
+                        readBytes += 2
 
                     # Read until we find the end marker
                     while readBytes < stats.st_size:
@@ -159,7 +160,6 @@ class RenaConvert(pyrogue.Process):
                     # Check and mode length
                     elif dataSize != (17 + (fastCount * 6)):
                         self.ErroredRecords.set(self.ErroredRecords.value()+1,write=False)
-                        print("Bad and mode length")
                         continue;
 
                     # Good frame continue to process
