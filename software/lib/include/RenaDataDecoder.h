@@ -19,6 +19,7 @@ namespace ucsc_hn_lib {
          uint32_t rxByteCount_;
          uint32_t rxDropCount_;
          uint8_t  nodeId_;
+         uint32_t copyCount_;
 
          uint8_t polarity_[31][2][36];
          uint32_t rxCount_[31];
@@ -45,6 +46,8 @@ namespace ucsc_hn_lib {
          void countReset();
 
          uint32_t getRxFrameCount();
+
+         uint32_t getCopyCount();
 
          uint32_t getRxSampleCount();
 

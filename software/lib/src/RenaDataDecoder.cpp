@@ -26,6 +26,7 @@ void ucsc_hn_lib::RenaDataDecoder::setup_python() {
       .def("setChannelPolarity", &ucsc_hn_lib::RenaDataDecoder::setChannelPolarity)
       .def("getChannelPolarity", &ucsc_hn_lib::RenaDataDecoder::getChannelPolarity)
       .def("countReset",         &ucsc_hn_lib::RenaDataDecoder::countReset)
+      .def("getCopyCount",       &ucsc_hn_lib::RenaDataDecoder::getCopyCount)
       .def("getRxSampleCount",   &ucsc_hn_lib::RenaDataDecoder::getRxSampleCount)
       .def("getRxDropCount",     &ucsc_hn_lib::RenaDataDecoder::getRxDropCount)
       .def("getRxFrameCount",    &ucsc_hn_lib::RenaDataDecoder::getRxFrameCount)
@@ -70,6 +71,7 @@ void ucsc_hn_lib::RenaDataDecoder::countReset () {
    rxSampleCount_ = 0;
    rxDropCount_ = 0;
    rxByteCount_ = 0;
+   copyCount_ = 0;
 
    for (f=0; f < 31; f++) rxCount_[f] = 0;
    for (f=0; f < 31; f++) rxTotal_[f] = 0;
@@ -100,6 +102,10 @@ uint32_t ucsc_hn_lib::RenaDataDecoder::getRxDropCount() {
 
 uint32_t ucsc_hn_lib::RenaDataDecoder::getRxByteCount() {
    return rxByteCount_;
+}
+
+uint32_t ucsc_hn_lib::RenaDataDecoder::getCopyCount() {
+   return copyCount_;
 }
 
 uint32_t ucsc_hn_lib::RenaDataDecoder::getRxCount(uint8_t fpga) {
@@ -192,11 +198,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    ris::FrameLockPtr lock = frame->lock();
 
    // Ensure frame is in a sing buffer
-   //if ( ! ensureSingleBuffer(frame,false) ) {
-      //dlog_->error("Received data not in a single buffer");
-      //return;
-   //}
-   ensureSingleBuffer(frame,true);
+   if ( ensureSingleBuffer(frame,true) ) copyCount_++;
 
    // Generate two new outgoing frames
    rFrame = acceptReq(4000,true);

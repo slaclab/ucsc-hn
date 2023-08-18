@@ -28,6 +28,10 @@ class DataDecoder(pr.Device):
                                   mode='RO', value=0, pollInterval=1,
                                   localGet=lambda : self._getFrameCount()))
 
+        self.add(pr.LocalVariable(name='CopyCount', description='Copy Count',
+                                  mode='RO', value=0, pollInterval=1,
+                                  localGet=lambda : self._getCopyCount()))
+
         self.add(pr.LocalVariable(name='FrameRate', description='Frame Rate',
                                   mode='RO', value=0.0, disp='{:.1f}'))
 
@@ -132,6 +136,9 @@ class DataDecoder(pr.Device):
         self._lastSampleTime  = time.time()
         self.SampleRate.set(rate)
         return curr
+
+    def _getCopyCount(self):
+        return self._processor.getCopyCount()
 
     def _getRxCount(self, idx):
         return self._processor.getRxCount(idx)
