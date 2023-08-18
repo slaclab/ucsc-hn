@@ -53,7 +53,6 @@ class DataDecoder(pr.Device):
                                   mode='RO', value=0.0, disp='{:.1f}'))
 
         self.add(pr.LocalVariable(name='DropCount', description='Drop Count',
-                                  pollInterval=1,
                                   mode='RO', value=0, pollInterval=1,
                                   localGet=lambda : self._getDropCount()))
 
