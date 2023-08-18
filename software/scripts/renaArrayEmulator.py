@@ -55,6 +55,8 @@ class RenaArrayEmulator(pyrogue.Root):
         self.zmqServer = pyrogue.interfaces.ZmqServer(root=self, addr='*', port=0)
         self.addInterface(self.zmqServer)
 
+        self.DataWriter.BufferSize.setDefault(8192)
+
 if __name__ == "__main__":
 
     with RenaArrayEmulator(dataFile=sys.argv[1]) as root:

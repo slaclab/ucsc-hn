@@ -60,7 +60,7 @@ ucsc_hn_lib::RenaDataDecoder::RenaDataDecoder (uint8_t nodeId) {
 
    // Fixed size buffer pool
    setFixedSize(4096);
-   setPoolSize(2500);
+   setPoolSize(5000);
 }
 
 void ucsc_hn_lib::RenaDataDecoder::countReset () {
@@ -192,10 +192,11 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    ris::FrameLockPtr lock = frame->lock();
 
    // Ensure frame is in a sing buffer
-   if ( ! ensureSingleBuffer(frame,false) ) {
-      dlog_->error("Received data not in a single buffer");
-      return;
-   }
+   //if ( ! ensureSingleBuffer(frame,false) ) {
+      //dlog_->error("Received data not in a single buffer");
+      //return;
+   //}
+   ensureSingleBuffer(frame,true);
 
    // Generate two new outgoing frames
    rFrame = acceptReq(4000,true);
