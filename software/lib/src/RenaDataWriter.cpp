@@ -51,6 +51,7 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
    uint8_t chanCount;
    uint32_t totSize;
    uint32_t totRead;
+   uint8_t  x;
 
    char buffer[200];
 
@@ -59,42 +60,46 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
    rogue::GilRelease noGil;
    std::unique_lock<std::mutex> lock(mtx_);
 
-   if ( fd_ >= 0 ) {
-       totSize = frame->getPayload();
-       totRead = 0;
+   totSize = frame->getPayload();
+   totRead = 0;
 
-      src = frame->begin();
+   src = frame->begin();
 
-      // Read 16 bytes
-      if ( (totSize - totRead) >= 16 ) {
-         fromFrame(src,1,&fpgaId);
-         fromFrame(src,1,&renaId);
-         fromFrame(src,1,&nodeId);
-         fromFrame(src,8,&timeStamp);
-         fromFrame(src,4,&frameId);
-         fromFrame(src,1,&chanCount);
-         totRead += 16;
-
-         while ( chanCount > 0 ) {
-
-            if ( (totSize - totRead) >= 16 ) {
-                fromFrame(src,1,&ch);
-                fromFrame(src,1,&polarity);
-                fromFrame(src,2,&phaData);
-                fromFrame(src,2,&uData);
-                fromFrame(src,2,&vData);
-                totRead += 8;
-
-                sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
-
-                checkSize(strlen(buffer));
-                intWrite(buffer,strlen(buffer));
-            }
-            --chanCount;
-         }
-      }
-      frameCount_ ++;
-      cond_.notify_all();
+   if ( (totSize - totRead) >= 16 ) {
+       log_->error("Not enough room in frame for header");
+       return;
    }
+
+   // Read 16 bytes
+   fromFrame(src,1,&fpgaId);
+   fromFrame(src,1,&renaId);
+   fromFrame(src,1,&nodeId);
+   fromFrame(src,8,&timeStamp);
+   fromFrame(src,4,&frameId);
+   fromFrame(src,1,&chanCount);
+   totRead += 16;
+
+   for (x=0; x < chanCount; x++) {
+
+      if ( (totSize - totRead) >= 8 ) {
+         log_->error("Not enough room in frame for data");
+         return;
+      }
+
+      // Read 8 byte data frame
+      fromFrame(src,1,&ch);
+      fromFrame(src,1,&polarity);
+      fromFrame(src,2,&phaData);
+      fromFrame(src,2,&uData);
+      fromFrame(src,2,&vData);
+      totRead += 8;
+
+      sprintf(buffer, "%i %i %i %i %i %i %i %i %li\n",nodeId,fpgaId,renaId,ch,polarity,phaData,uData,vData,timeStamp);
+
+      checkSize(strlen(buffer));
+      intWrite(buffer,strlen(buffer));
+   }
+   frameCount_ ++;
+   cond_.notify_all();
 }
 

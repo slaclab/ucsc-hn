@@ -184,6 +184,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    uint8_t zero;
    uint8_t one;
    uint8_t chanCount;
+   uint8_t ch;
 
    doDecode = decodeEn_;
 
@@ -381,7 +382,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
 
        // Extract data PHA, U and V ADC values for each channel
        bit = 1;
-       for ( x=0; x < 36; x++ ) {
+       for ( ch=0; ch < 36; ch++ ) {
           readPHA = false;
           readUV  = false;
 
@@ -418,10 +419,10 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
              }
 
              // Lookup polarity
-             polarity = getChannelPolarity(fpgaId,renaId,x);
+             polarity = getChannelPolarity(fpgaId,renaId,ch);
 
              // Start frame data
-             toFrame(dPtr,1,&x); // Channel ID
+             toFrame(dPtr,1,&ch); // Channel ID
              toFrame(dPtr,1,&polarity);
              toFrame(dPtr,2,&phaData);
              toFrame(dPtr,2,&uData);

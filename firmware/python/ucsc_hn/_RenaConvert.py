@@ -213,7 +213,7 @@ class RenaConvert(pyrogue.Process):
                             print(f"{nodeId} {fpgaId} {renaId} {x} {polarity} {phaData} {uData} {vData} {timeStamp}", file=dstFile)
 
                     ####################### End Process Frame ##############################
-                    print("-------------------------------------",file=dstFile)
+                    #print("-------------------------------------",file=dstFile)
 
                     # Update status
                     self.Step.set(readBytes,write=False)
