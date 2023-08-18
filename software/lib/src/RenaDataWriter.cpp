@@ -65,7 +65,7 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
 
    src = frame->begin();
 
-   if ( (totSize - totRead) >= 16 ) {
+   if ( (totSize - totRead) < 16 ) {
        log_->error("Not enough room in frame for header");
        return;
    }
@@ -81,7 +81,7 @@ void ucsc_hn_lib::RenaDataWriter::writeFile ( uint8_t channel, std::shared_ptr<r
 
    for (x=0; x < chanCount; x++) {
 
-      if ( (totSize - totRead) >= 8 ) {
+      if ( (totSize - totRead) < 8 ) {
          log_->error("Not enough room in frame for data");
          return;
       }
