@@ -33,6 +33,7 @@ class DataDecoder(pr.Device):
                                   localGet=lambda : self._getCopyCount()))
 
         self.add(pr.LocalVariable(name='FrameRate', description='Frame Rate',
+                                  pollInterval=1,
                                   mode='RO', value=0.0, disp='{:.1f}'))
 
         self.add(pr.LocalVariable(name='ByteCount', description='Byte Count',
@@ -40,6 +41,7 @@ class DataDecoder(pr.Device):
                                   localGet=lambda : self._getByteCount()))
 
         self.add(pr.LocalVariable(name='ByteRate', description='Byte Rate',
+                                  pollInterval=1,
                                   mode='RO', value=0.0, disp='{:.1f}'))
 
         self.add(pr.LocalVariable(name='SampleCount', description='Sample Count',
@@ -47,13 +49,16 @@ class DataDecoder(pr.Device):
                                   localGet=lambda : self._getSampleCount()))
 
         self.add(pr.LocalVariable(name='SampleRate', description='Sample Rate',
+                                  pollInterval=1,
                                   mode='RO', value=0.0, disp='{:.1f}'))
 
         self.add(pr.LocalVariable(name='DropCount', description='Drop Count',
+                                  pollInterval=1,
                                   mode='RO', value=0, pollInterval=1,
                                   localGet=lambda : self._getDropCount()))
 
         self.add(pr.LocalVariable(name='DropRate', description='Drop Rate',
+                                  pollInterval=1,
                                   mode='RO', value=0, disp='{:.1f}'))
 
         self.add(pr.LocalVariable(name='DecodeEn', description='Decoder Enable',
@@ -65,6 +70,7 @@ class DataDecoder(pr.Device):
             self.add(pr.LocalVariable(name=f'RxCount[{i}]',
                                       description='Per Rena Channel Rx Count.',
                                       mode='RO',
+                                      pollInterval=1,
                                       localGet=lambda idx=i: self._getRxCount(idx),
                                       disp='{}'))
 
@@ -72,6 +78,7 @@ class DataDecoder(pr.Device):
             self.add(pr.LocalVariable(name=f'RxTotal[{i}]',
                                       description='Per Rena Channel Rx Count.',
                                       mode='RO',
+                                      pollInterval=1,
                                       localGet=lambda idx=i: self._getRxTotal(idx),
                                       disp='{}'))
 

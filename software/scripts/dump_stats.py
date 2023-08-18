@@ -43,7 +43,7 @@ for file in sys.argv[1:]:
 
                     totalBytes += data['MultiRenaRoot'][key]['RenaArray']['DataDecoder']['ByteCount']
 
-                    for k in ['FrameCount', 'ByteCount', 'SampleCount', 'DropCount', 'DecodeEn']:
+                    for k in ['CopyCount', 'FrameCount', 'ByteCount', 'SampleCount', 'DropCount', 'DecodeEn']:
                         val = data['MultiRenaRoot'][key]['RenaArray']['DataDecoder'][k]
                         print(f"Decode {k} = {val}", file=res)
 
