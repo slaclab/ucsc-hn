@@ -427,7 +427,7 @@ begin
       generic map (
          TPD_G                        => TPD_G,
          MAX_NUMBER_SUB_FRAMES_G      => 128,
-         SUPER_FRAME_BYTE_THRESHOLD_G => 900,
+         SUPER_FRAME_BYTE_THRESHOLD_G => 800,
          MAX_CLK_GAP_G                => 1024,
          AXIS_CONFIG_G                => AXIS_CONFIG_G,
          INPUT_PIPE_STAGES_G          => 0,
