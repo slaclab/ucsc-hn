@@ -14,8 +14,8 @@ if len(sys.argv) != 3:
 
 # First get a baseline of timestamps
 
-filtNode = 0
-filtFpga = 15
+filtNode = 9
+filtFpga = 20
 lastT = 0
 totalKept = 0
 
