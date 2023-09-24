@@ -37,6 +37,14 @@ class MultiRenaRoot(pyrogue.Root):
                                               variable=self.Node[node].RenaArray.RenaBoard[rena].DiagMessageCount,
                                               guiGroup='DiagMessageCount'))
 
+        for node in range(len(host)):
+            for rena in range(1,31):
+
+                self.add(pyrogue.LinkVariable(name=f'RxCount_{node}_{rena}',
+                                              mode='RO',
+                                              variable=self.Node[node].RenaArray.DataDecoder.RxCount[rena],
+                                              guiGroup='RxCount'))
+
         self.add(pyrogue.LocalCommand(name='SaveOldConfig', value='',
                                       function=self._storeOldConfig,
                                       hidden=False,

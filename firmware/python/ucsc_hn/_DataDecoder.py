@@ -24,6 +24,10 @@ class DataDecoder(pr.Device):
 
         self._processor = ucsc_hn_lib.RenaDataDecoder(nodeId)
 
+        #self.add(pr.LocalVariable(name='TotalCount', description='Total Count',
+                                  #mode='RO', value=-1, pollInterval=1,
+                                  #localGet=lambda : self._getTotalCount()))
+
         self.add(pr.LocalVariable(name='FrameCount', description='Frame Count',
                                   mode='RO', value=0, pollInterval=1,
                                   localGet=lambda : self._getFrameCount()))
@@ -141,6 +145,12 @@ class DataDecoder(pr.Device):
         self._lastSampleCount = curr
         self._lastSampleTime  = time.time()
         self.SampleRate.set(rate)
+        return curr
+
+    def _getTotalCount(self):
+        curr = 0
+        for i in range(1,31):
+            curr += self.RxTotal[i].value()
         return curr
 
     def _getCopyCount(self):
