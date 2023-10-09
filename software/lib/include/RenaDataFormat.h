@@ -1,7 +1,9 @@
 
 #ifndef __RENA_DATA_FORMAT_H__
 #define __RENA_DATA_FORMAT_H__
-#include <inttypes.h>
+#include <stdint.h>
+#include <memory>
+#include <cstring>
 
 namespace ucsc_hn_lib {
 
@@ -69,8 +71,8 @@ namespace ucsc_hn_lib {
 
          char * getStrData();
 
-         bool processChunk(uint8_t &*data, uint8_t &length);
-         bool frameRx(uint8_t *data, uint8_t length);
+         bool processChunk(uint8_t *&data, uint32_t &length);
+         bool frameRx(uint8_t *data, uint32_t length);
    };
 
    typedef std::shared_ptr<ucsc_hn_lib::RenaDataFormat> RenaDataFormatPtr;

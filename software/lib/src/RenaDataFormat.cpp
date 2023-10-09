@@ -1,5 +1,6 @@
 #define __STDC_FORMAT_MACROS
 #include <RenaDataFormat.h>
+#include <cstdio>
 
 ucsc_hn_lib::RenaDataFormatPtr ucsc_hn_lib::RenaDataFormat::create(uint8_t nodeId) {
    ucsc_hn_lib::RenaDataFormatPtr r = std::make_shared<ucsc_hn_lib::RenaDataFormat>(nodeId);
@@ -122,7 +123,7 @@ char * ucsc_hn_lib::RenaDataFormat::getStrData() {
 
 // Take an arbitrary chunk of data and extra rena frames. Returns true if data
 // was found. Update pointer position and size on each processed value
-bool ucsc_hn_lib::RenaDataFormat::processChunk(uint8_t &*data, uint32_t &size) {
+bool ucsc_hn_lib::RenaDataFormat::processChunk(uint8_t *&data, uint32_t &size) {
    bool ret = false;
    uint8_t gotCrc;
 
@@ -144,9 +145,9 @@ bool ucsc_hn_lib::RenaDataFormat::processChunk(uint8_t &*data, uint32_t &size) {
 
          // Found end marker, process frame
          if ( *data == 0xFF ) {
-            if ( rxCount > 6 ) {
+            if ( rxCount_ > 6 ) {
                gotCrc = data[rxCount_-3] << 4 | data[rxCount_-2];
-               if ( expCrc == gotCrc ) ret = frameRx(rxBuffer_, rxCount_);
+               if ( calcCrc_ == gotCrc ) ret = frameRx(rxBuffer_, rxCount_);
             }
 
             if ( ! ret ) rxDropCount_++;
@@ -264,7 +265,7 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
    else if ( size != (17 + (fastCount * 6))) return false;
 
    // Valid frame received
-   ++rxFrameCount_++;
+   ++rxFrameCount_;
 
    // Extract data PHA, U and V ADC values for each channel
    bit = 1;
@@ -291,8 +292,8 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
          rxSampleCount_++;
 
          // PHA is two bytes
-         if ( readPHA ) phaData_[count_] = data[buffIdx++] << 6 | data[buffIdx++];
-         else phaData_[count_] = 0;
+         if ( readPHA ) phData_[count_] = data[buffIdx++] << 6 | data[buffIdx++];
+         else phData_[count_] = 0;
 
          // U & V Data
          if (readUV) {
@@ -309,9 +310,9 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
          channel_[count_] = ch;
 
          // Generate string data
-         sprintf(&(strData_[strlen(strData)]), "%u %u %u %u %u %u %u %u %lu\n",
-               noteId_, fpgaId_, renaId_, channel_[count_], polarity_[count_],
-               phData_[count_], uData_[count_], vData_[count_], timestamp_);
+         sprintf(&(strData_[strlen(strData_)]), "%u %u %u %u %u %u %u %u %lu\n",
+               nodeId_, fpgaId_, renaId_, channel_[count_], polarity_[count_],
+               phData_[count_], uData_[count_], vData_[count_], timeStamp_);
 
          ++count_;
       }
