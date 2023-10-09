@@ -1,6 +1,15 @@
 #define __STDC_FORMAT_MACROS
 #include <RenaDataFormat.h>
+#include <rogue/GeneralError.h>
+#include <rogue/GilRelease.h>
 #include <cstdio>
+#include <boost/python.hpp>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+namespace bp = boost::python;
 
 ucsc_hn_lib::RenaDataFormatPtr ucsc_hn_lib::RenaDataFormat::create() {
    ucsc_hn_lib::RenaDataFormatPtr r = std::make_shared<ucsc_hn_lib::RenaDataFormat>();
@@ -48,6 +57,19 @@ ucsc_hn_lib::RenaDataFormat::RenaDataFormat () {
    }
 }
 
+void ucsc_hn_lib::RenaDataFormat::setup_python() {
+   bp::class_<ucsc_hn_lib::RenaDataFormat, ucsc_hn_lib::RenaDataFormatPtr, boost::noncopyable >("RenaDataFormat",bp::init<>())
+      .def("countReset",     &ucsc_hn_lib::RenaDataFormat::countReset)
+      .def("getByteCount",   &ucsc_hn_lib::RenaDataFormat::getByteCount)
+      .def("getFrameCount",  &ucsc_hn_lib::RenaDataFormat::getFrameCount)
+      .def("getDropCount",   &ucsc_hn_lib::RenaDataFormat::getDropCount)
+      .def("getSampleCount", &ucsc_hn_lib::RenaDataFormat::getSampleCount)
+      .def("getFileSize",    &ucsc_hn_lib::RenaDataFormat::getFileSize)
+      .def("getFileRead",    &ucsc_hn_lib::RenaDataFormat::getFileRead)
+      .def("convertFile",    &ucsc_hn_lib::RenaDataFormat::convertFile)
+   ;
+}
+
 void ucsc_hn_lib::RenaDataFormat::countReset () {
    rxByteCount_ = 0;
    rxFrameCount_ = 0;
@@ -69,6 +91,14 @@ uint32_t ucsc_hn_lib::RenaDataFormat::getDropCount() {
 
 uint32_t ucsc_hn_lib::RenaDataFormat::getSampleCount() {
    return rxSampleCount_;
+}
+
+uint32_t ucsc_hn_lib::RenaDataFormat::getFileSize() {
+   return fileSize_;
+}
+
+uint32_t ucsc_hn_lib::RenaDataFormat::getFileRead() {
+   return fileRead_;
 }
 
 uint8_t  ucsc_hn_lib::RenaDataFormat::getNodeId() {
@@ -331,4 +361,43 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
    }
    return true;
 }
+
+void ucsc_hn_lib::RenaDataFormat::convertFile ( std::string inFile, std::string outFile) {
+   struct stat st;
+   int fin;
+   int fout;
+   uint8_t inBuff[8192];
+   uint8_t *inPtr;
+   uint32_t inLength;
+   uint32_t fileSize;
+   uint32_t readSize;
+   char *outStr;
+
+   rogue::GilRelease noGil;
+
+   if ( ( fin = open(inFile.c_str(),O_RDONLY) ) < 0 )
+      throw(rogue::GeneralError::create("RenaDataFormat::convert", "Failed to open input file: %s", inFile.c_str()));
+
+   // Get file size
+   stat(inFile.c_str(), &st);
+   fileSize_ = st.st_size;
+   fileRead_ = 0;
+
+   if ( ( fout = open(outFile.c_str(), O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) < 0)
+      throw(rogue::GeneralError::create("RenaDataFormat::convert", "Failed to open output file: %s", outFile.c_str()));
+
+   inPtr = inBuff;
+
+   while ( (inLength = read(fin, inPtr, 8192)) > 0 ) {
+      fileRead_ += inLength;
+      while ( inLength > 0 ) {
+         if ( processChunk(inPtr, inLength) ) {
+            outStr = getStrData();
+            write(fout,outStr,strlen(outStr));
+         }
+      }
+      inPtr = inBuff;
+   }
+}
+
 

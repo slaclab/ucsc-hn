@@ -47,13 +47,3 @@ set_target_properties(ucsc_hn_lib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_
 # Link to rogue core
 TARGET_LINK_LIBRARIES(ucsc_hn_lib PUBLIC ${ROGUE_LIBRARIES})
 
-# Set output directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-
-# Compile each source
-file(GLOB APP_SOURCES ${PROJECT_SOURCE_DIR}/app_src/*.cpp)
-foreach (srcFile ${APP_SOURCES})
-   get_filename_component(binName ${srcFile} NAME_WE)
-   add_executable(${binName} ${srcFile})
-   TARGET_LINK_LIBRARIES(${binName} ${ROGUE_LIBRARIES} ucsc_hn_lib)
-endforeach ()

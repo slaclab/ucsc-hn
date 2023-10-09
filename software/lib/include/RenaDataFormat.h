@@ -39,6 +39,8 @@ namespace ucsc_hn_lib {
          uint32_t rxFrameCount_;
          uint32_t rxDropCount_;
          uint32_t rxSampleCount_;
+         uint32_t fileSize_;
+         uint32_t fileRead_;
 
          // Pending rx
          uint8_t rxBuffer_[8192];
@@ -51,11 +53,15 @@ namespace ucsc_hn_lib {
 
          RenaDataFormat ();
 
+         static void setup_python();
+
          void countReset();
          uint32_t getByteCount();
          uint32_t getFrameCount();
          uint32_t getDropCount();
          uint32_t getSampleCount();
+         uint32_t getFileSize();
+         uint32_t getFileRead();
 
          uint8_t  getNodeId();
          uint8_t  getRenaId();
@@ -73,6 +79,7 @@ namespace ucsc_hn_lib {
 
          bool processChunk(uint8_t *&data, uint32_t &length);
          bool frameRx(uint8_t *data, uint32_t length);
+         void convertFile ( std::string inFile, std::string outFile);
    };
 
    typedef std::shared_ptr<ucsc_hn_lib::RenaDataFormat> RenaDataFormatPtr;

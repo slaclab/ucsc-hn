@@ -8,6 +8,7 @@ RoguePackages:
 
 RogueScripts:
    - ../software/scripts/renaGui
+   - ../software/scripts/renaDataConvert
 
 CondaDependencies:
    - 'rogue=v5.18.4'
