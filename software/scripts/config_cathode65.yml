@@ -1,0 +1,316 @@
+# Included at the RenaBoard Level
+ReadoutEnable: Disable
+ForceTrig: Disable
+SerialNumber: 0
+OrMode: Disable
+SelectiveRead: Disable
+IntermediateBoard: Odd
+FollowerEn: Disable
+FollowerAsic: 0
+FollowerChannel: 0
+
+Rena[:]:
+  Channel[:]:
+    FbResistor: 200MOhm
+    TestInputEnable: Enable
+    FastChanPowerDown: PowerOn
+    FbType: Res. Mult.
+    Gain: '5.0'
+    PowerDown: PowerOn
+    PoleZero: Disable
+    FbCapacitor: 60 fF
+    ShapeTime: 1.1 uS
+    FbFetSize: 450 um
+    FastDac: 90
+    Polarity: Positive
+    SlowDac: 90
+    FastTrigEnable: Disable
+    SlowTrigEnable: Disable
+
+Rena[0]:
+  Channel[4]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[5]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[6]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[7]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[8]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[9]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[10]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[11]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[12]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[13]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[14]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[15]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[16]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[17]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[18]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[19]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[20]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[21]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[22]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[23]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[24]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+
+  Channel[25]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[26]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[27]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[28]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+
+Rena[1]:
+  Channel[7]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[8]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[9]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+  Channel[10]:
+    FastDac: 150
+    SlowDac: 150
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Negative
+
+  Channel[11]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[12]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[13]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[14]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[15]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[16]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[17]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[18]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[19]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[20]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[21]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[22]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[23]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[24]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[25]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[26]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[27]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive
+  Channel[28]:
+    FastDac: 65
+    SlowDac: 65
+    FastTrigEnable: Enable
+    SlowTrigEnable: Enable
+    Polarity: Positive

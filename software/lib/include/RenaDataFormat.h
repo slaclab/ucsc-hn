@@ -1,0 +1,81 @@
+
+#ifndef __RENA_DATA_FORMAT_H__
+#define __RENA_DATA_FORMAT_H__
+#include <inttypes.h>
+
+namespace ucsc_hn_lib {
+
+   class RenaDataFormat {
+
+         // CRC Table
+         unsigned char crc8_table_[256];
+
+         // Static configuration
+         uint8_t nodeId_;
+
+         // Dynamic per frame
+         uint8_t  renaId_;
+         uint8_t  fpgaId_;
+         uint64_t timeStamp_;
+         uint8_t  count_;
+
+         // Up to 36 channels of data per frame
+         uint8_t channel_[36];
+         uint8_t polarity_[36];
+         uint8_t phData_[36];
+         uint8_t uData_[36];
+         uint8_t vData_[36];
+
+         // Frame String
+         char strData_[10000];
+
+         // Polarity Map
+         uint8_t polarityMap_[31][2][36];
+
+         // Counters
+         uint32_t rxByteCount_;
+         uint32_t rxFrameCount_;
+         uint32_t rxDropCount_;
+         uint32_t rxSampleCount_;
+
+         // Pending rx
+         uint8_t rxBuffer_[8192];
+         uint8_t rxCount_;
+         uint8_t calcCrc_;
+
+      public:
+
+         static std::shared_ptr<ucsc_hn_lib::RenaDataFormat> create(uint8_t nodeId);
+
+         RenaDataFormat (uint8_t nodeId);
+
+         void countReset();
+         uint32_t getByteCount();
+         uint32_t getFrameCount();
+         uint32_t getDropCount();
+         uint32_t getSampleCount();
+
+         uint8_t  getNodeId();
+         uint8_t  getRenaId();
+         uint8_t  getFpgaId();
+         uint64_t getTimeStamp();
+         uint8_t  getCount();
+
+         uint8_t getChannel(uint8_t x);
+         uint8_t getPolarity(uint8_t x);
+         uint8_t getPhData(uint8_t x);
+         uint8_t getUData(uint8_t x);
+         uint8_t getVData(uint8_t x);
+
+         char * getStrData();
+
+         bool processChunk(uint8_t &*data, uint8_t &length);
+         bool frameRx(uint8_t *data, uint8_t length);
+   };
+
+   typedef std::shared_ptr<ucsc_hn_lib::RenaDataFormat> RenaDataFormatPtr;
+
+}
+
+#endif
+
