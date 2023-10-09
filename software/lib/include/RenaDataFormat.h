@@ -10,7 +10,7 @@ namespace ucsc_hn_lib {
    class RenaDataFormat {
 
          // CRC Table
-         unsigned char crc8_table_[256];
+         uint8_t crc8_table_[256];
 
          // Static configuration
          uint8_t nodeId_;
@@ -24,9 +24,9 @@ namespace ucsc_hn_lib {
          // Up to 36 channels of data per frame
          uint8_t channel_[36];
          uint8_t polarity_[36];
-         uint8_t phData_[36];
-         uint8_t uData_[36];
-         uint8_t vData_[36];
+         uint16_t phData_[36];
+         uint16_t uData_[36];
+         uint16_t vData_[36];
 
          // Frame String
          char strData_[10000];
@@ -47,9 +47,9 @@ namespace ucsc_hn_lib {
 
       public:
 
-         static std::shared_ptr<ucsc_hn_lib::RenaDataFormat> create(uint8_t nodeId);
+         static std::shared_ptr<ucsc_hn_lib::RenaDataFormat> create();
 
-         RenaDataFormat (uint8_t nodeId);
+         RenaDataFormat ();
 
          void countReset();
          uint32_t getByteCount();
@@ -65,9 +65,9 @@ namespace ucsc_hn_lib {
 
          uint8_t getChannel(uint8_t x);
          uint8_t getPolarity(uint8_t x);
-         uint8_t getPhData(uint8_t x);
-         uint8_t getUData(uint8_t x);
-         uint8_t getVData(uint8_t x);
+         uint16_t getPhData(uint8_t x);
+         uint16_t getUData(uint8_t x);
+         uint16_t getVData(uint8_t x);
 
          char * getStrData();
 

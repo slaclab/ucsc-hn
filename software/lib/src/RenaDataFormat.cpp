@@ -2,17 +2,16 @@
 #include <RenaDataFormat.h>
 #include <cstdio>
 
-ucsc_hn_lib::RenaDataFormatPtr ucsc_hn_lib::RenaDataFormat::create(uint8_t nodeId) {
-   ucsc_hn_lib::RenaDataFormatPtr r = std::make_shared<ucsc_hn_lib::RenaDataFormat>(nodeId);
+ucsc_hn_lib::RenaDataFormatPtr ucsc_hn_lib::RenaDataFormat::create() {
+   ucsc_hn_lib::RenaDataFormatPtr r = std::make_shared<ucsc_hn_lib::RenaDataFormat>();
    return(r);
 }
 
-ucsc_hn_lib::RenaDataFormat::RenaDataFormat (uint8_t nodeId) {
+ucsc_hn_lib::RenaDataFormat::RenaDataFormat () {
    uint32_t f,r,c,i,j;
    unsigned char crc;
 
    countReset();
-   nodeId_ = nodeId;
    count_ = 0;
    rxCount_ = 0;
 
@@ -102,17 +101,17 @@ uint8_t ucsc_hn_lib::RenaDataFormat::getPolarity(uint8_t x) {
    else return 0;
 }
 
-uint8_t ucsc_hn_lib::RenaDataFormat::getPhData(uint8_t x) {
+uint16_t ucsc_hn_lib::RenaDataFormat::getPhData(uint8_t x) {
    if ( x < count_ ) return phData_[x];
    else return 0;
 }
 
-uint8_t ucsc_hn_lib::RenaDataFormat::getUData(uint8_t x) {
+uint16_t ucsc_hn_lib::RenaDataFormat::getUData(uint8_t x) {
    if ( x < count_ ) return uData_[x];
    else return 0;
 }
 
-uint8_t ucsc_hn_lib::RenaDataFormat::getVData(uint8_t x) {
+uint16_t ucsc_hn_lib::RenaDataFormat::getVData(uint8_t x) {
    if ( x < count_ ) return vData_[x];
    else return 0;
 }
@@ -135,8 +134,10 @@ bool ucsc_hn_lib::RenaDataFormat::processChunk(uint8_t *&data, uint32_t &size) {
 
       // Look for first markers
       if ( rxCount_ == 0 ) {
-         if ( *data == 0xC8 || *data == 0xC9 ) rxCount_ = 1;
-         calcCrc_ = 0;
+         if ( rxBuffer_[0] == 0xC8 || rxBuffer_[0] == 0xC9 ) {
+            rxCount_ = 1;
+            calcCrc_ = crc8_table_[rxBuffer_[0]];
+         }
       }
 
       // In Frame, look for end marker
@@ -144,10 +145,11 @@ bool ucsc_hn_lib::RenaDataFormat::processChunk(uint8_t *&data, uint32_t &size) {
          ++rxCount_;
 
          // Found end marker, process frame
-         if ( *data == 0xFF ) {
-            if ( rxCount_ > 6 ) {
-               gotCrc = data[rxCount_-3] << 4 | data[rxCount_-2];
+         if ( rxBuffer_[rxCount_-1] == 0xFF ) {
+            if ( rxCount_ > 3 ) {
+               gotCrc = rxBuffer_[rxCount_-3] << 4 | rxBuffer_[rxCount_-2];
                if ( calcCrc_ == gotCrc ) ret = frameRx(rxBuffer_, rxCount_);
+               //else printf("Got crc mismatch. Got = %u, calc = %u\n",gotCrc,calcCrc_);
             }
 
             if ( ! ret ) rxDropCount_++;
@@ -155,8 +157,7 @@ bool ucsc_hn_lib::RenaDataFormat::processChunk(uint8_t *&data, uint32_t &size) {
             break;
          }
 
-         // Don't compute the first 3 and last 3 values
-         else if ( rxCount_ > 6 ) calcCrc_ = crc8_table_[calcCrc_ ^ data[rxCount_-4]];
+         else if ( rxCount_ > 5 ) calcCrc_ = crc8_table_[calcCrc_ ^ rxBuffer_[rxCount_-3]];
       }
    }
    return ret;
@@ -205,37 +206,43 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
    // Something is wrong
    else return false;
 
-   // Get renaId and FPGA Id
-   renaId_ = data[1] & 0x1;
-   fpgaId_ = (data[1] >> 1) & 0x3F;
+   //printf("Got here\n");
 
-   // Bytes 2 - 7 are the timesamp, 42 bits total
+   // Get source ID, dest id is ingored
+   nodeId_ = data[1];
+
+   // Get renaId and FPGA Id
+   renaId_ = data[3] & 0x1;
+   fpgaId_ = (data[3] >> 1) & 0x3F;
+
+   // Bytes 4 - 9 are the timesamp, 42 bits total
    timeStamp_ = 0;
-   for (x=2; x < 8; x++) {
+   for (x=4; x < 10; x++) {
       timeStamp_ = timeStamp_ << 7;
       timeStamp_ |= data[x];
    }
 
-   // Bytes 8 - 13 are the fast trigger list for channels 35-0
+   // Bytes 10 - 15 are the fast trigger list for channels 35-0
    fastTriggerList = 0;
-   for (x=8; x < 14; x++) {
+   for (x=10; x < 16; x++) {
       fastTriggerList = fastTriggerList << 6;
       fastTriggerList |= data[x];
    }
 
-   buffIdx = 14;
+   buffIdx = 16;
 
-   // Bytes 14 - 19 are the slow trigger list for channels 35-0
+   // Bytes 16 - 21 are the slow trigger list for channels 35-0
+   // used in or mode only
    slowTriggerList = 0;
 
    // OR Mode
    if (readMode) {
-      for (x=14; x < 20; x++) {
+      for (x=16; x < 22; x++) {
          slowTriggerList = slowTriggerList << 6;
          slowTriggerList |= data[x];
       }
 
-      buffIdx = 20;
+      buffIdx = 22;
    }
 
    // Count the number of fast triggers
@@ -258,11 +265,15 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
       }
 
       // Check or mode length
-      if ( size != (23 + (fastCount * 4) + (slowCount *2))) return false;
+      // Add count up to now = 21
+      // plus 2 crc and a tail bite (24)
+      if ( size != (25 + (fastCount * 4) + (slowCount *2))) return false;
    }
 
    // Check and mode length
-   else if ( size != (17 + (fastCount * 6))) return false;
+   // Add count up to now = 21
+   // plus 2 crc and a tail bite (24)
+   else if ( size != (19 + (fastCount * 6))) return false;
 
    // Valid frame received
    ++rxFrameCount_;
