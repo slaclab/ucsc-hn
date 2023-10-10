@@ -398,6 +398,9 @@ void ucsc_hn_lib::RenaDataFormat::convertFile ( std::string inFile, std::string 
       }
       inPtr = inBuff;
    }
+
+   close(fin);
+   close(fout);
 }
 
 
