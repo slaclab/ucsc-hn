@@ -1,76 +1,113 @@
+
+#####################################
+# Configuration
+#####################################
+
+# Threshold Steps for Cathod and Anonde. Both lists need to be the same length
+AnodeDacValues = [65, 75, 85]
+CathodeDacValues = [150, 145, 140]
+
+# Time per step in seconds
+TimePerStep = 30
+
+#####################################
+# Runtime Code Below
+#####################################
 import pyrogue.interfaces
 import time
+import os
+import datetime
+import argparse
+parser = argparse.ArgumentParser('Threshold Scan')
 
-client = pyrogue.interfaces.VirtualClient('localhost',9099)
+parser.add_argument(
+    "--config",
+    required = True,
+    help     = "Top Configuration File.",
+)
 
-print(f"Time= {client.MultiRenaRoot.LocalTime.get()}")
+parser.add_argument(
+    "--output",
+    required = True,
+    help     = "Output Directory",
+)
 
-# Cleanup
-client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
-client.MultiRenaRoot.DataWriter.Close()
+# Get the arguments
+args = parser.parse_args()
 
-# Take state steps as a script
-client.MultiRenaRoot.LoadConfig("/home/ril/slac_testing/ucsc-hn/software/scripts")
-print("Load Done")
+# Create the data directory if it does not exist
+if not os.path.exists(args.output):
+    os.makedirs(args.output)
 
-time.sleep(5)
-client.MultiRenaRoot.Initialize()
-print("Initialize Done")
+# First attempt to a running server
+with pyrogue.interfaces.VirtualClient('localhost',9099) as client:
 
-Duration = 300
-DataDir = "thold_single2"
+    # Cleanup State Of the System
+    client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
+    client.MultiRenaRoot.DataWriter.Close()
+    client.MultiRenaRoot.LegacyWriter.Close()
 
-Scans = [ { 'channels'   : [i for i in range(4,25)],
-            'thresholds' : [90,85,80,75,70,65,60,55,50,45,40]},
-          { 'channels'   : [i for i in range(25,29)],
-            'thresholds' : [145,150,155,160,165,170,175,180,185]}]
+    # Hard reset the system
+    client.MultiRenaRoot.HardReset()
 
-Boards = [7,8]
-Nodes  = [0]
+    # Load the configuration
+    client.MultiRenaRoot.LoadConfig(args.config)
+    print("Load Config Done")
 
-for scan in Scans:
-    for chan in scan['channels']:
-        for thold in scan['thresholds']:
-            for n in Nodes:
-                for b in Boards:
-                    for r in range(2):
-                        client.MultiRenaRoot.Node[n].RenaArray.RenaBoard[b].Rena[r].Channel[chan].FastDac.set(thold)
-                        client.MultiRenaRoot.Node[n].RenaArray.RenaBoard[b].Rena[r].Channel[chan].SlowDac.set(thold)
+    # Initialize & count reset
+    client.MultiRenaRoot.Initialize()
+    client.MultiRenaRoot.CountReset()
 
-                        # Turn off other channels
-                        for other in range(0,36):
-                            client.MultiRenaRoot.Node[n].RenaArray.RenaBoard[b].Rena[r].Channel[other].FastTrigEnable.setDisp('Disable')
-                            client.MultiRenaRoot.Node[n].RenaArray.RenaBoard[b].Rena[r].Channel[other].SlowTrigEnable.setDisp('Disable')
+    for aDac,cDac in zip(AnodeDacValues, CathodeDacValues):
+        # Figure out data, state and config names
+        ts = datetime.datetime.now().strftime(f"{aDac}_{cDac}_%Y%m%d_%H%M%S")
+        data = args.output + "/data_" + ts + ".dat"
+        state = args.output + "/state_" + ts + ".yml"
+        conf = args.output + "/config_" + ts + ".yml"
+        oldConf = args.output + "/config_" + ts + ".cfg"
 
-                        # Turn on target channels
-                        client.MultiRenaRoot.Node[n].RenaArray.RenaBoard[b].Rena[r].Channel[chan].FastTrigEnable.setDisp('Enable')
-                        client.MultiRenaRoot.Node[n].RenaArray.RenaBoard[b].Rena[r].Channel[chan].SlowTrigEnable.setDisp('Enable')
+        # Update all of the anode and cathode configurations
+        for ni, node in client.MultiRenaRoot.Node.items():
+            print(f"Setting Node {ni} Anode DAC values to {aDac}. Cathode DAC values to {cDac}.")
+            for bi, board in node.RenaArray.RenaBoard.items():
+                for ri, rena in board.Rena.items():
+                    for ci, chan in rena.Channel.items():
+                        if chan.Polarity.valueDisp() == 'Positive':
+                            chan.FastDac.set(aDac)
+                            chan.SlowDac.set(aDac)
+                        else:
+                            chan.FastDac.set(cDac)
+                            chan.SlowDac.set(cDac)
 
-                # Configure boards
-                client.MultiRenaRoot.Node[n].RenaArray.ConfigBoards()
-                time.sleep(2)
+            # Configure
+            node.RenaArray.ConfigBoards()
 
-            client.MultiRenaRoot.Initialize()
-            time.sleep(1)
+        # Initialize and count reset
+        client.MultiRenaRoot.Initialize()
+        client.MultiRenaRoot.CountReset()
 
-            # Open data file
-            client.MultiRenaRoot.DataWriter.DataFile.set(f"/home/ril/slac_testing/ucsc-hn/software/scripts/{DataDir}/{chan:#02}_{thold:#03}.dat")
-            client.MultiRenaRoot.DataWriter.Open()
-            time.sleep(1)
+        # First save config and legacy config
+        client.MultiRenaRoot.SaveConfig(conf)
+        client.MultiRenaRoot.SaveOldConfig(oldConf)
 
-            # Set run enable
-            client.MultiRenaRoot.RunControl.runState.setDisp("Running")
+        # Open data file
+        client.MultiRenaRoot.LegacyWriter.DataFile.set(data)
+        client.MultiRenaRoot.LegacyWriter.Open()
 
-            print(f"Running for {Duration} seconds Chan {chan} Thold {thold}")
-            time.sleep(Duration)
+        # Start Data Run
+        client.MultiRenaRoot.RunControl.runRate.setDisp('Test Mode')
+        client.MultiRenaRoot.RunControl.runState.setDisp("Running")
 
-            # Set run stopped
-            client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
-            time.sleep(1)
+        # Take data for 30 seconds
+        print(f"Taking data for {TimePerStep} seconds")
+        time.sleep(TimePerStep)
 
-            # Close data file
-            client.MultiRenaRoot.DataWriter.Close()
+        # Stop Run
+        client.MultiRenaRoot.RunControl.runState.setDisp("Stopped")
 
-print("Done")
+        # Close Data file
+        client.MultiRenaRoot.LegacyWriter.Close()
 
+        # Save State
+        client.MultiRenaRoot.SaveState(state)
 
