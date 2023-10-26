@@ -249,7 +249,7 @@ bool ucsc_hn_lib::RenaDataFormat::frameRx(uint8_t *data, uint32_t size) {
    timeStamp_ = 0;
    for (x=4; x < 10; x++) {
       timeStamp_ = timeStamp_ << 7;
-      timeStamp_ |= data[x];
+      timeStamp_ |= (data[x] & 0x7F);
    }
 
    // Bytes 10 - 15 are the fast trigger list for channels 35-0
