@@ -160,7 +160,7 @@ class RenaChannel(pr.Device):
     def isFollower(self):
 
         if self.parent.parent.FollowerEn.value() and \
-           self.parent.parent.FollowerAsic.value() == self.parent.Rena and \
+           self.parent.parent.FollowerAsic.value() == self.parent.rena and \
            self.parent.parent.FollowerChannel.value() == self.channel:
             return True
         else:
