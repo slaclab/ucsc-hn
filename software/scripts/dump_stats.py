@@ -19,7 +19,7 @@ for file in sys.argv[1:]:
         data = yaml.load(strData,Loader=yaml.Loader)
 
         with open(name,'w') as res:
-            for i in range(10):
+            for i in range(1,11):
 
                 key = f"Node[{i}]"
 

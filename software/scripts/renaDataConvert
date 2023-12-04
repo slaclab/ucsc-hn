@@ -22,21 +22,24 @@ runThread.start()
 ltime = time.time()
 print(f"Converting {sys.argv[1]} to {sys.argv[2]}. Updating status every 10 seconds.")
 
+def show_progress(df):
+    fileSize = df.getFileSize()
+    fileRead = df.getFileRead()
+    readBytes = df.getByteCount()
+    readFrames = df.getFrameCount()
+    dropCount = df.getDropCount()
+    sampCount = df.getSampleCount()
+
+    ltime = time.time()
+
+    pct = int((float(fileRead) / float(fileSize)) * 100.0);
+    vPct = int((float(readBytes) / float(fileRead)) * 100.0);
+
+    print(f"Read {fileRead} of {fileSize} bytes, {pct} pct. Valid = {readBytes}, {vPct} pct, Frames = {readFrames}, drops = {dropCount}, samples = {sampCount}")
+
 while runThread.is_alive():
 
     if time.time() - ltime > 10:
-        fileSize = df.getFileSize()
-        fileRead = df.getFileRead()
-        readBytes = df.getByteCount()
-        readFrames = df.getFrameCount()
-        dropCount = df.getDropCount()
-        sampCount = df.getSampleCount()
+        show_progress(df)
 
-        ltime = time.time()
-
-        pct = int((float(fileRead) / float(fileSize)) * 100.0);
-        vPct = int((float(readBytes) / float(fileRead)) * 100.0);
-
-        print(f"Read {fileRead} of {fileSize} bytes, {pct} pct. Valid = {readBytes}, {vPct} pct, Frames = {readFrames}, drops = {dropCount}, samples = {sampCount}")
-
-print(f"Read {fileRead} of {fileSize} bytes, {pct} pct. Valid = {readBytes}, {vPct} pct, Frames = {readFrames}, drops = {dropCount}, samples = {sampCount}")
+show_progress(df)

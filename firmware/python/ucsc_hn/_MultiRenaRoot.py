@@ -21,7 +21,7 @@ class MultiRenaRoot(pyrogue.Root):
         self.add(lw)
 
         for i in range(len(host)):
-            self.add(ucsc_hn.RenaNode(host=host[i],name=f'Node[{i}]',node=i,dataWriter=dw,legacyWriter=lw,emulate=emulate))
+            self.add(ucsc_hn.RenaNode(host=host[i],name=f'Node[{i+1}]',node=i+1,dataWriter=dw,legacyWriter=lw,emulate=emulate))
 
         self.add(ucsc_hn.RunControl())
 
@@ -29,7 +29,7 @@ class MultiRenaRoot(pyrogue.Root):
 
         self.add(ucsc_hn.ChannelSelect(nodeCount=len(host)))
 
-        for node in range(len(host)):
+        for node in range(1,len(host)+1):
             for rena in range(1,31):
 
                 self.add(pyrogue.LinkVariable(name=f'DiagCount_{node}_{rena}',
@@ -37,7 +37,7 @@ class MultiRenaRoot(pyrogue.Root):
                                               variable=self.Node[node].RenaArray.RenaBoard[rena].DiagMessageCount,
                                               guiGroup='DiagMessageCount'))
 
-        for node in range(len(host)):
+        for node in range(1,len(host)+1):
             for rena in range(1,31):
 
                 self.add(pyrogue.LinkVariable(name=f'RxCount_{node}_{rena}',

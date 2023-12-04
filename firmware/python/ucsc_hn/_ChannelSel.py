@@ -11,10 +11,10 @@ class ChannelSelect(pr.Device):
         ##############################
 
         self.add(pr.LocalVariable(name='NodeSelect',
-                                 value=0,
+                                 value=1,
                                  mode='RW',
-                                 minimum=0,
-                                 maximum=self._nodeCount-1,
+                                 minimum=1,
+                                 maximum=self._nodeCount,
                                  description="Node Selection"))
 
         self.add(pr.LocalVariable(name='BoardSelect',
@@ -413,7 +413,7 @@ class ChannelSelect(pr.Device):
         super()._rootAttached(parent,root)
 
         # Link dependencies
-        for node in range(self._nodeCount):
+        for node in range(1,self._nodeCount+1):
             for board in range(1,31):
                 for rena in range(2):
                     for chan in range(36):
@@ -421,7 +421,7 @@ class ChannelSelect(pr.Device):
                             self.root.Node[node].RenaArray.RenaBoard[board].node(var).addListener(self.node(var))
 
         # Link dependencies
-        for node in range(self._nodeCount):
+        for node in range(1,self._nodeCount+1):
             for board in range(1,31):
                 for rena in range(2):
                     for chan in range(36):

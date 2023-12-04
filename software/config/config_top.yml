@@ -8,69 +8,66 @@ MultiRenaRoot:
         DecodeEn: False
 
       RenaBoard[1]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[2]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[3]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[4]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[5]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[6]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[7]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[8]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[9]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[10]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[11]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[12]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[13]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[14]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[15]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[16]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[17]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[18]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[19]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[20]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[21]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[22]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[23]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[24]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[25]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[26]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[27]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[28]:
-        !include config_anode65.yml
+        !include config_anode.yml
       RenaBoard[29]:
-        !include config_cathode65.yml
+        !include config_cathode.yml
       RenaBoard[30]:
-        !include config_anode65.yml
+        !include config_anode.yml
 
-  Node[0]:
-    FanInRegs:
-      ChanEnable: 0x7F000000
   Node[1]:
     FanInRegs:
       ChanEnable: 0x7FFF8000
@@ -96,5 +93,8 @@ MultiRenaRoot:
     FanInRegs:
       ChanEnable: 0x7FFF8000
   Node[9]:
+    FanInRegs:
+      ChanEnable: 0x7FFF8000
+  Node[10]:
     FanInRegs:
       ChanEnable: 0x7FFF8000
