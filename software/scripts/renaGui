@@ -53,5 +53,7 @@ else:
 import ucsc_hn
 
 with ucsc_hn.MultiRenaRoot(host=host,pollEn=True,emulate=args.emulate) as root:
+    print(f"System has {root.nodeCount} nodes")
+
     ui = os.path.dirname(ucsc_hn.__file__) + '/GuiTop.py'
     pyrogue.pydm.runPyDM(root=root,ui=ui)
