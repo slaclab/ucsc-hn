@@ -35,12 +35,12 @@ namespace ucsc_hn_lib {
          uint8_t polarityMap_[31][2][36];
 
          // Counters
-         uint32_t rxByteCount_;
+         uint64_t rxByteCount_;
          uint32_t rxFrameCount_;
          uint32_t rxDropCount_;
          uint32_t rxSampleCount_;
-         uint32_t fileSize_;
-         uint32_t fileRead_;
+         uint64_t fileSize_;
+         uint64_t fileRead_;
 
          // Pending rx
          uint8_t rxBuffer_[8192];
@@ -56,12 +56,12 @@ namespace ucsc_hn_lib {
          static void setup_python();
 
          void countReset();
-         uint32_t getByteCount();
+         uint64_t getByteCount();
          uint32_t getFrameCount();
          uint32_t getDropCount();
          uint32_t getSampleCount();
-         uint32_t getFileSize();
-         uint32_t getFileRead();
+         uint64_t getFileSize();
+         uint64_t getFileRead();
 
          uint8_t  getNodeId();
          uint8_t  getRenaId();
