@@ -77,7 +77,7 @@ void ucsc_hn_lib::RenaDataFormat::countReset () {
    rxSampleCount_ = 0;
 }
 
-uint32_t ucsc_hn_lib::RenaDataFormat::getByteCount() {
+uint64_t ucsc_hn_lib::RenaDataFormat::getByteCount() {
    return rxByteCount_;
 }
 
@@ -93,11 +93,11 @@ uint32_t ucsc_hn_lib::RenaDataFormat::getSampleCount() {
    return rxSampleCount_;
 }
 
-uint32_t ucsc_hn_lib::RenaDataFormat::getFileSize() {
+uint64_t ucsc_hn_lib::RenaDataFormat::getFileSize() {
    return fileSize_;
 }
 
-uint32_t ucsc_hn_lib::RenaDataFormat::getFileRead() {
+uint64_t ucsc_hn_lib::RenaDataFormat::getFileRead() {
    return fileRead_;
 }
 
@@ -369,8 +369,6 @@ void ucsc_hn_lib::RenaDataFormat::convertFile ( std::string inFile, std::string 
    uint8_t inBuff[8192];
    uint8_t *inPtr;
    uint32_t inLength;
-   uint32_t fileSize;
-   uint32_t readSize;
    char *outStr;
 
    rogue::GilRelease noGil;
