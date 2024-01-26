@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pyrogue
-pyrogue.addLibraryPath('../python')
+#pyrogue.addLibraryPath('../python')
 
 import ucsc_hn_lib
 import sys
