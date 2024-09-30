@@ -18,6 +18,10 @@ project (ucusc_hn_lib)
 enable_language(CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wno-deprecated")
 
+SET(CMAKE_SKIP_BUILD_RPATH TRUE)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+
 #####################################
 # Find Rogue & Support Libraries
 #####################################

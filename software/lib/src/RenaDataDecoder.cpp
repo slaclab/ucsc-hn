@@ -198,7 +198,7 @@ void ucsc_hn_lib::RenaDataDecoder::acceptFrame ( ris::FramePtr frame ) {
    ris::FrameLockPtr lock = frame->lock();
 
    // Ensure frame is in a sing buffer
-   if ( ensureSingleBuffer(frame,true) ) copyCount_++;
+   if ( ris::Master::ensureSingleBuffer(frame,true) ) copyCount_++;
 
    // Generate two new outgoing frames
    rFrame = acceptReq(4000,true);
