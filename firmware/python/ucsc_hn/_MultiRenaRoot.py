@@ -52,6 +52,9 @@ class MultiRenaRoot(pyrogue.Root):
 
         self.add(ucsc_hn.RenaConvert())
 
+        self.zmqServer = pyrogue.interfaces.ZmqServer(root=self, addr='127.0.0.1', port=0)
+        self.addInterface(self.zmqServer)
+
     def _loadConfig(self,arg):
         self.loadYaml(name=arg,
                       writeEach=False,
