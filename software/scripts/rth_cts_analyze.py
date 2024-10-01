@@ -1,8 +1,8 @@
 
 import sys
 
-NodeList = [i for i in range(10)]
-FpgaList = [i for i in range(15,31)]
+NodeList = [i for i in range(1,3)]
+FpgaList = [i for i in range(5,7)]
 
 KeyList = [f'{node}-{fpga}' for node in NodeList for fpga in FpgaList]
 
@@ -14,8 +14,8 @@ if len(sys.argv) != 3:
 
 # First get a baseline of timestamps
 
-filtNode = 9
-filtFpga = 20
+filtNode = 1
+filtFpga = 5
 lastT = 0
 totalKept = 0
 

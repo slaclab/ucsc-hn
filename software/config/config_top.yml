@@ -70,10 +70,10 @@ MultiRenaRoot:
 
   Node[1]:
     FanInRegs:
-      ChanEnable: 0x7FFF8000
+      ChanEnable: 0x60000000
   Node[2]:
     FanInRegs:
-      ChanEnable: 0x7FFF8000
+      ChanEnable: 0x60000000
   Node[3]:
     FanInRegs:
       ChanEnable: 0x7FFF8000
