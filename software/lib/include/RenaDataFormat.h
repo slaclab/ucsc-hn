@@ -42,6 +42,12 @@ namespace ucsc_hn_lib {
          uint64_t fileSize_;
          uint64_t fileRead_;
 
+         // File tracking
+         int fin_;
+         uint8_t finBuff_[8192];
+         uint8_t *finPtr_;
+         uint32_t finLength_;
+
          // Pending rx
          uint8_t rxBuffer_[8192];
          uint8_t rxCount_;
@@ -76,6 +82,10 @@ namespace ucsc_hn_lib {
          uint16_t getVData(uint8_t x);
 
          char * getStrData();
+
+         void openFile(std::string inFile);
+         void closeFile();
+         bool readFile();
 
          bool processChunk(uint8_t *&data, uint32_t &length);
          bool frameRx(uint8_t *data, uint32_t length);
