@@ -8,7 +8,7 @@
 #include <RenaDataFormat.h>
 
 BOOST_PYTHON_MODULE(ucsc_hn_lib) {
-   PyEval_InitThreads();
+   //PyEval_InitThreads();
    try {
       ucsc_hn_lib::RenaDataDecoder::setup_python();
       ucsc_hn_lib::RenaDataWriter::setup_python();
