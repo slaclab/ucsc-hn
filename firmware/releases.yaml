@@ -11,7 +11,7 @@ RogueScripts:
    - ../software/scripts/renaDataConvert
 
 CondaDependencies:
-   - 'rogue=v5.18.4'
+   - 'rogue'
    - 'python>=3.9'
    - surf
    - rce_gen3_fw_lib
