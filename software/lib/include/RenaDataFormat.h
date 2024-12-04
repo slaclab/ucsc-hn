@@ -44,9 +44,9 @@ namespace ucsc_hn_lib {
 
          // File tracking
          int fin_;
-         uint8_t finBuff[8192]_;
+         uint8_t finBuff_[8192];
          uint8_t *finPtr_;
-         int32_t finLength_;
+         uint32_t finLength_;
 
          // Pending rx
          uint8_t rxBuffer_[8192];

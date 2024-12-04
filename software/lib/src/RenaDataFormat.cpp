@@ -23,6 +23,7 @@ ucsc_hn_lib::RenaDataFormat::RenaDataFormat () {
    countReset();
    count_ = 0;
    rxCount_ = 0;
+   fin_ = -1;
 
    for (i=0; i<256; i++) {
       crc = i;
@@ -57,6 +58,8 @@ ucsc_hn_lib::RenaDataFormat::RenaDataFormat () {
    }
 }
 
+void ucsc_hn_lib::RenaDataFormat::setup_python() {
+
    bp::class_<ucsc_hn_lib::RenaDataFormat, ucsc_hn_lib::RenaDataFormatPtr, boost::noncopyable >("RenaDataFormat",bp::init<>())
       .def("countReset",     &ucsc_hn_lib::RenaDataFormat::countReset)
       .def("getByteCount",   &ucsc_hn_lib::RenaDataFormat::getByteCount)
@@ -69,16 +72,16 @@ ucsc_hn_lib::RenaDataFormat::RenaDataFormat () {
       .def("openFile",       &ucsc_hn_lib::RenaDataFormat::openFile)
       .def("closeFile",      &ucsc_hn_lib::RenaDataFormat::closeFile)
       .def("readFile",       &ucsc_hn_lib::RenaDataFormat::readFile)
-      .def("getNodeId",      &ucsc_hn_lib::RenaDataFormat:: getNodeId)
-      .def("getRenaId",      &ucsc_hn_lib::RenaDataFormat:: getRenaId)
-      .def("getFpgaId",      &ucsc_hn_lib::RenaDataFormat:: getFpgaId)
-      .def("getTimeStamp",   &ucsc_hn_lib::RenaDataFormat:: getTimeStamp)
-      .def("getCount",       &ucsc_hn_lib::RenaDataFormat:: getCount)
-      .def("getChannel",     &ucsc_hn_lib::RenaDataFormat:: getChannel)
-      .def("getPolarity",    &ucsc_hn_lib::RenaDataFormat:: getPolarity)
-      .def("getPhData",      &ucsc_hn_lib::RenaDataFormat:: getPhData)
-      .def("getUData",       &ucsc_hn_lib::RenaDataFormat:: getUData)
-      .def("getVData",       &ucsc_hn_lib::RenaDataFormat:: getVData)
+      .def("getNodeId",      &ucsc_hn_lib::RenaDataFormat::getNodeId)
+      .def("getRenaId",      &ucsc_hn_lib::RenaDataFormat::getRenaId)
+      .def("getFpgaId",      &ucsc_hn_lib::RenaDataFormat::getFpgaId)
+      .def("getTimeStamp",   &ucsc_hn_lib::RenaDataFormat::getTimeStamp)
+      .def("getCount",       &ucsc_hn_lib::RenaDataFormat::getCount)
+      .def("getChannel",     &ucsc_hn_lib::RenaDataFormat::getChannel)
+      .def("getPolarity",    &ucsc_hn_lib::RenaDataFormat::getPolarity)
+      .def("getPhData",      &ucsc_hn_lib::RenaDataFormat::getPhData)
+      .def("getUData",       &ucsc_hn_lib::RenaDataFormat::getUData)
+      .def("getVData",       &ucsc_hn_lib::RenaDataFormat::getVData)
    ;
 }
 
@@ -379,7 +382,7 @@ void ucsc_hn_lib::RenaDataFormat::openFile(std::string inFile) {
 
    rogue::GilRelease noGil;
 
-   if ( ( fin_ >= 0 )
+   if ( fin_ >= 0 )
       throw(rogue::GeneralError::create("RenaDataFormat::openFile", "File already open."));
 
    if ( ( fin_ = open(inFile.c_str(),O_RDONLY) ) < 0 )
@@ -393,7 +396,7 @@ void ucsc_hn_lib::RenaDataFormat::openFile(std::string inFile) {
 }
 
 void ucsc_hn_lib::RenaDataFormat::closeFile() {
-   if ( ( fin_ < 0 )
+   if ( fin_ < 0 )
       throw(rogue::GeneralError::create("RenaDataFormat::closeFile", "File not open."));
 
    close(fin_);
@@ -401,15 +404,18 @@ void ucsc_hn_lib::RenaDataFormat::closeFile() {
 }
 
 bool ucsc_hn_lib::RenaDataFormat::readFile() {
+   ssize_t ret;
+
    while (1) {
       if ( finLength_ == 0 ) {
-         if ( ( finLength_ = read(fin_, inPtr_, 8192)) <= 0 ) {
+         if ( ( ret = read(fin_, finBuff_, 8192)) <= 0 ) {
             finLength_ = 0;
             return false;
          }
+         finLength_ = (uint32_t)ret;
          fileRead_ += finLength_;
-         finPtr_ = finBuf_;
-       }
+         finPtr_ = finBuff_;
+      }
 
       if ( processChunk(finPtr_, finLength_) ) return true;
    }
@@ -424,7 +430,7 @@ void ucsc_hn_lib::RenaDataFormat::convertFile ( std::string inFile, std::string 
    if ( ( fout = open(outFile.c_str(), O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) < 0)
       throw(rogue::GeneralError::create("RenaDataFormat::convert", "Failed to open output file: %s", outFile.c_str()));
 
-   while readFile() {
+   while ( readFile() ) {
       outStr = getStrData();
       write(fout,outStr,strlen(outStr));
    }
