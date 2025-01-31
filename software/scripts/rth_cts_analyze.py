@@ -1,21 +1,27 @@
 
 import sys
+import numpy as np
+import collections
+
+#NodeList = [i for i in range(1,3)]
+#FpgaList = [i for i in range(5,7)]
 
 NodeList = [i for i in range(1,3)]
-FpgaList = [i for i in range(5,7)]
+FpgaList = [i for i in range(20,21)]
 
 KeyList = [f'{node}-{fpga}' for node in NodeList for fpga in FpgaList]
 
 hitList = {}
+deltaList = {}
 
-if len(sys.argv) != 3:
-    print("Usage: cts_analyze.py rena_file.dat output")
+if len(sys.argv) != 3 and len(sys.argv) != 4:
+    print("Usage: cts_analyze.py rena_file.dat output [metrics]")
     sys.exit(1)
 
 # First get a baseline of timestamps
 
 filtNode = 1
-filtFpga = 5
+filtFpga = 20
 lastT = 0
 totalKept = 0
 
@@ -59,6 +65,12 @@ with open(sys.argv[1]) as f:
 
         if tsr in hitList:
             hitList[tsr][f'{node}-{fpga}'] += 1
+            k = f'{node}-{fpga}-{rena}-{chan}'
+
+            if k not in deltaList:
+                deltaList[k] = []
+
+            deltaList[k].append(ts - hitList[tsr]['orig'])
 
 print("Done.")
 print("Writing Results")
@@ -90,4 +102,25 @@ with open(sys.argv[2], 'w') as of:
     print(st, file=of)
 
 print("Done.")
+
+if len(sys.argv) > 3:
+
+    deltaList = collections.OrderedDict(sorted(deltaList.items()))
+
+    print("Writing Diffs")
+    with open(sys.argv[3], 'w') as of:
+
+        st = "Chan\tMean\tDev\tMin\tMax\tLen"
+        print(st, file=of)
+
+        for k,v in deltaList.items():
+            mean = np.mean(deltaList[k])
+            std = np.std(deltaList[k])
+            mn = np.min(deltaList[k])
+            mx = np.max(deltaList[k])
+            ln = len(deltaList[k])
+            st = f"{k}\t{mean}\t{std}\t{mn}\t{mx}\t{ln}"
+            print(st, file=of)
+
+    print("Done.")
 
