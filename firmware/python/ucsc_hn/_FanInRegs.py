@@ -120,6 +120,18 @@ class FanInRegs(pr.Device):
                 mode         = 'RO',
             ))
 
+        for i in range(1,31):
+            self.add(pr.RemoteVariable(
+                name         = f'OFlowCount[{i}]',
+                description  = 'Overflow Count',
+                offset       = 0x300 + (i-1)*4,
+                bitSize      = 32,
+                bitOffset    = 0x00,
+                disp         = '{:#}',
+                base         = pr.UInt,
+                mode         = 'RO',
+            ))
+
     def initialize(self):
         self.SendReset()
 
