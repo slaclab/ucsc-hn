@@ -43,6 +43,7 @@ entity FanInRegs is
       countRst     : out sl;
       rxPackets    : in  Slv32Array(30 downto 1);
       dropBytes    : in  Slv32Array(30 downto 1);
+      oflowCount   : in  Slv32Array(30 downto 1);
       sysClkCount  : in slv(15 downto 0);
       renaClkCount : in slv(15 downto 0);
       mmcmReset    : in sl;
@@ -81,6 +82,7 @@ architecture rtl of FanInRegs is
    signal currRxDataSync : slv(30 downto 1);
    signal rxPacketsSync  : Slv32Array(30 downto 1);
    signal dropBytesSync  : Slv32Array(30 downto 1);
+   signal oflowCountSync : Slv32Array(30 downto 1);
 
    signal sysClkCountReg  : slv(15 downto 0);
    signal renaClkCountReg : slv(15 downto 0);
@@ -109,6 +111,16 @@ begin
             rst     => axiRst,
             dataIn  => dropBytes(i),
             dataOut => dropBytesSync(i));
+
+      U_SyncOFlowCount: entity surf.SynchronizerVector
+         generic map (
+            TPD_G   => TPD_G,
+            WIDTH_G => 32)
+         port map (
+            clk     => axiClk,
+            rst     => axiRst,
+            dataIn  => oflowCount(i),
+            dataOut => oflowCountSync(i));
 
       U_SyncCurRxData: entity surf.Synchronizer
          generic map ( TPD_G => TPD_G)
@@ -148,7 +160,7 @@ begin
             dataIn  => mmcmLocked,
             dataOut => mmcmLockedReg);
 
-   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, currRxDataSync, sysClkCountReg, renaClkCountReg, mmcmLockedReg) is
+   comb : process (r, axiReadMaster, axiRst, axiWriteMaster, rxPacketsSync, dropBytesSync, oflowCountSync, currRxDataSync, sysClkCountReg, renaClkCountReg, mmcmLockedReg) is
       variable v      : RegType;
       variable axilEp : AxiLiteEndpointType;
    begin
@@ -197,6 +209,11 @@ begin
       -- Rx Drop Bytes Registers, 0x200 - 0x274
       for i in 1 to 30 loop
          axiSlaveRegisterR(axilEp, toSlv(512 + (i-1)*4,12), 0, dropBytesSync(i));
+      end loop;
+
+      -- Overflow Count Registers, 0x300 - 0x374
+      for i in 1 to 30 loop
+         axiSlaveRegisterR(axilEp, toSlv(768 + (i-1)*4,12), 0, oflowCountSync(i));
       end loop;
 
       -- Close the transaction

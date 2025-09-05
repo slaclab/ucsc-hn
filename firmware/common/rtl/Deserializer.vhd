@@ -35,6 +35,7 @@ entity Deserializer is
       currRxData : out sl;
       rxPackets  : out slv(31 downto 0);
       dropBytes  : out slv(31 downto 0);
+      oflowCount : out slv(31 downto 0);
 
       -- Output
       mAxisClk    : in  sl;
@@ -80,6 +81,8 @@ architecture Behavioral of Deserializer is
       rxPackets      : slv(31 downto 0);
       dropBytes      : slv(31 downto 0);
       dropCntEn      : sl;
+      oflowCount     : slv(31 downto 0);
+      oflowCountEn   : sl;
       timeoutCnt     : slv(23 downto 0);
       timeoutRst     : sl;
       timeout        : sl;
@@ -93,6 +96,8 @@ architecture Behavioral of Deserializer is
       rxPackets      => (others => '0'),
       dropBytes      => (others => '0'),
       dropCntEn      => '0',
+      oflowCount     => (others => '0'),
+      oflowCountEn   => '0',
       timeoutCnt     => (others => '1'),
       timeoutRst     => '0',
       timeout        => '0',
@@ -114,6 +119,8 @@ architecture Behavioral of Deserializer is
 
    signal tmpAxisMaster : AxiStreamMasterType;
    signal tmpAxisSlave  : AxiStreamSlaveType;
+
+   signal intAxisCntrl  : AxiStreamCntrlType;
 
    signal countRstReg : sl;
    signal rxEnableReg : sl;
@@ -169,7 +176,7 @@ begin
          rx         => rxInt);
 
 
-   comb : process(r, uartData, uartDen, sysClkRst, countRstReg) is
+   comb : process(r, uartData, uartDen, sysClkRst, countRstReg, intAxisCntrl) is
       variable v : RegType;
    begin
 
@@ -191,13 +198,20 @@ begin
       end if;
 
       if countRstReg = '1' then
-         v.rxPackets := (others => '0');
-         v.dropBytes := (others => '0');
+         v.rxPackets  := (others => '0');
+         v.dropBytes  := (others => '0');
+         v.oflowCount := (others => '0');
       end if;
 
       if r.dropCntEn = '1' then
          v.dropBytes := r.dropBytes + 1;
       end if;
+
+      if r.oflowCountEn = '1' then
+         v.oflowCount := r.oflowCount + 1;
+      end if;
+
+      v.oflowCountEn := intAxisCntrl.overflow;
 
       case r.state is
 
@@ -240,9 +254,10 @@ begin
             v.state := IDLE_S;
       end case;
 
-      uartRd    <= v.uartRd;
-      rxPackets <= r.rxPackets;
-      dropBytes <= r.dropBytes;
+      uartRd     <= v.uartRd;
+      rxPackets  <= r.rxPackets;
+      dropBytes  <= r.dropBytes;
+      oflowCount <= r.oflowCount;
 
       -- Synchronous Reset
       if (sysClkRst = '1') then
@@ -273,6 +288,7 @@ begin
          sAxisClk    => sysClk,
          sAxisRst    => sysClkRst,
          sAxisMaster => r.intAxisMaster,
+         sAxisCntrl  => intAxisCntrl,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => tmpAxisMaster,

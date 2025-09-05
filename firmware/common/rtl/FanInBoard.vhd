@@ -107,9 +107,10 @@ architecture STRUCTURE of FanInBoard is
    signal intWriteMaster : AxiLiteWriteMasterType;
    signal intWriteSlave  : AxiLiteWriteSlaveType;
 
-   signal countRst  : sl;
-   signal rxPackets : Slv32Array(30 downto 1);
-   signal dropBytes : Slv32Array(30 downto 1);
+   signal countRst   : sl;
+   signal rxPackets  : Slv32Array(30 downto 1);
+   signal dropBytes  : Slv32Array(30 downto 1);
+   signal oflowCount : Slv32Array(30 downto 1);
 
    signal currRxData : slv(30 downto 1);
    signal rxEnable   : slv(30 downto 1);
@@ -159,6 +160,7 @@ begin
          countRst       => countRst,
          rxPackets      => rxPackets,
          dropBytes      => dropBytes,
+         oclowCount     => oclowCount,
          sysClkCount    => sysClkCount,
          renaClkCount   => renaClkCount,
          mmcmReset      => mmcmReset,
@@ -390,6 +392,7 @@ begin
             countRst    => countRst,
             rxPackets   => rxPackets(i),
             dropBytes   => dropBytes(i),
+            oclowCount  => oclowCount(i),
             mAxisClk    => dataClk,
             mAxisRst    => dataClkRst,
             mAxisMaster => intObMasters(i),
