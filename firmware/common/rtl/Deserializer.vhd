@@ -120,7 +120,7 @@ architecture Behavioral of Deserializer is
    signal tmpAxisMaster : AxiStreamMasterType;
    signal tmpAxisSlave  : AxiStreamSlaveType;
 
-   signal intAxisCntrl  : AxiStreamCntrlType;
+   signal intAxisCtrl   : AxiStreamCtrlType;
 
    signal countRstReg : sl;
    signal rxEnableReg : sl;
@@ -176,7 +176,7 @@ begin
          rx         => rxInt);
 
 
-   comb : process(r, uartData, uartDen, sysClkRst, countRstReg, intAxisCntrl) is
+   comb : process(r, uartData, uartDen, sysClkRst, countRstReg, intAxisCtrl) is
       variable v : RegType;
    begin
 
@@ -211,7 +211,7 @@ begin
          v.oflowCount := r.oflowCount + 1;
       end if;
 
-      v.oflowCountEn := intAxisCntrl.overflow;
+      v.oflowCountEn := intAxisCtrl.overflow;
 
       case r.state is
 
@@ -288,7 +288,7 @@ begin
          sAxisClk    => sysClk,
          sAxisRst    => sysClkRst,
          sAxisMaster => r.intAxisMaster,
-         sAxisCntrl  => intAxisCntrl,
+         sAxisCtrl   => intAxisCtrl,
          mAxisClk    => mAxisClk,
          mAxisRst    => mAxisRst,
          mAxisMaster => tmpAxisMaster,
