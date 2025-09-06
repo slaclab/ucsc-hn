@@ -332,10 +332,6 @@ begin
          userEthBypIbSlave    => open,
          userEthBypObMaster   => open,
          userEthBypObSlave    => AXI_STREAM_SLAVE_FORCE_C,
-         userEthVlanIbMasters => (others=>AXI_STREAM_MASTER_INIT_C),
-         userEthVlanIbSlaves  => open,
-         userEthVlanObMasters => open,
-         userEthVlanObSlaves  => (others=>AXI_STREAM_SLAVE_FORCE_C),
          -- AXI-Lite Buses
          axilClk              => axilClk,
          axilRst              => axilRst,
