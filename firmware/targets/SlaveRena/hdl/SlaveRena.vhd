@@ -293,8 +293,7 @@ begin
          UDP_SERVER_EN_G    => true,
          UDP_SERVER_SIZE_G  => 2,
          UDP_SERVER_PORTS_G => SERVER_PORTS_C,
-         BYP_EN_G           => false,
-         VLAN_EN_G          => false)
+         BYP_EN_G           => false)
       port map (
          -- Clocks and resets
          clk312               => clk312,
